@@ -1,0 +1,7 @@
+<?php
+/** @var string */
+const CP_VERSION = '1.3.0';
+/** @var string */
+const CP_PLUGIN_DIR = '/tmp/cp-work/';
+/** @var string */
+const CP_PLUGIN_URL = 'http://dummy/';

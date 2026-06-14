@@ -1,0 +1,31 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 6
+    paths:
+        - includes/
+        - convoca-publisher.php
+        - uninstall.php
+    excludePaths:
+        - vendor
+        - .git
+        - assets
+        - languages (?)
+        - stubs
+        - tests
+    scanFiles:
+        - stubs/constants.stub
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+    stubFiles:
+        - stubs/constants.stub
+        - stubs/wp-cli.stub
+    reportUnmatchedIgnoredErrors: false
+    treatPhpDocTypesAsCertain: false
+    parallel:
+        maximumNumberOfProcesses: 1
+        processTimeout: 300.0
+    ignoreErrors:
+        - '#Unsafe usage of new static\(\)#'
+        - '#Call to an undefined method .*Plugin::#'
+        - '#requireOnce\.fileNotFound#'

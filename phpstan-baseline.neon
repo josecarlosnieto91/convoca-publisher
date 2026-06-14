@@ -1,0 +1,73 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method ConvocaPublisher\\Crypto\:\:decrypt_on_load\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: includes/class-crypto.php
+
+		-
+			message: '#^Method ConvocaPublisher\\Crypto\:\:decrypt_on_load\(\) has parameter \$value with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: includes/class-crypto.php
+
+		-
+			message: '#^Method ConvocaPublisher\\Plugin\:\:get_channels\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-plugin.php
+
+		-
+			message: '#^Property ConvocaPublisher\\Plugin\:\:\$channels type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-plugin.php
+
+		-
+			message: '#^Method ConvocaPublisher\\Publisher\:\:__construct\(\) has parameter \$channels with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-publisher.php
+
+		-
+			message: '#^Method ConvocaPublisher\\Publisher\:\:init\(\) has parameter \$channels with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-publisher.php
+
+		-
+			message: '#^Method ConvocaPublisher\\Publisher\:\:log_publish\(\) has parameter \$entry with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-publisher.php
+
+		-
+			message: '#^Method ConvocaPublisher\\Publisher\:\:publish_post\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-publisher.php
+
+		-
+			message: '#^Property ConvocaPublisher\\Publisher\:\:\$channels type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-publisher.php
+
+		-
+			message: '#^Method ConvocaPublisher\\Retry\:\:get_queue_stats\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-retry.php
+
+		-
+			message: '#^Method ConvocaPublisher\\Scheduler\:\:add_cron_interval\(\) has parameter \$schedules with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-scheduler.php
+
+		-
+			message: '#^Method ConvocaPublisher\\Scheduler\:\:add_cron_interval\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-scheduler.php

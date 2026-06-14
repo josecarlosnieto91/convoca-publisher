@@ -1,0 +1,18 @@
+<?php
+namespace WP_CLI {
+    class Command {};
+}
+namespace {
+    class WP_Post {
+        public int $ID;
+        public int $post_author;
+        public string $post_title;
+        public string $post_content;
+        public string $post_excerpt;
+        public string $post_status;
+        public string $post_type;
+        public string $post_date;
+    }
+    class WP_Error {}
+    class WP_Hook {}
+}

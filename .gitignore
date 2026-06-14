@@ -1,0 +1,20 @@
+# Dependencies
+vendor/
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Translation files (user-generated)
+*.po
+*.mo
+
+# Build artifacts
+composer.lock
