@@ -1,10 +1,10 @@
 === Convoca Publisher ===
-Contributors: josecarlosnieto91
+Contributors: josecarlosnietoramos
 Donate link: https://biodevas.org
 Tags: social media, facebook, instagram, linkedin, twitter, x, tiktok, google my business, telegram, mastodon, auto-publish, scheduler, social, publish
 Requires at least: 6.0
-Tested up to: 6.7
-Requires PHP: 8.0
+Tested up to: 7.0
+Requires PHP: 8.1
 Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
