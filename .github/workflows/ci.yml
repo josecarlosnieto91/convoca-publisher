@@ -25,6 +25,13 @@ jobs:
       - name: Validate composer
         run: composer validate --strict
 
+      - name: Configure composer auth
+        run: |
+          composer config --global github-oauth.github.com ${{ github.token }}
+          composer config --global repo.packagist composer https://repo.packagist.org
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
