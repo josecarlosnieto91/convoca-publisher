@@ -119,7 +119,7 @@ GPL v2 o posterior. Ver [LICENSE](LICENSE).
 
 ## 👤 Autor
 
-**José Carlos Nieto Ramos** — [biodevas.org](https://biodevas.org)
+**José Carlos Nieto Ramos** — [josecarlosnietoramos.wordpress.com](https://josecarlosnietoramos.wordpress.com)
 
 ---
 

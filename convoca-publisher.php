@@ -9,7 +9,7 @@
  * Requires at least: 6.4
  * Tested up to: 7.0
  * Author: José Carlos Nieto Ramos
- * Author URI: https://biodevas.org
+ * Author URI: https://josecarlosnietoramos.wordpress.com
  * License: GPL v2 or later
  * Text Domain: convoca-publisher
  * Domain Path: /languages
@@ -19,6 +19,8 @@
  *
  * @package ConvocaPublisher
  */
+
+namespace ConvocaPublisher;
 
 defined('ABSPATH') || exit;
 
@@ -58,7 +60,7 @@ define('CP_MIN_PHP', '8.0');
 define('CP_MIN_WP', '6.0');
 
 // Comprobación de requisitos al activar
-register_activation_hook(__FILE__, 'cp_activation_check');
+register_activation_hook(__FILE__, 'ConvocaPublisher\\cp_activation_check');
 function cp_activation_check(): void
 {
     global $wp_version;
@@ -89,7 +91,7 @@ function cp_activation_check(): void
 }
 
 // Desactivación
-register_deactivation_hook(__FILE__, 'cp_deactivation');
+register_deactivation_hook(__FILE__, 'ConvocaPublisher\\cp_deactivation');
 function cp_deactivation(): void
 {
     wp_clear_scheduled_hook('cp_retry_failed_posts');
@@ -157,11 +159,11 @@ function cp_privacy_notice(): void
 
 require_once CP_PLUGIN_DIR . 'includes/class-plugin.php';
 
-function convoca_publisher(): ConvocaPublisher\Plugin
+function convoca_publisher(): \ConvocaPublisher\Plugin
 {
     static $instance = null;
     if (null === $instance) {
-        $instance = new ConvocaPublisher\Plugin();
+        $instance = new \ConvocaPublisher\Plugin();
     }
     return $instance;
 }

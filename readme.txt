@@ -1,6 +1,6 @@
 === Convoca Publisher ===
 Contributors: josecarlosnietoramos
-Donate link: https://biodevas.org
+Donate link: https://josecarlosnietoramos.wordpress.com
 Tags: social media, facebook, instagram, linkedin, twitter, x, tiktok, google my business, telegram, mastodon, auto-publish, scheduler, social, publish
 Requires at least: 6.0
 Tested up to: 7.0
@@ -148,4 +148,4 @@ Migración de opciones sp_* a cp_*. La migración es automática al activar el p
 
 Este plugin es parte del ecosistema Convoca — un conjunto de plugins de código abierto para WordPress enfocados en la gestión de organizaciones, socios y comunicación digital.
 
-Desarrollado por José Carlos Nieto Ramos — https://biodevas.org
+Desarrollado por José Carlos Nieto Ramos — https://josecarlosnietoramos.wordpress.com
