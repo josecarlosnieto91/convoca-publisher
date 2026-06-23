@@ -5,7 +5,7 @@ Tags: social media, facebook, instagram, linkedin, twitter, x, tiktok, google my
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,10 @@ Sí, todos los tokens se cifran con AES-256-GCM usando las salts de WordPress an
 
 == Changelog ==
 
+
+= 1.3.1 =
+* Added: MANUAL_USUARIO.md with complete admin guide
+* Dev: Added phpstan.neon for static analysis
 = 1.3.0 =
 * Migración completa de opciones sp_* a cp_* (con migración automática al activar)
 * Nuevo sistema de plantillas por canal con variables {title}, {excerpt}, {url}, {hashtags}, {date}, {author}
@@ -141,6 +145,10 @@ Sí, todos los tokens se cifran con AES-256-GCM usando las salts de WordPress an
 
 == Upgrade Notice ==
 
+
+= 1.3.1 =
+* Added: MANUAL_USUARIO.md with complete admin guide
+* Dev: Added phpstan.neon for static analysis
 = 1.3.0 =
 Migración de opciones sp_* a cp_*. La migración es automática al activar el plugin. Las opciones antiguas se convierten sin pérdida de datos.
 
