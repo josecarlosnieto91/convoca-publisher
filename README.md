@@ -51,6 +51,10 @@ composer install
 composer test
 ```
 
+
+### 1.3.1
+- docs: add MANUAL_USUARIO.md with 7 social networks admin guide
+
 ## 📋 Requisitos
 
 - PHP 8.0+
