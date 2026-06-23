@@ -4,7 +4,7 @@
  * Plugin Name: Convoca Publisher
  * Plugin URI: https://github.com/josecarlosnieto91/convoca-publisher
  * Description: Publica automáticamente tus entradas de WordPress en redes sociales. Canales: Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram, Mastodon. Con plantillas personalizables por canal, cola de reintentos, cifrado de tokens y panel de monitoreo.
- * Version: 1.3.0
+ * Version: 1.3.1
  * Requires PHP: 8.1
  * Requires at least: 6.4
  * Tested up to: 7.0
