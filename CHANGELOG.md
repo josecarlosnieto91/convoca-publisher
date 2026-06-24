@@ -1,27 +1,25 @@
-# Changelog — Convoca Publisher
+# Changelog — convoca-publisher
 
-## 1.3.0
-* Migración completa de opciones sp_* a cp_*
-* Nuevo sistema de plantillas por canal con variables
-* Hashtags automáticos desde etiquetas del post
-* Aviso de privacidad obligatorio
-* Cifrado mejorado de tokens (AES-256-GCM)
-* README.txt compatible con WordPress.org
-* Dependencia: convoca-core (Requires Plugins + code check)
+## v1.3.1 (2026-06-24)
 
-## 1.2.0
-* Nuevos canales: Telegram, Mastodon
-* Cifrado de tokens (AES-256-GCM)
-* Cola de reintentos con backoff exponencial
-* Metabox en el editor con botón de republicar
-* REST API (/convoca-publisher/v1/)
+### 🔐 Security
+- Renamed `conv_` → `convoca_` (options, hooks, constants, meta keys)
+- Renamed `Assoc` → `Convoca` in autoloader and webhook headers
+- Mitigated 12 security vulnerabilities in licensing infrastructure
+- License key used as HMAC secret for anti-replay protection
 
-## 1.1.0
-* Añadidos canales: LinkedIn, Twitter/X, TikTok, Google My Business
-* Arquitectura de canales extensible mejorada
+### ✨ Improvements
+- PSR-4/classmap autoloading without legacy SPL fallbacks
+- i18n: `wp_set_script_translations` for JS translations
+- i18n: wrapped `wp_die`, `wp_send_json_error`, and REST messages with `__()`
+- Added `wp_enqueue_scripts` hook for script translations
 
-## 1.0.0
-* Lanzamiento inicial
-* Canal Facebook/Instagram
-* Publicación automática al publicar
-* Soporte para entradas programadas
+### 🧪 Tests
+- Added unit/integration tests covering critical zones
+
+### 📦 Infrastructure
+- Updated release ZIPs on getconvoca.app
+- Added JSON metadata with SHA256 checksums
+- Demo environment synchronized
+
+---
