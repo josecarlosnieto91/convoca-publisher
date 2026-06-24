@@ -44,7 +44,7 @@ add_action(
 add_action(
 	'plugins_loaded',
 	function () {
-		if ( ! defined( 'CONV_COMMON_VERSION' ) && ! function_exists( 'convoca_core_is_active' ) ) {
+		if ( ! defined( 'CONVOCA_COMMON_VERSION' ) && ! function_exists( 'convoca_core_is_active' ) ) {
 			add_action(
 				'admin_notices',
 				function () {
