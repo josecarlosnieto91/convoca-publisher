@@ -24,6 +24,12 @@ namespace ConvocaPublisher;
 
 defined('ABSPATH') || exit;
 
+/* ── Composer autoload ─────────────────────────────── */
+\$composer_autoload = __DIR__ . '/vendor/autoload.php';
+if ( file_exists( \$composer_autoload ) ) {
+	require_once \$composer_autoload;
+}
+
 // Load translations.
 add_action(
 	'init',
@@ -156,8 +162,6 @@ function cp_privacy_notice(): void
     echo '<p><label><input type="checkbox" name="cp_privacy_ack" value="1" ' . checked(get_option('cp_privacy_acknowledged', false), true, false) . '> ' . esc_html__('He leído y acepto este aviso', 'convoca-publisher') . '</label></p>';
     echo '</div>';
 }
-
-require_once CP_PLUGIN_DIR . 'includes/class-plugin.php';
 
 function convoca_publisher(): \ConvocaPublisher\Plugin
 {

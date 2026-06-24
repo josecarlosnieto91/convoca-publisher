@@ -1,694 +1,707 @@
-# Copyright (C) 2026 José Carlos Nieto Ramos
-# This file is distributed under the GPL v2 or later.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Convoca Publisher 1.3.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/convoca-publisher\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-24 07:07+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-14T13:49:10+00:00\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: convoca-publisher\n"
 
-#. Plugin Name of the plugin
-#: convoca-publisher.php
-#: includes/class-admin.php:20
-#: includes/class-admin.php:21
-#: includes/class-admin.php:115
-#: includes/class-admin.php:418
-#: includes/class-metabox.php:20
-msgid "Convoca Publisher"
-msgstr ""
-
-#. Plugin URI of the plugin
-#: convoca-publisher.php
-msgid "https://github.com/josecarlosnieto91/convoca-publisher"
-msgstr ""
-
-#. Description of the plugin
-#: convoca-publisher.php
-msgid "Publica automáticamente tus entradas de WordPress en redes sociales. Canales: Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram, Mastodon. Con plantillas personalizables por canal, cola de reintentos, cifrado de tokens y panel de monitoreo."
-msgstr ""
-
-#. Author of the plugin
-#: convoca-publisher.php
-msgid "José Carlos Nieto Ramos"
-msgstr ""
-
-#. Author URI of the plugin
-#: convoca-publisher.php
-msgid "https://convoca.org"
-msgstr ""
-
-#: convoca-publisher.php:70
-#, php-format
-msgid "Convoca Publisher requiere PHP %s o superior. Tu versión: %s"
-msgstr ""
-
-#: convoca-publisher.php:81
-#, php-format
-msgid "Convoca Publisher requiere WordPress %s o superior."
-msgstr ""
-
-#: convoca-publisher.php:152
-msgid "🔐 Convoca Publisher — Aviso de privacidad"
-msgstr ""
-
-#: convoca-publisher.php:153
-msgid "Este plugin envía datos (título, extracto, URL, imagen destacada y etiquetas de tus entradas) a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, Telegram, Mastodon) cuando publicas contenido en redes sociales. Los tokens de acceso se almacenan cifrados en la base de datos de WordPress."
-msgstr ""
-
-#: convoca-publisher.php:154
-#: includes/class-admin.php:169
-msgid "He leído y acepto este aviso"
-msgstr ""
-
-#: includes/channels/class-facebook.php:16
+#: convoca-publisher/includes/channels/class-facebook.php:16
 msgid "Facebook / Instagram"
 msgstr ""
 
-#: includes/channels/class-facebook.php:32
+#: convoca-publisher/includes/channels/class-facebook.php:32
 msgid "Token o Page ID no configurados."
 msgstr ""
 
-#: includes/channels/class-facebook.php:67
+#: convoca-publisher/includes/channels/class-facebook.php:67
 msgid "Error desconocido de Meta API."
 msgstr ""
 
-#: includes/channels/class-facebook.php:75
+#: convoca-publisher/includes/channels/class-facebook.php:75
 msgid "Token de Acceso (Page Access Token)"
 msgstr ""
 
-#: includes/channels/class-facebook.php:77
-msgid "Token de página de Facebook con permisos pages_manage_posts y pages_read_engagement."
+#: convoca-publisher/includes/channels/class-facebook.php:77
+msgid ""
+"Token de página de Facebook con permisos pages_manage_posts y "
+"pages_read_engagement."
 msgstr ""
 
-#: includes/channels/class-facebook.php:80
+#: convoca-publisher/includes/channels/class-facebook.php:80
 msgid "ID de la Página de Facebook"
 msgstr ""
 
-#: includes/channels/class-facebook.php:82
+#: convoca-publisher/includes/channels/class-facebook.php:82
 msgid "ID numérico de tu página de Facebook."
 msgstr ""
 
-#: includes/channels/class-facebook.php:85
+#: convoca-publisher/includes/channels/class-facebook.php:85
 msgid "ID de Instagram Business (opcional)"
 msgstr ""
 
-#: includes/channels/class-facebook.php:87
-msgid "Si tu Instagram está vinculado a la página de Facebook, se publicará también allí."
+#: convoca-publisher/includes/channels/class-facebook.php:87
+msgid ""
+"Si tu Instagram está vinculado a la página de Facebook, se publicará también "
+"allí."
 msgstr ""
 
-#: includes/channels/class-facebook.php:91
-#: includes/channels/class-linkedin.php:97
-#: includes/channels/class-mastodon.php:114
-#: includes/channels/class-telegram.php:93
+#: convoca-publisher/includes/channels/class-facebook.php:91
+#: convoca-publisher/includes/channels/class-linkedin.php:97
+#: convoca-publisher/includes/channels/class-telegram.php:93
+#: convoca-publisher/includes/channels/class-mastodon.php:114
 msgid "Plantilla del mensaje"
 msgstr ""
 
-#: includes/channels/class-facebook.php:93
-msgid "{title}, {excerpt}, {url}, {hashtags}, {date}, {author}. Por defecto: {title} — {url} {hashtags}"
+#: convoca-publisher/includes/channels/class-facebook.php:93
+msgid ""
+"{title}, {excerpt}, {url}, {hashtags}, {date}, {author}. Por defecto: "
+"{title} — {url} {hashtags}"
 msgstr ""
 
-#: includes/channels/class-facebook.php:102
+#: convoca-publisher/includes/channels/class-facebook.php:102
 msgid "El token de Facebook es obligatorio."
 msgstr ""
 
-#: includes/channels/class-facebook.php:105
+#: convoca-publisher/includes/channels/class-facebook.php:105
 msgid "El ID de página de Facebook es obligatorio."
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:16
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:16
 msgid "Google My Business"
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:30
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:30
 msgid "Token o ubicación de GMB no configurados."
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:74
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:74
 msgid "Error desconocido de GMB API."
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:82
-#: includes/channels/class-linkedin.php:87
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:82
+#: convoca-publisher/includes/channels/class-linkedin.php:87
 msgid "Access Token (OAuth 2.0)"
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:84
-msgid "Token de Google con permisos https://www.googleapis.com/auth/business.manage."
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:84
+msgid ""
+"Token de Google con permisos https://www.googleapis.com/auth/business.manage."
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:87
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:87
 msgid "Location ID"
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:89
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:89
 msgid "Formato: accounts/{accountId}/locations/{locationId}"
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:92
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:92
 msgid "Plantilla del post"
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:94
-msgid "{title}, {excerpt}, {url}. GMB limita a 1500 caracteres. Por defecto: {excerpt} — {url}"
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:94
+msgid ""
+"{title}, {excerpt}, {url}. GMB limita a 1500 caracteres. Por defecto: "
+"{excerpt} — {url}"
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:103
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:103
 msgid "El token de Google es obligatorio."
 msgstr ""
 
-#: includes/channels/class-googlemybusiness.php:106
+#: convoca-publisher/includes/channels/class-googlemybusiness.php:106
 msgid "El Location ID de GMB es obligatorio."
 msgstr ""
 
-#: includes/channels/class-linkedin.php:16
+#: convoca-publisher/includes/channels/class-linkedin.php:16
 msgid "LinkedIn"
 msgstr ""
 
-#: includes/channels/class-linkedin.php:30
+#: convoca-publisher/includes/channels/class-linkedin.php:30
 msgid "Token o URN de LinkedIn no configurados."
 msgstr ""
 
-#: includes/channels/class-linkedin.php:79
+#: convoca-publisher/includes/channels/class-linkedin.php:79
 msgid "Error desconocido de LinkedIn API."
 msgstr ""
 
-#: includes/channels/class-linkedin.php:89
+#: convoca-publisher/includes/channels/class-linkedin.php:89
 msgid "Token de LinkedIn con permisos w_organization_social o w_member_social."
 msgstr ""
 
-#: includes/channels/class-linkedin.php:92
+#: convoca-publisher/includes/channels/class-linkedin.php:92
 msgid "URN de perfil/página"
 msgstr ""
 
-#: includes/channels/class-linkedin.php:94
+#: convoca-publisher/includes/channels/class-linkedin.php:94
 msgid "Ej: urn:li:person:abc123 o urn:li:organization:xyz456"
 msgstr ""
 
-#: includes/channels/class-linkedin.php:99
-msgid "{title}, {excerpt}, {url}, {hashtags}, {date}, {author}. LinkedIn usa ARTICLE format."
+#: convoca-publisher/includes/channels/class-linkedin.php:99
+msgid ""
+"{title}, {excerpt}, {url}, {hashtags}, {date}, {author}. LinkedIn usa "
+"ARTICLE format."
 msgstr ""
 
-#: includes/channels/class-linkedin.php:108
+#: convoca-publisher/includes/channels/class-linkedin.php:108
 msgid "El token de LinkedIn es obligatorio."
 msgstr ""
 
-#: includes/channels/class-linkedin.php:111
+#: convoca-publisher/includes/channels/class-linkedin.php:111
 msgid "La URN de LinkedIn es obligatoria."
 msgstr ""
 
-#: includes/channels/class-mastodon.php:16
-msgid "Mastodon"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:31
-msgid "Token o servidor de Mastodon no configurados."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:91
-msgid "Error desconocido de Mastodon API."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:99
-msgid "Servidor"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:101
-msgid "Ej: https://mastodon.social"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:104
-#: includes/channels/class-tiktok.php:78
-msgid "Access Token"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:106
-msgid "Token de acceso de Mastodon (Desarrollo → Nuevo token → write:statuses)."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:109
-msgid "Visibilidad"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:111
-msgid "public, unlisted, private, direct (por defecto public)."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:116
-msgid "{title}, {excerpt}, {url}, {hashtags}. Máximo 500 caracteres. Por defecto: {title} — {url} {hashtags}"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:125
-msgid "El token de Mastodon es obligatorio."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:128
-msgid "El servidor de Mastodon es obligatorio."
-msgstr ""
-
-#: includes/channels/class-telegram.php:16
-msgid "Telegram"
-msgstr ""
-
-#: includes/channels/class-telegram.php:30
-msgid "Token o Chat ID de Telegram no configurados."
-msgstr ""
-
-#: includes/channels/class-telegram.php:71
-msgid "Error desconocido de Telegram API."
-msgstr ""
-
-#: includes/channels/class-telegram.php:78
-msgid "Token del Bot"
-msgstr ""
-
-#: includes/channels/class-telegram.php:80
-msgid "Token del bot de Telegram (de @BotFather)."
-msgstr ""
-
-#: includes/channels/class-telegram.php:83
-msgid "Chat ID"
-msgstr ""
-
-#: includes/channels/class-telegram.php:85
-msgid "ID del canal o grupo (negativo para grupos)."
-msgstr ""
-
-#: includes/channels/class-telegram.php:88
-msgid "Modo de parseo"
-msgstr ""
-
-#: includes/channels/class-telegram.php:90
-msgid "HTML o Markdown (por defecto HTML)."
-msgstr ""
-
-#: includes/channels/class-telegram.php:95
-msgid "{title}, {excerpt}, {url}, {hashtags}. Por defecto: {title} — {url} {hashtags}"
-msgstr ""
-
-#: includes/channels/class-telegram.php:104
-msgid "El token de Telegram es obligatorio."
-msgstr ""
-
-#: includes/channels/class-telegram.php:107
-msgid "El Chat ID de Telegram es obligatorio."
-msgstr ""
-
-#: includes/channels/class-tiktok.php:16
+#: convoca-publisher/includes/channels/class-tiktok.php:16
 msgid "TikTok"
 msgstr ""
 
-#: includes/channels/class-tiktok.php:30
+#: convoca-publisher/includes/channels/class-tiktok.php:30
 msgid "Token u Open ID de TikTok no configurados."
 msgstr ""
 
-#: includes/channels/class-tiktok.php:70
+#: convoca-publisher/includes/channels/class-tiktok.php:70
 msgid "Error desconocido de TikTok API."
 msgstr ""
 
-#: includes/channels/class-tiktok.php:80
+#: convoca-publisher/includes/channels/class-tiktok.php:78
+#: convoca-publisher/includes/channels/class-mastodon.php:104
+msgid "Access Token"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-tiktok.php:80
 msgid "Token OAuth 2.0 de TikTok con permisos video.publish."
 msgstr ""
 
-#: includes/channels/class-tiktok.php:83
+#: convoca-publisher/includes/channels/class-tiktok.php:83
 msgid "Open ID"
 msgstr ""
 
-#: includes/channels/class-tiktok.php:85
+#: convoca-publisher/includes/channels/class-tiktok.php:85
 msgid "Open ID del usuario de TikTok que publicará."
 msgstr ""
 
-#: includes/channels/class-tiktok.php:88
+#: convoca-publisher/includes/channels/class-tiktok.php:88
 msgid "Título del video"
 msgstr ""
 
-#: includes/channels/class-tiktok.php:90
+#: convoca-publisher/includes/channels/class-tiktok.php:90
 msgid "{title} — máximo 100 caracteres. Por defecto: {title}"
 msgstr ""
 
-#: includes/channels/class-tiktok.php:99
+#: convoca-publisher/includes/channels/class-tiktok.php:99
 msgid "El token de TikTok es obligatorio."
 msgstr ""
 
-#: includes/channels/class-tiktok.php:102
+#: convoca-publisher/includes/channels/class-tiktok.php:102
 msgid "El Open ID de TikTok es obligatorio."
 msgstr ""
 
-#: includes/channels/class-twitter.php:16
+#: convoca-publisher/includes/channels/class-twitter.php:16
 msgid "Twitter / X"
 msgstr ""
 
-#: includes/channels/class-twitter.php:30
+#: convoca-publisher/includes/channels/class-twitter.php:30
 msgid "Bearer token de Twitter no configurado."
 msgstr ""
 
-#: includes/channels/class-twitter.php:68
+#: convoca-publisher/includes/channels/class-twitter.php:68
 msgid "Error desconocido de Twitter API."
 msgstr ""
 
-#: includes/channels/class-twitter.php:107
+#: convoca-publisher/includes/channels/class-twitter.php:107
 msgid "Bearer Token (OAuth 2.0)"
 msgstr ""
 
-#: includes/channels/class-twitter.php:109
-msgid "Token OAuth 2.0 de la app de Twitter/X con permisos tweet.read y tweet.write."
+#: convoca-publisher/includes/channels/class-twitter.php:109
+msgid ""
+"Token OAuth 2.0 de la app de Twitter/X con permisos tweet.read y tweet.write."
 msgstr ""
 
-#: includes/channels/class-twitter.php:112
+#: convoca-publisher/includes/channels/class-twitter.php:112
 msgid "Plantilla del tweet"
 msgstr ""
 
-#: includes/channels/class-twitter.php:114
-msgid "{title}, {excerpt}, {url}, {hashtags}. Máximo 280 caracteres total. Por defecto: {title} {url} {hashtags}"
+#: convoca-publisher/includes/channels/class-twitter.php:114
+msgid ""
+"{title}, {excerpt}, {url}, {hashtags}. Máximo 280 caracteres total. Por "
+"defecto: {title} {url} {hashtags}"
 msgstr ""
 
-#: includes/channels/class-twitter.php:122
+#: convoca-publisher/includes/channels/class-twitter.php:122
 msgid "El Bearer Token de Twitter es obligatorio."
 msgstr ""
 
-#: includes/class-admin.php:31
-#: includes/class-admin.php:32
+#: convoca-publisher/includes/channels/class-telegram.php:16
+msgid "Telegram"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:30
+msgid "Token o Chat ID de Telegram no configurados."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:71
+msgid "Error desconocido de Telegram API."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:78
+msgid "Token del Bot"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:80
+msgid "Token del bot de Telegram (de @BotFather)."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:83
+msgid "Chat ID"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:85
+msgid "ID del canal o grupo (negativo para grupos)."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:88
+msgid "Modo de parseo"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:90
+msgid "HTML o Markdown (por defecto HTML)."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:95
+msgid ""
+"{title}, {excerpt}, {url}, {hashtags}. Por defecto: {title} — {url} "
+"{hashtags}"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:104
+msgid "El token de Telegram es obligatorio."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-telegram.php:107
+msgid "El Chat ID de Telegram es obligatorio."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:16
+msgid "Mastodon"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:31
+msgid "Token o servidor de Mastodon no configurados."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:91
+msgid "Error desconocido de Mastodon API."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:99
+msgid "Servidor"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:101
+msgid "Ej: https://mastodon.social"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:106
+msgid ""
+"Token de acceso de Mastodon (Desarrollo → Nuevo token → write:statuses)."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:109
+msgid "Visibilidad"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:111
+msgid "public, unlisted, private, direct (por defecto public)."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:116
+msgid ""
+"{title}, {excerpt}, {url}, {hashtags}. Máximo 500 caracteres. Por defecto: "
+"{title} — {url} {hashtags}"
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:125
+msgid "El token de Mastodon es obligatorio."
+msgstr ""
+
+#: convoca-publisher/includes/channels/class-mastodon.php:128
+msgid "El servidor de Mastodon es obligatorio."
+msgstr ""
+
+#: convoca-publisher/includes/class-scheduler.php:23
+msgid "Cada 15 minutos"
+msgstr ""
+
+#: convoca-publisher/includes/class-admin.php:20
+#: convoca-publisher/includes/class-admin.php:21
+#: convoca-publisher/includes/class-admin.php:115
+#: convoca-publisher/includes/class-admin.php:418
+#: convoca-publisher/includes/class-metabox.php:20
+msgid "Convoca Publisher"
+msgstr ""
+
+#: convoca-publisher/includes/class-admin.php:31
+#: convoca-publisher/includes/class-admin.php:32
 msgid "Historial"
 msgstr ""
 
-#: includes/class-admin.php:40
-#: includes/class-admin.php:41
+#: convoca-publisher/includes/class-admin.php:40
+#: convoca-publisher/includes/class-admin.php:41
 msgid "Acerca de"
 msgstr ""
 
-#: includes/class-admin.php:119
+#: convoca-publisher/includes/class-admin.php:119
 msgid "Configuración"
 msgstr ""
 
-#: includes/class-admin.php:122
+#: convoca-publisher/includes/class-admin.php:122
 msgid "Canales"
 msgstr ""
 
-#: includes/class-admin.php:125
+#: convoca-publisher/includes/class-admin.php:125
 msgid "Probar"
 msgstr ""
 
-#: includes/class-admin.php:128
+#: convoca-publisher/includes/class-admin.php:128
 msgid "Plantillas"
 msgstr ""
 
-#: includes/class-admin.php:152
+#: convoca-publisher/includes/class-admin.php:152
 msgid "Aviso de privacidad actualizado."
 msgstr ""
 
-#: includes/class-admin.php:156
+#: convoca-publisher/includes/class-admin.php:156
 msgid "Ajustes guardados."
 msgstr ""
 
-#: includes/class-admin.php:164
+#: convoca-publisher/includes/class-admin.php:164
 msgid "🔐 Aviso de privacidad"
 msgstr ""
 
-#: includes/class-admin.php:165
-msgid "Este plugin envía el título, extracto, URL, imagen destacada y etiquetas de tus entradas a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, Telegram, Mastodon). Los tokens de acceso se almacenan cifrados en la base de datos de WordPress (AES-256-GCM)."
+#: convoca-publisher/includes/class-admin.php:165
+msgid ""
+"Este plugin envía el título, extracto, URL, imagen destacada y etiquetas de "
+"tus entradas a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, "
+"Telegram, Mastodon). Los tokens de acceso se almacenan cifrados en la base "
+"de datos de WordPress (AES-256-GCM)."
 msgstr ""
 
-#: includes/class-admin.php:176
+#: convoca-publisher/includes/class-admin.php:169
+#: convoca-publisher/convoca-publisher.php:162
+msgid "He leído y acepto este aviso"
+msgstr ""
+
+#: convoca-publisher/includes/class-admin.php:176
 msgid "Configuración general"
 msgstr ""
 
-#: includes/class-admin.php:179
+#: convoca-publisher/includes/class-admin.php:179
 msgid "Publicación automática"
 msgstr ""
 
-#: includes/class-admin.php:183
+#: convoca-publisher/includes/class-admin.php:183
 msgid "Publicar automáticamente al publicar una entrada"
 msgstr ""
 
-#: includes/class-admin.php:188
+#: convoca-publisher/includes/class-admin.php:188
 msgid "Programación"
 msgstr ""
 
-#: includes/class-admin.php:192
+#: convoca-publisher/includes/class-admin.php:192
 msgid "Activar programación de entradas"
 msgstr ""
 
-#: includes/class-admin.php:194
+#: convoca-publisher/includes/class-admin.php:194
 msgid "Publica automáticamente las entradas programadas cuando se publican."
 msgstr ""
 
-#: includes/class-admin.php:240
+#: convoca-publisher/includes/class-admin.php:240
 msgid "Plantillas de mensaje"
 msgstr ""
 
-#: includes/class-admin.php:243
+#: convoca-publisher/includes/class-admin.php:243
 msgid "Variables disponibles:"
 msgstr ""
 
-#: includes/class-admin.php:245
+#: convoca-publisher/includes/class-admin.php:245
 msgid "Título de la entrada"
 msgstr ""
 
-#: includes/class-admin.php:246
+#: convoca-publisher/includes/class-admin.php:246
 msgid "Extracto de la entrada"
 msgstr ""
 
-#: includes/class-admin.php:247
+#: convoca-publisher/includes/class-admin.php:247
 msgid "Enlace permanente de la entrada"
 msgstr ""
 
-#: includes/class-admin.php:248
+#: convoca-publisher/includes/class-admin.php:248
 msgid "Primeras 5 etiquetas como hashtags"
 msgstr ""
 
-#: includes/class-admin.php:249
+#: convoca-publisher/includes/class-admin.php:249
 msgid "Fecha de publicación"
 msgstr ""
 
-#: includes/class-admin.php:250
+#: convoca-publisher/includes/class-admin.php:250
 msgid "Nombre del autor"
 msgstr ""
 
-#: includes/class-admin.php:251
+#: convoca-publisher/includes/class-admin.php:251
 msgid "URL de la imagen destacada"
 msgstr ""
 
-#: includes/class-admin.php:253
-msgid "Puedes configurar una plantilla global y/o plantillas específicas por canal."
+#: convoca-publisher/includes/class-admin.php:253
+msgid ""
+"Puedes configurar una plantilla global y/o plantillas específicas por canal."
 msgstr ""
 
-#: includes/class-admin.php:259
+#: convoca-publisher/includes/class-admin.php:259
 msgid "Plantilla global"
 msgstr ""
 
-#: includes/class-admin.php:262
+#: convoca-publisher/includes/class-admin.php:262
 msgid "Mensaje por defecto"
 msgstr ""
 
-#: includes/class-admin.php:265
+#: convoca-publisher/includes/class-admin.php:265
 msgid "Se usa cuando un canal no tiene su propia plantilla."
 msgstr ""
 
-#: includes/class-admin.php:270
+#: convoca-publisher/includes/class-admin.php:270
 msgid "Plantillas por canal"
 msgstr ""
 
-#: includes/class-admin.php:271
+#: convoca-publisher/includes/class-admin.php:271
 msgid "Déjalo vacío para usar la plantilla global."
 msgstr ""
 
-#: includes/class-admin.php:279
+#: convoca-publisher/includes/class-admin.php:279
 msgid "Usar plantilla global"
 msgstr ""
 
-#: includes/class-admin.php:280
+#: convoca-publisher/includes/class-admin.php:280
 msgid "Plantilla específica para "
 msgstr ""
 
-#: includes/class-admin.php:294
+#: convoca-publisher/includes/class-admin.php:294
 msgid "No hay canales disponibles."
 msgstr ""
 
-#: includes/class-admin.php:295
+#: convoca-publisher/includes/class-admin.php:295
 msgid "Configura al menos un token en la pestaña de Ajustes."
 msgstr ""
 
-#: includes/class-admin.php:303
+#: convoca-publisher/includes/class-admin.php:303
 msgid "Configurado y operativo"
 msgstr ""
 
-#: includes/class-admin.php:304
+#: convoca-publisher/includes/class-admin.php:304
 msgid "No configurado — ve a Ajustes"
 msgstr ""
 
-#: includes/class-admin.php:315
+#: convoca-publisher/includes/class-admin.php:315
 msgid "Prueba de publicación"
 msgstr ""
 
-#: includes/class-admin.php:316
-msgid "Selecciona una entrada reciente y haz clic en \"Publicar en redes\" para probar la integración."
+#: convoca-publisher/includes/class-admin.php:316
+msgid ""
+"Selecciona una entrada reciente y haz clic en \"Publicar en redes\" para "
+"probar la integración."
 msgstr ""
 
-#: includes/class-admin.php:322
+#: convoca-publisher/includes/class-admin.php:322
 msgid "Entrada"
 msgstr ""
 
-#: includes/class-admin.php:328
+#: convoca-publisher/includes/class-admin.php:328
 msgid "Seleccionar entrada..."
 msgstr ""
 
-#: includes/class-admin.php:338
+#: convoca-publisher/includes/class-admin.php:338
 msgid "🚀 Publicar en redes"
 msgstr ""
 
-#: includes/class-admin.php:347
+#: convoca-publisher/includes/class-admin.php:347
 msgid "Resultado:"
 msgstr ""
 
-#: includes/class-admin.php:355
+#: convoca-publisher/includes/class-admin.php:355
 msgid "Publicado! ID: "
 msgstr ""
 
-#: includes/class-admin.php:357
+#: convoca-publisher/includes/class-admin.php:357
 msgid "Error desconocido"
 msgstr ""
 
-#: includes/class-admin.php:374
+#: convoca-publisher/includes/class-admin.php:374
 msgid "Historial de publicaciones"
 msgstr ""
 
-#: includes/class-admin.php:376
+#: convoca-publisher/includes/class-admin.php:376
 msgid "No hay publicaciones registradas todavía."
 msgstr ""
 
-#: includes/class-admin.php:379
+#: convoca-publisher/includes/class-admin.php:379
 msgid "¿Borrar todo el historial?"
 msgstr ""
 
-#: includes/class-admin.php:380
+#: convoca-publisher/includes/class-admin.php:380
 msgid "Limpiar historial"
 msgstr ""
 
-#: includes/class-admin.php:392
+#: convoca-publisher/includes/class-admin.php:392
 msgid "Post #"
 msgstr ""
 
-#: includes/class-admin.php:403
+#: convoca-publisher/includes/class-admin.php:403
 msgid "Cola de reintentos"
 msgstr ""
 
-#: includes/class-admin.php:404
+#: convoca-publisher/includes/class-admin.php:404
 msgid "Pendientes: "
 msgstr ""
 
-#: includes/class-admin.php:405
+#: convoca-publisher/includes/class-admin.php:405
 msgid "Fallidos: "
 msgstr ""
 
-#: includes/class-admin.php:416
+#: convoca-publisher/includes/class-admin.php:416
 msgid "Acerca de Convoca Publisher"
 msgstr ""
 
-#: includes/class-admin.php:419
+#: convoca-publisher/includes/class-admin.php:419
 msgid "Plugin de publicación automática en redes sociales para WordPress."
 msgstr ""
 
-#: includes/class-admin.php:420
+#: convoca-publisher/includes/class-admin.php:420
 msgid "Parte del ecosistema Convoca."
 msgstr ""
 
-#: includes/class-admin.php:425
+#: convoca-publisher/includes/class-admin.php:425
 msgid "Canales disponibles"
 msgstr ""
 
-#: includes/class-admin.php:443
+#: convoca-publisher/includes/class-admin.php:443
 msgid "No tienes permisos."
 msgstr ""
 
-#: includes/class-metabox.php:40
-msgid "Publicado en redes"
-msgstr ""
-
-#: includes/class-metabox.php:47
-msgid "Error"
-msgstr ""
-
-#: includes/class-metabox.php:52
-msgid "↻ Republicar"
-msgstr ""
-
-#: includes/class-metabox.php:54
-msgid "Se publicará automáticamente al guardar."
-msgstr ""
-
-#: includes/class-metabox.php:58
-msgid "Canales:"
-msgstr ""
-
-#: includes/class-metabox.php:76
-msgid "Publicando..."
-msgstr ""
-
-#: includes/class-notifications.php:29
+#: convoca-publisher/includes/class-notifications.php:29
 msgid "Convoca Publisher — Aviso de privacidad"
 msgstr ""
 
-#: includes/class-notifications.php:30
-msgid "Este plugin envía datos a APIs de terceros. Por favor, lee y acepta el aviso de privacidad en los ajustes."
+#: convoca-publisher/includes/class-notifications.php:30
+msgid ""
+"Este plugin envía datos a APIs de terceros. Por favor, lee y acepta el aviso "
+"de privacidad en los ajustes."
 msgstr ""
 
-#: includes/class-notifications.php:45
-#: includes/class-notifications.php:59
-#: includes/class-notifications.php:68
+#: convoca-publisher/includes/class-notifications.php:45
+#: convoca-publisher/includes/class-notifications.php:59
+#: convoca-publisher/includes/class-notifications.php:68
 msgid "Convoca Publisher:"
 msgstr ""
 
-#: includes/class-notifications.php:47
+#: convoca-publisher/includes/class-notifications.php:47
 #, php-format
 msgid "Canales sin configurar: %s"
 msgstr ""
 
-#: includes/class-notifications.php:50
+#: convoca-publisher/includes/class-notifications.php:50
 msgid "Ir a ajustes"
 msgstr ""
 
-#: includes/class-notifications.php:61
+#: convoca-publisher/includes/class-notifications.php:61
 #, php-format
 msgid "%d publicaciones pendientes de reintentar."
 msgstr ""
 
-#: includes/class-notifications.php:70
+#: convoca-publisher/includes/class-notifications.php:70
 #, php-format
 msgid "%d publicaciones fallaron definitivamente. Revisa los tokens."
 msgstr ""
 
-#: includes/class-rest.php:59
+#: convoca-publisher/includes/class-rest.php:59
 msgid "Canal no encontrado o no configurado."
 msgstr ""
 
-#: includes/class-rest.php:67
+#: convoca-publisher/includes/class-rest.php:67
 msgid "Post no encontrado."
 msgstr ""
 
-#: includes/class-rest.php:75
-#: includes/class-rest.php:146
+#: convoca-publisher/includes/class-rest.php:75
+#: convoca-publisher/includes/class-rest.php:146
 msgid "Publisher no inicializado."
 msgstr ""
 
-#: includes/class-rest.php:80
+#: convoca-publisher/includes/class-rest.php:80
 msgid "Canal no procesado."
 msgstr ""
 
-#: includes/class-rest.php:117
+#: convoca-publisher/includes/class-rest.php:117
 msgid "Post no encontrado o no publicado."
 msgstr ""
 
-#: includes/class-rest.php:132
+#: convoca-publisher/includes/class-rest.php:132
 #, php-format
 msgid "Simulación: se publicaría en %s"
 msgstr ""
 
-#: includes/class-scheduler.php:23
-msgid "Cada 15 minutos"
+#: convoca-publisher/includes/class-metabox.php:40
+msgid "Publicado en redes"
+msgstr ""
+
+#: convoca-publisher/includes/class-metabox.php:47
+msgid "Error"
+msgstr ""
+
+#: convoca-publisher/includes/class-metabox.php:52
+msgid "↻ Republicar"
+msgstr ""
+
+#: convoca-publisher/includes/class-metabox.php:54
+msgid "Se publicará automáticamente al guardar."
+msgstr ""
+
+#: convoca-publisher/includes/class-metabox.php:58
+msgid "Canales:"
+msgstr ""
+
+#: convoca-publisher/includes/class-metabox.php:76
+msgid "Publicando..."
+msgstr ""
+
+#: convoca-publisher/convoca-publisher.php:78
+#, php-format
+msgid "Convoca Publisher requiere PHP %s o superior. Tu versión: %s"
+msgstr ""
+
+#: convoca-publisher/convoca-publisher.php:89
+#, php-format
+msgid "Convoca Publisher requiere WordPress %s o superior."
+msgstr ""
+
+#: convoca-publisher/convoca-publisher.php:160
+msgid "🔐 Convoca Publisher — Aviso de privacidad"
+msgstr ""
+
+#: convoca-publisher/convoca-publisher.php:161
+msgid ""
+"Este plugin envía datos (título, extracto, URL, imagen destacada y etiquetas "
+"de tus entradas) a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, "
+"Google, Telegram, Mastodon) cuando publicas contenido en redes sociales. Los "
+"tokens de acceso se almacenan cifrados en la base de datos de WordPress."
 msgstr ""
