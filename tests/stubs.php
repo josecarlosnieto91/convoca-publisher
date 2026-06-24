@@ -37,6 +37,10 @@ function esc_html(string $text): string
 // --- Options ---
 function get_option(string $option, mixed $default = false): mixed
 {
+    // Return a fixed AES-256 key for Crypto so tests are deterministic
+    if ($option === 'cp_encryption_key') {
+        return 'SISo4fW6aYd2QYYabknhj3S9no1GI8HOjX0OMOEmsGA=';
+    }
     return $default;
 }
 function update_option(string $option, mixed $value, bool $autoload = false): bool
