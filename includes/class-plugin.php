@@ -5,37 +5,7 @@ namespace ConvocaPublisher;
 defined('ABSPATH') || exit;
 
 // @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/channels/interface-channel.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/channels/class-facebook.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/channels/class-linkedin.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/channels/class-twitter.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/channels/class-tiktok.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/channels/class-googlemybusiness.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/channels/class-telegram.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/channels/class-mastodon.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/class-admin.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/class-publisher.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/class-scheduler.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/class-retry.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/class-crypto.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/class-metabox.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/class-notifications.php';
-// @phpstan-ignore-next-line (constant resolves to local path)
-require_once CP_PLUGIN_DIR . 'includes/class-rest.php';
+// Classes auto-loaded via Composer classmap. Run `composer dump-autoload --optimize` after adding new files.
 
 class Plugin
 {
