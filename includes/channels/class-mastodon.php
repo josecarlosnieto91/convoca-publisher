@@ -129,4 +129,43 @@ class Mastodon implements ChannelInterface
         }
         return $errors;
     }
+
+    public function verify_connection(): array
+    {
+        $token = get_option('cp_mastodon_token', '');
+        $server = rtrim(get_option('cp_mastodon_server', ''), '/');
+
+        if (empty($token) || empty($server)) {
+            return ['success' => false, 'message' => __('Token o servidor de Mastodon no configurados.', 'convoca-publisher')];
+        }
+
+        $resp = wp_remote_get("{$server}/api/v1/accounts/verify_credentials", [
+            'headers' => [
+                'Authorization' => "Bearer {$token}",
+            ],
+            'timeout' => 15,
+        ]);
+
+        if (is_wp_error($resp)) {
+            return ['success' => false, 'message' => __('Error de conexión: ', 'convoca-publisher') . $resp->get_error_message()];
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($resp), true);
+        $http_code = wp_remote_retrieve_response_code($resp);
+
+        if ($http_code >= 200 && $http_code < 300 && isset($body['id'])) {
+            $acct = $body['acct'] ?? $body['username'] ?? 'desconocido';
+            return [
+                'success' => true,
+                'message' => sprintf(
+                    /* translators: %s: Mastodon account handle */
+                    __('✅ Conexión correcta. Cuenta: @%s', 'convoca-publisher'),
+                    $acct
+                ),
+            ];
+        }
+
+        $error_msg = $body['error'] ?? __('Error desconocido de Mastodon API.', 'convoca-publisher');
+        return ['success' => false, 'message' => $error_msg];
+    }
 }

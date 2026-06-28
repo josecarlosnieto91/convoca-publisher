@@ -29,4 +29,11 @@ interface ChannelInterface
      * @return array<int, string>
      */
     public function validate_settings(array $settings): array;
+
+    /**
+     * Verifies the connection to the channel's API or validates stored credentials.
+     *
+     * @return array{success: bool, message: string}
+     */
+    public function verify_connection(): array;
 }

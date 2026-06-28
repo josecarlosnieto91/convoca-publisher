@@ -12,6 +12,7 @@ class Admin
         add_action('admin_init', [self::class, 'register_settings']);
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
         add_action('admin_action_cp_delete_log', [self::class, 'handle_delete_log']);
+        add_action('admin_post_cp_verify_channel', [self::class, 'handle_verify_channel']);
     }
 
     public static function add_menu_page(): void
@@ -127,6 +128,9 @@ class Admin
                 <a href="?page=convoca-publisher&amp;tab=templates" class="nav-tab <?php echo $active_tab === 'templates' ? 'nav-tab-active' : ''; ?>">
                     <?php echo esc_html__('Plantillas', 'convoca-publisher'); ?>
                 </a>
+                <a href="?page=convoca-publisher&amp;tab=guide" class="nav-tab <?php echo $active_tab === 'guide' ? 'nav-tab-active' : ''; ?>">
+                    📖 <?php echo esc_html__('Guía', 'convoca-publisher'); ?>
+                </a>
             </nav>
             
             <?php
@@ -136,6 +140,8 @@ class Admin
                 self::render_test_tab();
             } elseif ($active_tab === 'templates') {
                 self::render_templates_tab();
+            } elseif ($active_tab === 'guide') {
+                self::render_guide_tab();
             } else {
                 self::render_settings_tab();
             }
@@ -290,6 +296,16 @@ class Admin
     private static function render_channels_tab(): void
     {
         $channels = convoca_publisher()->get_channels();
+
+        // Show verification result transient if present
+        $verify_result = get_transient('cp_verify_result_' . get_current_user_id());
+        if (false !== $verify_result) {
+            delete_transient('cp_verify_result_' . get_current_user_id());
+            $class = $verify_result['success'] ? 'notice-success' : 'notice-error';
+            $icon = $verify_result['success'] ? '✅' : '❌';
+            echo '<div class="notice ' . esc_attr($class) . ' is-dismissible"><p>' . $icon . ' ' . esc_html($verify_result['message']) . '</p></div>';
+        }
+
         if (empty($channels)) {
             echo '<div class="notice notice-warning"><p>' . esc_html__('No hay canales disponibles.', 'convoca-publisher') . '</p></div>';
             echo '<p>' . esc_html__('Configura al menos un token en la pestaña de Ajustes.', 'convoca-publisher') . '</p>';
@@ -303,6 +319,12 @@ class Admin
                 ? '<span style="color:#46b450;">✅ ' . esc_html__('Configurado y operativo', 'convoca-publisher') . '</span>'
                 : '<span style="color:#dc3232;">❌ ' . esc_html__('No configurado — ve a Ajustes', 'convoca-publisher') . '</span>')
                 . '</p>';
+            // Verify button
+            $verify_url = wp_nonce_url(
+                admin_url('admin-post.php?action=cp_verify_channel&channel=' . $channel->get_id()),
+                'cp_verify_channel'
+            );
+            echo '<p><a href="' . esc_url($verify_url) . '" class="button">🔍 ' . esc_html__('Verificar conexión', 'convoca-publisher') . '</a></p>';
             echo '</div>';
         }
     }
@@ -446,5 +468,152 @@ class Admin
         delete_option('cp_publish_log');
         wp_safe_redirect(admin_url('admin.php?page=convoca-publisher-log'));
         exit;
+    }
+
+    /**
+     * Handle the verify channel admin-post action.
+     */
+    public static function handle_verify_channel(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+        check_admin_referer('cp_verify_channel');
+        $channel_id = isset($_GET['channel']) ? sanitize_text_field(wp_unslash($_GET['channel'])) : '';
+        $channel = convoca_publisher()->get_channel($channel_id);
+        if (!$channel) {
+            wp_die(esc_html__('Canal no encontrado.', 'convoca-publisher'));
+        }
+        $result = $channel->verify_connection();
+        set_transient('cp_verify_result_' . get_current_user_id(), $result, 30);
+        wp_safe_redirect(add_query_arg('cp_verified', $channel_id, wp_get_referer()));
+        exit;
+    }
+
+    /**
+     * Render the setup guide tab with step-by-step instructions for each channel.
+     */
+    private static function render_guide_tab(): void
+    {
+        ?>
+        <div class="cp-settings-section">
+            <h2><?php echo esc_html__('📖 Guía de configuración', 'convoca-publisher'); ?></h2>
+            <p><?php echo esc_html__('Sigue estos pasos para configurar cada red social. Necesitarás una cuenta de desarrollador en cada plataforma para obtener los tokens de acceso.', 'convoca-publisher'); ?></p>
+        </div>
+
+        <!-- Facebook / Instagram -->
+        <div class="cp-settings-section">
+            <h2>📘 <?php echo esc_html__('Facebook / Instagram', 'convoca-publisher'); ?></h2>
+            <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Página de Facebook, App de Facebook Developer', 'convoca-publisher'); ?></p>
+            <ol>
+                <li><?php echo sprintf(esc_html__('Ve a %s', 'convoca-publisher'), '<a href="https://developers.facebook.com/apps/" target="_blank">developers.facebook.com/apps/</a>'); ?></li>
+                <li><?php echo esc_html__('Crea una app tipo "Business" o "Sin integración"', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('En Productos, añade "Facebook Login" y "Instagram Graph API"', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Ve a Herramientas → "Generar token de página"', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Selecciona tu página y copia el token', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Copia también el ID de página (Page ID)', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Pega ambos en Ajustes → Facebook / Instagram', 'convoca-publisher'); ?></li>
+            </ol>
+            <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Page Access Token, Page ID, Instagram Business ID (opcional)', 'convoca-publisher'); ?></p>
+            <p><a href="https://developers.facebook.com/docs/pages/publishing/" target="_blank">📄 <?php echo esc_html__('Documentación oficial de Meta', 'convoca-publisher'); ?></a></p>
+        </div>
+
+        <!-- LinkedIn -->
+        <div class="cp-settings-section">
+            <h2>💼 <?php echo esc_html__('LinkedIn', 'convoca-publisher'); ?></h2>
+            <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de LinkedIn, App de LinkedIn Developer', 'convoca-publisher'); ?></p>
+            <ol>
+                <li><?php echo sprintf(esc_html__('Ve a %s', 'convoca-publisher'), '<a href="https://www.linkedin.com/developers/apps" target="_blank">linkedin.com/developers/apps</a>'); ?></li>
+                <li><?php echo esc_html__('Crea una nueva app', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Solicita los permisos (products): "Share on LinkedIn" y "Sign In with LinkedIn"', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Ve a la pestaña Auth y genera un Access Token de prueba (OAuth 2.0)', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Copia el token y pégalo en Ajustes → LinkedIn', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Para la URN: usa tu perfil (urn:li:person:...) o página de empresa (urn:li:organization:...)', 'convoca-publisher'); ?></li>
+            </ol>
+            <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Access Token (OAuth 2.0), URN de perfil/página', 'convoca-publisher'); ?></p>
+            <p><a href="https://learn.microsoft.com/en-us/linkedin/marketing/" target="_blank">📄 <?php echo esc_html__('Documentación oficial de LinkedIn', 'convoca-publisher'); ?></a></p>
+        </div>
+
+        <!-- Twitter / X -->
+        <div class="cp-settings-section">
+            <h2>🐦 <?php echo esc_html__('Twitter / X', 'convoca-publisher'); ?></h2>
+            <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de desarrollador de X (antes Twitter), Proyecto en Developer Portal', 'convoca-publisher'); ?></p>
+            <ol>
+                <li><?php echo sprintf(esc_html__('Ve a %s', 'convoca-publisher'), '<a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">developer.twitter.com</a>'); ?></li>
+                <li><?php echo esc_html__('Crea un proyecto y una app (OAuth 2.0)', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('En "Keys and Tokens", genera un Bearer Token (OAuth 2.0)', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Asegúrate de que la app tenga permisos tweet.read y tweet.write', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Copia el Bearer Token y pégalo en Ajustes → Twitter / X', 'convoca-publisher'); ?></li>
+            </ol>
+            <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Bearer Token (OAuth 2.0)', 'convoca-publisher'); ?></p>
+            <p><a href="https://developer.twitter.com/en/docs/twitter-api" target="_blank">📄 <?php echo esc_html__('Documentación oficial de X API', 'convoca-publisher'); ?></a></p>
+        </div>
+
+        <!-- TikTok -->
+        <div class="cp-settings-section">
+            <h2>🎵 <?php echo esc_html__('TikTok', 'convoca-publisher'); ?></h2>
+            <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de desarrollador de TikTok, App en TikTok Developer Portal', 'convoca-publisher'); ?></p>
+            <ol>
+                <li><?php echo sprintf(esc_html__('Ve a %s', 'convoca-publisher'), '<a href="https://developers.tiktok.com/" target="_blank">developers.tiktok.com</a>'); ?></li>
+                <li><?php echo esc_html__('Crea una app y selecciona los permisos "video.publish" y "user.info.basic"', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Completa el flujo OAuth para obtener un Access Token', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Anota el Open ID (identificador único del usuario)', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Pega ambos en Ajustes → TikTok', 'convoca-publisher'); ?></li>
+            </ol>
+            <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Access Token, Open ID', 'convoca-publisher'); ?></p>
+            <p><a href="https://developers.tiktok.com/documentation" target="_blank">📄 <?php echo esc_html__('Documentación oficial de TikTok', 'convoca-publisher'); ?></a></p>
+        </div>
+
+        <!-- Google My Business -->
+        <div class="cp-settings-section">
+            <h2>🏪 <?php echo esc_html__('Google My Business', 'convoca-publisher'); ?></h2>
+            <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de Google, Proyecto en Google Cloud Console, Perfil de empresa en Google', 'convoca-publisher'); ?></p>
+            <ol>
+                <li><?php echo sprintf(esc_html__('Ve a %s', 'convoca-publisher'), '<a href="https://console.cloud.google.com/" target="_blank">console.cloud.google.com</a>'); ?></li>
+                <li><?php echo esc_html__('Crea un proyecto y habilita la API "Google My Business API"', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Crea credenciales OAuth 2.0 y obtén un token de acceso', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Para obtener el Location ID: usa la API de GMB o la herramienta de administración de Google', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('El formato del Location ID es: accounts/{accountId}/locations/{locationId}', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Pega ambos en Ajustes → Google My Business', 'convoca-publisher'); ?></li>
+            </ol>
+            <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Access Token (OAuth 2.0), Location ID', 'convoca-publisher'); ?></p>
+            <p><a href="https://developers.google.com/my-business" target="_blank">📄 <?php echo esc_html__('Documentación oficial de GMB API', 'convoca-publisher'); ?></a></p>
+        </div>
+
+        <!-- Telegram -->
+        <div class="cp-settings-section">
+            <h2>💬 <?php echo esc_html__('Telegram', 'convoca-publisher'); ?></h2>
+            <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Un bot de Telegram', 'convoca-publisher'); ?></p>
+            <ol>
+                <li><?php echo esc_html__('Abre Telegram y busca @BotFather', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Envía /newbot y sigue las instrucciones', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Copia el token HTTP API que te da BotFather', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Envía /setprivacy y selecciona Disabled', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Para obtener el Chat ID: envía un mensaje a tu bot, luego visita:', 'convoca-publisher'); ?>
+                    <br><code>https://api.telegram.org/bot&lt;TU_TOKEN&gt;/getUpdates</code></li>
+                <li><?php echo esc_html__('Copia el "chat":{"id":...} que aparece en la respuesta', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Pega token y chat ID en Ajustes → Telegram', 'convoca-publisher'); ?></li>
+            </ol>
+            <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Token del Bot, Chat ID', 'convoca-publisher'); ?></p>
+            <p><a href="https://core.telegram.org/bots/api" target="_blank">📄 <?php echo esc_html__('Documentación oficial de Telegram Bot API', 'convoca-publisher'); ?></a></p>
+        </div>
+
+        <!-- Mastodon -->
+        <div class="cp-settings-section">
+            <h2>🐘 <?php echo esc_html__('Mastodon', 'convoca-publisher'); ?></h2>
+            <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta en un servidor de Mastodon', 'convoca-publisher'); ?></p>
+            <ol>
+                <li><?php echo esc_html__('Inicia sesión en tu instancia de Mastodon (ej: mastodon.social)', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Ve a Preferencias → Desarrollo', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Haz clic en "Nueva aplicación"', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Asigna un nombre (ej: Convoca Publisher) y marca el permiso "write:statuses"', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Copia el "Access Token" que se genera', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Anota también la URL base de tu servidor (ej: https://mastodon.social)', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Pega ambos en Ajustes → Mastodon', 'convoca-publisher'); ?></li>
+            </ol>
+            <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Servidor (URL base), Access Token, Visibilidad (opcional)', 'convoca-publisher'); ?></p>
+            <p><a href="https://docs.joinmastodon.org/api/" target="_blank">📄 <?php echo esc_html__('Documentación oficial de Mastodon API', 'convoca-publisher'); ?></a></p>
+        </div>
+        <?php
     }
 }

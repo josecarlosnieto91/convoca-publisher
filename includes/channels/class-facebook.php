@@ -121,4 +121,40 @@ class Facebook implements ChannelInterface
     {
         return !empty(get_option('cp_instagram_business_id', ''));
     }
+
+    public function verify_connection(): array
+    {
+        $token = $this->get_token();
+        $page_id = $this->get_page_id();
+
+        if (empty($token) || empty($page_id)) {
+            return ['success' => false, 'message' => __('Token o Page ID no configurados.', 'convoca-publisher')];
+        }
+
+        $resp = wp_remote_get("https://graph.facebook.com/v22.0/{$page_id}?fields=name&access_token={$token}", [
+            'timeout' => 15,
+        ]);
+
+        if (is_wp_error($resp)) {
+            return ['success' => false, 'message' => __('Error de conexión: ', 'convoca-publisher') . $resp->get_error_message()];
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($resp), true);
+        $http_code = wp_remote_retrieve_response_code($resp);
+
+        if ($http_code >= 200 && $http_code < 300 && isset($body['name'])) {
+            $msg = sprintf(
+                /* translators: %s: Facebook page name */
+                __('✅ Conexión correcta. Página: %s', 'convoca-publisher'),
+                $body['name']
+            );
+            if ($this->instagram_linked()) {
+                $msg .= ' | ' . __('Instagram vinculado', 'convoca-publisher');
+            }
+            return ['success' => true, 'message' => $msg];
+        }
+
+        $error_msg = $body['error']['message'] ?? __('Error desconocido de Meta API.', 'convoca-publisher');
+        return ['success' => false, 'message' => $error_msg];
+    }
 }

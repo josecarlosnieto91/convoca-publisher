@@ -108,4 +108,36 @@ class Telegram implements ChannelInterface
         }
         return $errors;
     }
+
+    public function verify_connection(): array
+    {
+        $token = get_option('cp_telegram_token', '');
+        $chat_id = get_option('cp_telegram_chat_id', '');
+
+        if (empty($token) || empty($chat_id)) {
+            return ['success' => false, 'message' => __('Token o Chat ID no configurados.', 'convoca-publisher')];
+        }
+
+        $resp = wp_remote_get("https://api.telegram.org/bot{$token}/getMe", ['timeout' => 15]);
+
+        if (is_wp_error($resp)) {
+            return ['success' => false, 'message' => __('Error de conexión: ', 'convoca-publisher') . $resp->get_error_message()];
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($resp), true);
+
+        if ($body['ok'] ?? false) {
+            $username = $body['result']['username'] ?? 'desconocido';
+            return [
+                'success' => true,
+                'message' => sprintf(
+                    /* translators: %s: Telegram bot username */
+                    __('✅ Conexión correcta. Bot: @%s', 'convoca-publisher'),
+                    $username
+                ),
+            ];
+        }
+
+        return ['success' => false, 'message' => $body['description'] ?? __('Error desconocido', 'convoca-publisher')];
+    }
 }

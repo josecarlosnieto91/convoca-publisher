@@ -74,9 +74,7 @@ class Plugin
             $class_name = str_replace('-', '_', $class_name);
             if (class_exists($class_name)) {
                 $channel = new $class_name();
-                if ($channel->is_available()) {
-                    $this->channels[$channel->get_id()] = $channel;
-                }
+                $this->channels[$channel->get_id()] = $channel;
             }
         }
     }
@@ -107,5 +105,16 @@ class Plugin
     public function get_channels(): array
     {
         return $this->channels;
+    }
+
+    /**
+     * Get a channel instance by its ID.
+     *
+     * @param string $id The channel ID (e.g., 'facebook', 'telegram').
+     * @return Channels\ChannelInterface|null
+     */
+    public function get_channel(string $id): ?Channels\ChannelInterface
+    {
+        return $this->channels[$id] ?? null;
     }
 }

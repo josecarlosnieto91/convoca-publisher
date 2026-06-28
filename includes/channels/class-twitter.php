@@ -123,4 +123,42 @@ class Twitter implements ChannelInterface
         }
         return [];
     }
+
+    public function verify_connection(): array
+    {
+        $bearer = get_option('cp_twitter_bearer_token', '');
+
+        if (empty($bearer)) {
+            return ['success' => false, 'message' => __('Bearer Token de Twitter no configurado.', 'convoca-publisher')];
+        }
+
+        $resp = wp_remote_get('https://api.twitter.com/2/users/me', [
+            'headers' => [
+                'Authorization' => "Bearer {$bearer}",
+            ],
+            'timeout' => 15,
+        ]);
+
+        if (is_wp_error($resp)) {
+            return ['success' => false, 'message' => __('Error de conexión: ', 'convoca-publisher') . $resp->get_error_message()];
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($resp), true);
+        $http_code = wp_remote_retrieve_response_code($resp);
+
+        if ($http_code >= 200 && $http_code < 300 && isset($body['data']['id'])) {
+            $username = $body['data']['username'] ?? 'desconocido';
+            return [
+                'success' => true,
+                'message' => sprintf(
+                    /* translators: %s: Twitter/X username */
+                    __('✅ Conexión correcta. Usuario: @%s', 'convoca-publisher'),
+                    $username
+                ),
+            ];
+        }
+
+        $error_msg = $body['title'] ?? $body['detail'] ?? __('Error desconocido de Twitter API.', 'convoca-publisher');
+        return ['success' => false, 'message' => $error_msg];
+    }
 }

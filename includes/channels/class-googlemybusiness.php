@@ -107,4 +107,49 @@ class Googlemybusiness implements ChannelInterface
         }
         return $errors;
     }
+
+    public function verify_connection(): array
+    {
+        $token = get_option('cp_gmb_token', '');
+        $location = get_option('cp_gmb_location', '');
+
+        if (empty($token) || empty($location)) {
+            return ['success' => false, 'message' => __('Token o Location ID de GMB no configurados.', 'convoca-publisher')];
+        }
+
+        // Validate token format: JWT-like or Google access token
+        if (strlen($token) < 20 || strlen($token) > 4096) {
+            return ['success' => false, 'message' => __('El token de Google no tiene un formato válido.', 'convoca-publisher')];
+        }
+
+        // Validate location format: accounts/{id}/locations/{id}
+        if (!preg_match('#^accounts/[^/]+/locations/[^/]+$#', $location)) {
+            return ['success' => false, 'message' => __('El Location ID debe tener el formato: accounts/{accountId}/locations/{locationId}', 'convoca-publisher')];
+        }
+
+        // Try a lightweight API call to verify the token and location
+        $resp = wp_remote_get("https://mybusiness.googleapis.com/v4/{$location}/localPosts?pageSize=1", [
+            'headers' => [
+                'Authorization' => "Bearer {$token}",
+            ],
+            'timeout' => 15,
+        ]);
+
+        if (is_wp_error($resp)) {
+            return ['success' => false, 'message' => __('Error de conexión: ', 'convoca-publisher') . $resp->get_error_message()];
+        }
+
+        $http_code = wp_remote_retrieve_response_code($resp);
+        $body = json_decode(wp_remote_retrieve_body($resp), true);
+
+        if ($http_code >= 200 && $http_code < 300) {
+            return [
+                'success' => true,
+                'message' => __('✅ Conexión correcta. Location ID válido y accesible.', 'convoca-publisher'),
+            ];
+        }
+
+        $error_msg = $body['error']['message'] ?? __('Error desconocido de GMB API.', 'convoca-publisher');
+        return ['success' => false, 'message' => $error_msg];
+    }
 }

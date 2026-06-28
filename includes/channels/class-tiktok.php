@@ -103,4 +103,29 @@ class Tiktok implements ChannelInterface
         }
         return $errors;
     }
+
+    public function verify_connection(): array
+    {
+        $token = get_option('cp_tiktok_token', '');
+        $open_id = get_option('cp_tiktok_open_id', '');
+
+        if (empty($token) || empty($open_id)) {
+            return ['success' => false, 'message' => __('Token u Open ID de TikTok no configurados.', 'convoca-publisher')];
+        }
+
+        // Validate token format: should be a reasonable length JWT-like string
+        if (strlen($token) < 20 || strlen($token) > 512) {
+            return ['success' => false, 'message' => __('El token de TikTok no tiene un formato válido (longitud incorrecta).', 'convoca-publisher')];
+        }
+
+        // Validate Open ID format: should be a non-empty alphanumeric string
+        if (strlen($open_id) < 10 || strlen($open_id) > 128) {
+            return ['success' => false, 'message' => __('El Open ID de TikTok no tiene un formato válido.', 'convoca-publisher')];
+        }
+
+        return [
+            'success' => true,
+            'message' => __('✅ Formato de credenciales válido. Nota: TikTok no permite verificación de conexión sin publicar. Verifica manualmente desde el Developer Portal.', 'convoca-publisher'),
+        ];
+    }
 }

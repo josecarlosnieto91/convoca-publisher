@@ -112,4 +112,42 @@ class Linkedin implements ChannelInterface
         }
         return $errors;
     }
+
+    public function verify_connection(): array
+    {
+        $token = get_option('cp_linkedin_token', '');
+
+        if (empty($token)) {
+            return ['success' => false, 'message' => __('Token de LinkedIn no configurado.', 'convoca-publisher')];
+        }
+
+        $resp = wp_remote_get('https://api.linkedin.com/v2/me', [
+            'headers' => [
+                'Authorization' => "Bearer {$token}",
+            ],
+            'timeout' => 15,
+        ]);
+
+        if (is_wp_error($resp)) {
+            return ['success' => false, 'message' => __('Error de conexión: ', 'convoca-publisher') . $resp->get_error_message()];
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($resp), true);
+        $http_code = wp_remote_retrieve_response_code($resp);
+
+        if ($http_code >= 200 && $http_code < 300 && isset($body['sub'])) {
+            $name = $body['localizedLastName'] ?? $body['sub'] ?? '';
+            return [
+                'success' => true,
+                'message' => sprintf(
+                    /* translators: %s: LinkedIn user/profile name */
+                    __('✅ Conexión correcta. Perfil: %s', 'convoca-publisher'),
+                    $name
+                ),
+            ];
+        }
+
+        $error_msg = $body['message'] ?? $body['error_description'] ?? __('Error desconocido de LinkedIn API.', 'convoca-publisher');
+        return ['success' => false, 'message' => $error_msg];
+    }
 }
