@@ -49,7 +49,11 @@ add_action(
 				'admin_notices',
 				function () {
 					printf(
-						'<div class="notice notice-error"><p><strong>Convoca Publisher:</strong> Este plugin requiere el plugin <strong>Convoca Core</strong> activo.</p></div>'
+					    '<div class="notice notice-error"><p><strong>%s:</strong> %s <strong>%s</strong> %s</p></div>',
+					    esc_html__('Convoca Publisher', 'convoca-publisher'),
+					    esc_html__('Este plugin requiere el plugin', 'convoca-publisher'),
+					    esc_html__('Convoca Core', 'convoca-publisher'),
+					    esc_html__('activo.', 'convoca-publisher')
 					);
 				}
 			);
