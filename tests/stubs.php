@@ -35,20 +35,23 @@ function esc_html(string $text): string
 }
 
 // --- Options ---
+$GLOBALS['_cp_test_options'] = [];
+
 function get_option(string $option, mixed $default = false): mixed
 {
-    // Return a fixed AES-256 key for Crypto so tests are deterministic
     if ($option === 'cp_encryption_key') {
         return 'SISo4fW6aYd2QYYabknhj3S9no1GI8HOjX0OMOEmsGA=';
     }
-    return $default;
+    return $GLOBALS['_cp_test_options'][$option] ?? $default;
 }
 function update_option(string $option, mixed $value, bool $autoload = false): bool
 {
+    $GLOBALS['_cp_test_options'][$option] = $value;
     return true;
 }
 function delete_option(string $option): bool
 {
+    unset($GLOBALS['_cp_test_options'][$option]);
     return true;
 }
 function add_option(string $option, mixed $value, string $deprecated = '', bool $autoload = true): bool
@@ -100,6 +103,18 @@ function wp_trim_words(string $text, int $num_words = 55, string $more = '…'):
     }
     return $text;
 }
+function get_post(int|\WP_Post $post = null, ?string $output = null, string $filter = 'raw'): ?\WP_Post
+{
+    if ($post instanceof \WP_Post) {
+        return $post;
+    }
+    if ($post === null || $post === 0) {
+        return null;
+    }
+    $p = new \WP_Post();
+    $p->ID = $post;
+    return $p;
+}
 function get_permalink(\WP_Post|int $post): string
 {
     return 'https://example.com/?p=' . ($post instanceof \WP_Post ? $post->ID : $post);
@@ -112,7 +127,15 @@ function get_the_author_meta(string $field, int $user_id = 0): string
 {
     return 'Test Author';
 }
+function get_the_excerpt(\WP_Post|int $post = null): string
+{
+    return 'Test excerpt.';
+}
 function get_post_thumbnail_id(\WP_Post|int $post = null): int|false
+{
+    return false;
+}
+function get_the_post_thumbnail_url(\WP_Post|int $post = null, string|array $size = 'post-thumbnail'): string|false
 {
     return false;
 }
@@ -257,6 +280,26 @@ function settings_fields(string $option_group): void
 function wp_kses_post(string $data): string
 {
     return $data;
+}
+function set_transient(string $transient, mixed $value, int $expiration = 0): bool
+{
+    return true;
+}
+function get_transient(string $transient): mixed
+{
+    return false;
+}
+function wp_safe_redirect(string $location, int $status = 302, string $x_redirect_by = 'WordPress'): bool
+{
+    return true;
+}
+function add_query_arg(string|array $key, string $value = '', string $url = ''): string
+{
+    return $url . '?' . (is_string($key) ? $key . '=' . $value : '');
+}
+function wp_get_referer(): string|false
+{
+    return 'http://example.com/wp-admin/admin.php?page=convoca-publisher';
 }
 
 // --- WP_Error ---

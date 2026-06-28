@@ -118,6 +118,25 @@ class Publisher
     }
 
     /**
+     * Obtener el mensaje formateado para un canal específico.
+     * Método público que envuelve build_channel_message() para testing.
+     */
+    public function get_channel_message(int $post_id, string $channel_id): string
+    {
+        $post = get_post($post_id);
+        if (!$post) {
+            return '';
+        }
+        $channel = $this->channels[$channel_id] ?? null;
+        if (!$channel) {
+            return '';
+        }
+        $url = get_permalink($post);
+        $hashtags = $this->get_post_hashtags($post);
+        return $this->build_channel_message($post, $channel, $url, $hashtags);
+    }
+
+    /**
      * Construir mensaje específico para un canal usando su plantilla.
      */
     private function build_channel_message(\WP_Post $post, object $channel, string $url, string $hashtags): string
