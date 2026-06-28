@@ -51,6 +51,12 @@ class Publisher
             return;
         }
 
+        // Si tiene programación, no publicar ahora (lo hará el cron)
+        $schedule_ts = (int) get_post_meta($post_id, '_cp_schedule_time', true);
+        if ($schedule_ts > 0) {
+            return;
+        }
+
         $this->publish_post($post_id);
     }
 

@@ -65,6 +65,15 @@ class Metabox
             }
         }
 
+        // Programar publicación
+        $schedule_ts = (int) get_post_meta($post->ID, '_cp_schedule_time', true);
+        $schedule_val = $schedule_ts ? wp_date('Y-m-d\TH:i', $schedule_ts) : '';
+        echo '<hr><p><strong>' . esc_html__('Programar publicación:', 'convoca-publisher') . '</strong></p>';
+        echo '<label style="font-size:12px;">';
+        echo '<input type="datetime-local" name="cp_schedule_time" value="' . esc_attr($schedule_val) . '" style="width:100%;">';
+        echo '<p class="description" style="font-size:11px;margin:4px 0;">' . esc_html__('Déjalo vacío para publicar al guardar el post.', 'convoca-publisher') . '</p>';
+        echo '</label>';
+
         echo '</div>';
 
         // Inline JS for republish button
@@ -104,6 +113,17 @@ jQuery(function($) {
             }
         }
         update_post_meta($post_id, '_cp_disabled_channels', $disabled);
+
+        // Guardar programación
+        $schedule_raw = sanitize_text_field($_POST['cp_schedule_time'] ?? '');
+        if ($schedule_raw) {
+            $schedule_ts = strtotime($schedule_raw);
+            if ($schedule_ts > time()) {
+                update_post_meta($post_id, '_cp_schedule_time', $schedule_ts);
+            }
+        } else {
+            delete_post_meta($post_id, '_cp_schedule_time');
+        }
     }
 
     public static function ajax_republish(): void
