@@ -92,6 +92,15 @@ class Publisher
         $hashtags = $this->get_post_hashtags($post);
         $results = [];
 
+        // Validaciones previas a la publicación
+        $warnings = [];
+        if (empty(trim($post->post_title))) {
+            $warnings[] = __('El título del post está vacío.', 'convoca-publisher');
+        }
+        if (empty($image_url)) {
+            $warnings[] = __('No hay imagen destacada. Algunas redes (Facebook, Twitter) requieren imagen.', 'convoca-publisher');
+        }
+
         foreach ($this->channels as $channel_id => $channel) {
             if (!$channel->is_available()) {
                 continue;
@@ -118,6 +127,21 @@ class Publisher
         if (!empty($results)) {
             update_post_meta($post_id, '_cp_published', true);
             update_post_meta($post_id, '_cp_publish_results', $results);
+        }
+
+        // Adjuntar warnings al resultado si los hay
+        if (!empty($warnings)) {
+            $results['_warnings'] = $warnings;
+            foreach ($warnings as $w) {
+                $this->log_publish([
+                    'post_id'  => $post_id,
+                    'title'    => $post->post_title,
+                    'channel'  => 'VALIDACIÓN',
+                    'success'  => false,
+                    'time'     => current_time('mysql'),
+                    'response' => $w,
+                ]);
+            }
         }
 
         return $results;

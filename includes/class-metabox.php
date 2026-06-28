@@ -39,6 +39,7 @@ class Metabox
         if ($published) {
             echo '<p style="color:#46b450;"><strong>✅ ' . esc_html__('Publicado en redes', 'convoca-publisher') . '</strong></p>';
             foreach ($results as $channel_id => $result) {
+                if ($channel_id === '_warnings') continue;
                 $icon = !empty($result['success']) ? '✅' : '❌';
                 echo '<p style="margin:4px 0;font-size:12px;">' . $icon . ' <strong>' . esc_html($channel_id) . '</strong>: ';
                 if (!empty($result['success'])) {
@@ -47,6 +48,12 @@ class Metabox
                     echo '<span style="color:#dc3232;">' . esc_html($result['error'] ?? __('Error', 'convoca-publisher')) . '</span>';
                 }
                 echo '</p>';
+            }
+            // Mostrar warnings si existen
+            if (!empty($results['_warnings'])) {
+                foreach ($results['_warnings'] as $w) {
+                    echo '<p style="margin:4px 0;font-size:11px;color:#dba617;">⚠️ ' . esc_html($w) . '</p>';
+                }
             }
             echo '<p><button type="button" class="button button-small cp-republish" data-post-id="' . esc_attr((string) $post->ID) . '">'
                 . esc_html__('↻ Republicar', 'convoca-publisher') . '</button></p>';
