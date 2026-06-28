@@ -1,4 +1,4 @@
-# MANUAL_USUARIO.md — Convoca Publisher v1.3.0
+# MANUAL_USUARIO.md — Convoca Publisher v1.3.1
 
 > Guía para administradores: publicar entradas automáticamente en redes sociales.
 
