@@ -1,5 +1,21 @@
 <?php
 
+/**
+ * Convoca Publisher
+ *
+ * @package    Convoca\Publisher
+ * @subpackage Includes
+ *
+ * @copyright  Copyright (C) 2026 Jose Carlos Nieto Ramos
+ * @license    GPL-2.0-or-later
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ */
+
+
 namespace ConvocaPublisher;
 
 defined('ABSPATH') || exit;
@@ -41,7 +57,7 @@ class Metabox
             foreach ($results as $channel_id => $result) {
                 if ($channel_id === '_warnings') continue;
                 $icon = !empty($result['success']) ? '✅' : '❌';
-                echo '<p style="margin:4px 0;font-size:12px;">' . $icon . ' <strong>' . esc_html($channel_id) . '</strong>: ';
+                echo '<p style="margin:4px 0;font-size:12px;">' . esc_html($icon) . ' <strong>' . esc_html($channel_id) . '</strong>: ';
                 if (!empty($result['success'])) {
                     echo '<span style="color:#46b450;">' . esc_html($result['post_id'] ?? 'OK') . '</span>';
                 } else {
@@ -66,7 +82,7 @@ class Metabox
             foreach ($channels as $id => $ch) {
                 $checked = in_array($id, $disabled, true) ? '' : 'checked';
                 echo '<label style="display:block;margin:4px 0;font-size:12px;">';
-                echo '<input type="checkbox" name="cp_channels[' . esc_attr($id) . ']" value="1" ' . $checked . '> ';
+                echo '<input type="checkbox" name="cp_channels[' . esc_attr($id) . ']" value="1" ' . esc_attr($checked) . '> ';
                 echo esc_html($ch->get_name());
                 echo '</label>';
             }
@@ -122,7 +138,7 @@ jQuery(function($) {
         update_post_meta($post_id, '_cp_disabled_channels', $disabled);
 
         // Guardar programación
-        $schedule_raw = sanitize_text_field($_POST['cp_schedule_time'] ?? '');
+        $schedule_raw = sanitize_text_field(wp_unslash($_POST['cp_schedule_time'] ?? ''));
         if ($schedule_raw) {
             $schedule_ts = strtotime($schedule_raw);
             if ($schedule_ts > time()) {

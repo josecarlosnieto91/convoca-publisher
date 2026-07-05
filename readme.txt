@@ -8,38 +8,44 @@ Stable tag: 1.4.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Publica entradas automáticamente en redes sociales desde WordPress.
+Auto-publish WordPress posts to social media.
 
 == Description ==
 
-Publica automáticamente tus entradas de WordPress en redes sociales. Sin suscripciones, sin dependencias externas. Los tokens se almacenan cifrados con AES-256-GCM.
+Automatically publish your WordPress posts to social media. No subscriptions, no external dependencies. Tokens are encrypted with AES-256-GCM.
 
-Redes soportadas: Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram, Mastodon.
+Supported networks: Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram, Mastodon.
 
-* Publicación automática al publicar una entrada
-* Metabox con checkboxes por red, estado y programación
-* Plantillas de mensaje personalizables por canal
+* Automatic publishing when a post is published
+* Metabox with per-network checkboxes, status, and scheduling
+* Customizable message templates per channel
 * Variables: {title}, {excerpt}, {url}, {hashtags}, {date}, {author}
-* Cola de reintentos automáticos (máx. 2 intentos)
-* Historial de las últimas 200 publicaciones
-* REST API para integraciones externas
-* Tokens cifrados con AES-256-GCM
+* Automatic retry queue (max 2 attempts)
+* History of the last 200 posts
+* REST API for external integrations
+* Tokens encrypted with AES-256-GCM
 
-Funcionalidades PRO (requieren licencia):
-* Programación de publicación en redes
-* Cola de publicación programada y reintentos avanzados
-* 8 canales simultáneos
+PRO features (require a license):
+* Social media post scheduling
+* Scheduled publishing queue and advanced retries
+* 8 simultaneous channels
 
-= Servicios externos =
+= External Services =
 
-Este plugin se conecta con las APIs de las redes sociales configuradas (Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram, Mastodon) para publicar contenido. Las credenciales se almacenan cifradas localmente. También puede contactar con getconvoca.app para validar licencias PRO.
+This plugin connects to the APIs of the configured social networks (Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram, Mastodon) to publish content. Credentials are stored encrypted locally. It may also contact getconvoca.app to validate PRO licenses.
+
+== Installation ==
+
+1. Upload the `convoca-publisher` folder to `/wp-content/plugins/`
+2. Activate the plugin from the Plugins menu
+3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
 
 = 1.4.0 =
-* Nuevo: Programación de publicación en redes
-* Nuevo: Validaciones pre-publicación (título, imagen destacada)
-* Nuevo: Canal TikTok
-* Nuevo: Canal Google My Business
-* Mejora: 42 tests unitarios, 148 aserciones
-* Mejora: Guía detallada por canal en el panel de administración
+* New: Social media post scheduling
+* New: Pre-publish validations (title, featured image)
+* New: TikTok channel
+* New: Google My Business channel
+* Improvement: 42 unit tests, 148 assertions
+* Improvement: Detailed guide per channel in the admin dashboard

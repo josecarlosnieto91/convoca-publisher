@@ -1,712 +1,1101 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
+# Copyright (C) 2026 Jose Carlos Nieto Ramos
+# This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-29 00:35+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Project-Id-Version: convoca-publisher 1.4.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/convoca-publisher\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#: includes/channels/class-facebook.php:16
-msgid "Facebook / Instagram"
-msgstr ""
-
-#: includes/channels/class-facebook.php:32
-msgid "Token o Page ID no configurados."
-msgstr ""
-
-#: includes/channels/class-facebook.php:67
-msgid "Error desconocido de Meta API."
-msgstr ""
-
-#: includes/channels/class-facebook.php:75
-msgid "Token de Acceso (Page Access Token)"
-msgstr ""
-
-#: includes/channels/class-facebook.php:77
-msgid ""
-"Token de página de Facebook con permisos pages_manage_posts y "
-"pages_read_engagement."
-msgstr ""
-
-#: includes/channels/class-facebook.php:80
-msgid "ID de la Página de Facebook"
-msgstr ""
-
-#: includes/channels/class-facebook.php:82
-msgid "ID numérico de tu página de Facebook."
-msgstr ""
-
-#: includes/channels/class-facebook.php:85
-msgid "ID de Instagram Business (opcional)"
-msgstr ""
-
-#: includes/channels/class-facebook.php:87
-msgid ""
-"Si tu Instagram está vinculado a la página de Facebook, se publicará también "
-"allí."
-msgstr ""
-
-#: includes/channels/class-facebook.php:91
-#: includes/channels/class-linkedin.php:97
-#: includes/channels/class-telegram.php:93
-#: includes/channels/class-mastodon.php:114
-msgid "Plantilla del mensaje"
-msgstr ""
-
-#: includes/channels/class-facebook.php:93
-msgid ""
-"{title}, {excerpt}, {url}, {hashtags}, {date}, {author}. Por defecto: "
-"{title} — {url} {hashtags}"
-msgstr ""
-
-#: includes/channels/class-facebook.php:102
-msgid "El token de Facebook es obligatorio."
-msgstr ""
-
-#: includes/channels/class-facebook.php:105
-msgid "El ID de página de Facebook es obligatorio."
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:16
-msgid "Google My Business"
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:30
-msgid "Token o ubicación de GMB no configurados."
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:74
-msgid "Error desconocido de GMB API."
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:82
-#: includes/channels/class-linkedin.php:87
-msgid "Access Token (OAuth 2.0)"
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:84
-msgid ""
-"Token de Google con permisos https://www.googleapis.com/auth/business.manage."
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:87
-msgid "Location ID"
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:89
-msgid "Formato: accounts/{accountId}/locations/{locationId}"
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:92
-msgid "Plantilla del post"
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:94
-msgid ""
-"{title}, {excerpt}, {url}. GMB limita a 1500 caracteres. Por defecto: "
-"{excerpt} — {url}"
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:103
-msgid "El token de Google es obligatorio."
-msgstr ""
-
-#: includes/channels/class-googlemybusiness.php:106
-msgid "El Location ID de GMB es obligatorio."
-msgstr ""
-
-#: includes/channels/class-linkedin.php:16
-msgid "LinkedIn"
-msgstr ""
-
-#: includes/channels/class-linkedin.php:30
-msgid "Token o URN de LinkedIn no configurados."
-msgstr ""
-
-#: includes/channels/class-linkedin.php:79
-msgid "Error desconocido de LinkedIn API."
-msgstr ""
-
-#: includes/channels/class-linkedin.php:89
-msgid "Token de LinkedIn con permisos w_organization_social o w_member_social."
-msgstr ""
-
-#: includes/channels/class-linkedin.php:92
-msgid "URN de perfil/página"
-msgstr ""
-
-#: includes/channels/class-linkedin.php:94
-msgid "Ej: urn:li:person:abc123 o urn:li:organization:xyz456"
-msgstr ""
-
-#: includes/channels/class-linkedin.php:99
-msgid ""
-"{title}, {excerpt}, {url}, {hashtags}, {date}, {author}. LinkedIn usa "
-"ARTICLE format."
-msgstr ""
-
-#: includes/channels/class-linkedin.php:108
-msgid "El token de LinkedIn es obligatorio."
-msgstr ""
-
-#: includes/channels/class-linkedin.php:111
-msgid "La URN de LinkedIn es obligatoria."
-msgstr ""
-
-#: includes/channels/class-tiktok.php:16
-msgid "TikTok"
-msgstr ""
-
-#: includes/channels/class-tiktok.php:30
-msgid "Token u Open ID de TikTok no configurados."
-msgstr ""
-
-#: includes/channels/class-tiktok.php:70
-msgid "Error desconocido de TikTok API."
-msgstr ""
-
-#: includes/channels/class-tiktok.php:78
-#: includes/channels/class-mastodon.php:104
-msgid "Access Token"
-msgstr ""
-
-#: includes/channels/class-tiktok.php:80
-msgid "Token OAuth 2.0 de TikTok con permisos video.publish."
-msgstr ""
-
-#: includes/channels/class-tiktok.php:83
-msgid "Open ID"
-msgstr ""
-
-#: includes/channels/class-tiktok.php:85
-msgid "Open ID del usuario de TikTok que publicará."
-msgstr ""
-
-#: includes/channels/class-tiktok.php:88
-msgid "Título del video"
-msgstr ""
-
-#: includes/channels/class-tiktok.php:90
-msgid "{title} — máximo 100 caracteres. Por defecto: {title}"
-msgstr ""
-
-#: includes/channels/class-tiktok.php:99
-msgid "El token de TikTok es obligatorio."
-msgstr ""
-
-#: includes/channels/class-tiktok.php:102
-msgid "El Open ID de TikTok es obligatorio."
-msgstr ""
-
-#: includes/channels/class-twitter.php:16
-msgid "Twitter / X"
-msgstr ""
-
-#: includes/channels/class-twitter.php:30
-msgid "Bearer token de Twitter no configurado."
-msgstr ""
-
-#: includes/channels/class-twitter.php:68
-msgid "Error desconocido de Twitter API."
-msgstr ""
-
-#: includes/channels/class-twitter.php:107
-msgid "Bearer Token (OAuth 2.0)"
-msgstr ""
-
-#: includes/channels/class-twitter.php:109
-msgid ""
-"Token OAuth 2.0 de la app de Twitter/X con permisos tweet.read y tweet.write."
-msgstr ""
-
-#: includes/channels/class-twitter.php:112
-msgid "Plantilla del tweet"
-msgstr ""
-
-#: includes/channels/class-twitter.php:114
-msgid ""
-"{title}, {excerpt}, {url}, {hashtags}. Máximo 280 caracteres total. Por "
-"defecto: {title} {url} {hashtags}"
-msgstr ""
-
-#: includes/channels/class-twitter.php:122
-msgid "El Bearer Token de Twitter es obligatorio."
-msgstr ""
-
-#: includes/channels/class-telegram.php:16
-msgid "Telegram"
-msgstr ""
-
-#: includes/channels/class-telegram.php:30
-msgid "Token o Chat ID de Telegram no configurados."
-msgstr ""
-
-#: includes/channels/class-telegram.php:71
-msgid "Error desconocido de Telegram API."
-msgstr ""
-
-#: includes/channels/class-telegram.php:78
-msgid "Token del Bot"
-msgstr ""
-
-#: includes/channels/class-telegram.php:80
-msgid "Token del bot de Telegram (de @BotFather)."
-msgstr ""
-
-#: includes/channels/class-telegram.php:83
-msgid "Chat ID"
-msgstr ""
-
-#: includes/channels/class-telegram.php:85
-msgid "ID del canal o grupo (negativo para grupos)."
-msgstr ""
-
-#: includes/channels/class-telegram.php:88
-msgid "Modo de parseo"
-msgstr ""
-
-#: includes/channels/class-telegram.php:90
-msgid "HTML o Markdown (por defecto HTML)."
-msgstr ""
-
-#: includes/channels/class-telegram.php:95
-msgid ""
-"{title}, {excerpt}, {url}, {hashtags}. Por defecto: {title} — {url} "
-"{hashtags}"
-msgstr ""
-
-#: includes/channels/class-telegram.php:104
-msgid "El token de Telegram es obligatorio."
-msgstr ""
-
-#: includes/channels/class-telegram.php:107
-msgid "El Chat ID de Telegram es obligatorio."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:16
-msgid "Mastodon"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:31
-msgid "Token o servidor de Mastodon no configurados."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:91
-msgid "Error desconocido de Mastodon API."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:99
-msgid "Servidor"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:101
-msgid "Ej: https://mastodon.social"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:106
-msgid ""
-"Token de acceso de Mastodon (Desarrollo → Nuevo token → write:statuses)."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:109
-msgid "Visibilidad"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:111
-msgid "public, unlisted, private, direct (por defecto public)."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:116
-msgid ""
-"{title}, {excerpt}, {url}, {hashtags}. Máximo 500 caracteres. Por defecto: "
-"{title} — {url} {hashtags}"
-msgstr ""
-
-#: includes/channels/class-mastodon.php:125
-msgid "El token de Mastodon es obligatorio."
-msgstr ""
-
-#: includes/channels/class-mastodon.php:128
-msgid "El servidor de Mastodon es obligatorio."
-msgstr ""
-
-#: includes/class-scheduler.php:23
-msgid "Cada 15 minutos"
-msgstr ""
-
-#: includes/class-admin.php:20 includes/class-admin.php:21
-#: includes/class-admin.php:115 includes/class-admin.php:418
-#: includes/class-metabox.php:20 convoca-publisher.php:53
+"POT-Creation-Date: 2026-07-05T06:52:09+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: convoca-publisher\n"
+
+#. Plugin Name of the plugin
+#: convoca-publisher.php
+#: convoca-publisher.php:57
+#: includes/class-admin.php:37
+#: includes/class-admin.php:38
+#: includes/class-admin.php:132
+#: includes/class-admin.php:456
+#: includes/class-metabox.php:36
 msgid "Convoca Publisher"
 msgstr ""
 
-#: includes/class-admin.php:31 includes/class-admin.php:32
-msgid "Historial"
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: convoca-publisher.php
+msgid "https://getconvoca.app"
 msgstr ""
 
-#: includes/class-admin.php:40 includes/class-admin.php:41
-msgid "Acerca de"
+#. Description of the plugin
+#: convoca-publisher.php
+msgid "Publish WordPress posts to social media channels with customizable templates."
 msgstr ""
 
-#: includes/class-admin.php:119
-msgid "Configuración"
+#. Author of the plugin
+#: convoca-publisher.php
+msgid "Jose Carlos Nieto Ramos"
 msgstr ""
 
-#: includes/class-admin.php:122
-msgid "Canales"
-msgstr ""
-
-#: includes/class-admin.php:125
-msgid "Probar"
-msgstr ""
-
-#: includes/class-admin.php:128
-msgid "Plantillas"
-msgstr ""
-
-#: includes/class-admin.php:152
-msgid "Aviso de privacidad actualizado."
-msgstr ""
-
-#: includes/class-admin.php:156
-msgid "Ajustes guardados."
-msgstr ""
-
-#: includes/class-admin.php:164
-msgid "🔐 Aviso de privacidad"
-msgstr ""
-
-#: includes/class-admin.php:165
-msgid ""
-"Este plugin envía el título, extracto, URL, imagen destacada y etiquetas de "
-"tus entradas a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, "
-"Telegram, Mastodon). Los tokens de acceso se almacenan cifrados en la base "
-"de datos de WordPress (AES-256-GCM)."
-msgstr ""
-
-#: includes/class-admin.php:169 convoca-publisher.php:166
-msgid "He leído y acepto este aviso"
-msgstr ""
-
-#: includes/class-admin.php:176
-msgid "Configuración general"
-msgstr ""
-
-#: includes/class-admin.php:179
-msgid "Publicación automática"
-msgstr ""
-
-#: includes/class-admin.php:183
-msgid "Publicar automáticamente al publicar una entrada"
-msgstr ""
-
-#: includes/class-admin.php:188
-msgid "Programación"
-msgstr ""
-
-#: includes/class-admin.php:192
-msgid "Activar programación de entradas"
-msgstr ""
-
-#: includes/class-admin.php:194
-msgid "Publica automáticamente las entradas programadas cuando se publican."
-msgstr ""
-
-#: includes/class-admin.php:240
-msgid "Plantillas de mensaje"
-msgstr ""
-
-#: includes/class-admin.php:243
-msgid "Variables disponibles:"
-msgstr ""
-
-#: includes/class-admin.php:245
-msgid "Título de la entrada"
-msgstr ""
-
-#: includes/class-admin.php:246
-msgid "Extracto de la entrada"
-msgstr ""
-
-#: includes/class-admin.php:247
-msgid "Enlace permanente de la entrada"
-msgstr ""
-
-#: includes/class-admin.php:248
-msgid "Primeras 5 etiquetas como hashtags"
-msgstr ""
-
-#: includes/class-admin.php:249
-msgid "Fecha de publicación"
-msgstr ""
-
-#: includes/class-admin.php:250
-msgid "Nombre del autor"
-msgstr ""
-
-#: includes/class-admin.php:251
-msgid "URL de la imagen destacada"
-msgstr ""
-
-#: includes/class-admin.php:253
-msgid ""
-"Puedes configurar una plantilla global y/o plantillas específicas por canal."
-msgstr ""
-
-#: includes/class-admin.php:259
-msgid "Plantilla global"
-msgstr ""
-
-#: includes/class-admin.php:262
-msgid "Mensaje por defecto"
-msgstr ""
-
-#: includes/class-admin.php:265
-msgid "Se usa cuando un canal no tiene su propia plantilla."
-msgstr ""
-
-#: includes/class-admin.php:270
-msgid "Plantillas por canal"
-msgstr ""
-
-#: includes/class-admin.php:271
-msgid "Déjalo vacío para usar la plantilla global."
-msgstr ""
-
-#: includes/class-admin.php:279
-msgid "Usar plantilla global"
-msgstr ""
-
-#: includes/class-admin.php:280
-msgid "Plantilla específica para "
-msgstr ""
-
-#: includes/class-admin.php:294
-msgid "No hay canales disponibles."
-msgstr ""
-
-#: includes/class-admin.php:295
-msgid "Configura al menos un token en la pestaña de Ajustes."
-msgstr ""
-
-#: includes/class-admin.php:303
-msgid "Configurado y operativo"
-msgstr ""
-
-#: includes/class-admin.php:304
-msgid "No configurado — ve a Ajustes"
-msgstr ""
-
-#: includes/class-admin.php:315
-msgid "Prueba de publicación"
-msgstr ""
-
-#: includes/class-admin.php:316
-msgid ""
-"Selecciona una entrada reciente y haz clic en \"Publicar en redes\" para "
-"probar la integración."
-msgstr ""
-
-#: includes/class-admin.php:322
-msgid "Entrada"
-msgstr ""
-
-#: includes/class-admin.php:328
-msgid "Seleccionar entrada..."
-msgstr ""
-
-#: includes/class-admin.php:338
-msgid "🚀 Publicar en redes"
-msgstr ""
-
-#: includes/class-admin.php:347
-msgid "Resultado:"
-msgstr ""
-
-#: includes/class-admin.php:355
-msgid "Publicado! ID: "
-msgstr ""
-
-#: includes/class-admin.php:357
-msgid "Error desconocido"
-msgstr ""
-
-#: includes/class-admin.php:374
-msgid "Historial de publicaciones"
-msgstr ""
-
-#: includes/class-admin.php:376
-msgid "No hay publicaciones registradas todavía."
-msgstr ""
-
-#: includes/class-admin.php:379
-msgid "¿Borrar todo el historial?"
-msgstr ""
-
-#: includes/class-admin.php:380
-msgid "Limpiar historial"
-msgstr ""
-
-#: includes/class-admin.php:392
-msgid "Post #"
-msgstr ""
-
-#: includes/class-admin.php:403
-msgid "Cola de reintentos"
-msgstr ""
-
-#: includes/class-admin.php:404
-msgid "Pendientes: "
-msgstr ""
-
-#: includes/class-admin.php:405
-msgid "Fallidos: "
-msgstr ""
-
-#: includes/class-admin.php:416
-msgid "Acerca de Convoca Publisher"
-msgstr ""
-
-#: includes/class-admin.php:419
-msgid "Plugin de publicación automática en redes sociales para WordPress."
-msgstr ""
-
-#: includes/class-admin.php:420
-msgid "Parte del ecosistema Convoca."
-msgstr ""
-
-#: includes/class-admin.php:425
-msgid "Canales disponibles"
-msgstr ""
-
-#: includes/class-admin.php:443
-msgid "No tienes permisos."
-msgstr ""
-
-#: includes/class-notifications.php:29
-msgid "Convoca Publisher — Aviso de privacidad"
-msgstr ""
-
-#: includes/class-notifications.php:30
-msgid ""
-"Este plugin envía datos a APIs de terceros. Por favor, lee y acepta el aviso "
-"de privacidad en los ajustes."
-msgstr ""
-
-#: includes/class-notifications.php:45 includes/class-notifications.php:59
-#: includes/class-notifications.php:68
-msgid "Convoca Publisher:"
-msgstr ""
-
-#: includes/class-notifications.php:47
-#, php-format
-msgid "Canales sin configurar: %s"
-msgstr ""
-
-#: includes/class-notifications.php:50
-msgid "Ir a ajustes"
-msgstr ""
-
-#: includes/class-notifications.php:61
-#, php-format
-msgid "%d publicaciones pendientes de reintentar."
-msgstr ""
-
-#: includes/class-notifications.php:70
-#, php-format
-msgid "%d publicaciones fallaron definitivamente. Revisa los tokens."
-msgstr ""
-
-#: includes/class-rest.php:59
-msgid "Canal no encontrado o no configurado."
-msgstr ""
-
-#: includes/class-rest.php:67
-msgid "Post no encontrado."
-msgstr ""
-
-#: includes/class-rest.php:75 includes/class-rest.php:146
-msgid "Publisher no inicializado."
-msgstr ""
-
-#: includes/class-rest.php:80
-msgid "Canal no procesado."
-msgstr ""
-
-#: includes/class-rest.php:117
-msgid "Post no encontrado o no publicado."
-msgstr ""
-
-#: includes/class-rest.php:132
-#, php-format
-msgid "Simulación: se publicaría en %s"
-msgstr ""
-
-#: includes/class-metabox.php:40
-msgid "Publicado en redes"
-msgstr ""
-
-#: includes/class-metabox.php:47
-msgid "Error"
-msgstr ""
-
-#: includes/class-metabox.php:52
-msgid "↻ Republicar"
-msgstr ""
-
-#: includes/class-metabox.php:54
-msgid "Se publicará automáticamente al guardar."
-msgstr ""
-
-#: includes/class-metabox.php:58
-msgid "Canales:"
-msgstr ""
-
-#: includes/class-metabox.php:76
-msgid "Publicando..."
-msgstr ""
-
-#: convoca-publisher.php:54
+#: convoca-publisher.php:58
 msgid "Este plugin requiere el plugin"
 msgstr ""
 
-#: convoca-publisher.php:55
+#: convoca-publisher.php:59
 msgid "Convoca Core"
 msgstr ""
 
-#: convoca-publisher.php:56
+#: convoca-publisher.php:60
 msgid "activo."
 msgstr ""
 
-#: convoca-publisher.php:82
+#: convoca-publisher.php:86
 #, php-format
 msgid "Convoca Publisher requiere PHP %s o superior. Tu versión: %s"
 msgstr ""
 
-#: convoca-publisher.php:93
+#: convoca-publisher.php:97
 #, php-format
 msgid "Convoca Publisher requiere WordPress %s o superior."
 msgstr ""
 
-#: convoca-publisher.php:164
+#: convoca-publisher.php:168
 msgid "🔐 Convoca Publisher — Aviso de privacidad"
 msgstr ""
 
-#: convoca-publisher.php:165
-msgid ""
-"Este plugin envía datos (título, extracto, URL, imagen destacada y etiquetas "
-"de tus entradas) a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, "
-"Google, Telegram, Mastodon) cuando publicas contenido en redes sociales. Los "
-"tokens de acceso se almacenan cifrados en la base de datos de WordPress."
+#: convoca-publisher.php:169
+msgid "Este plugin envía datos (título, extracto, URL, imagen destacada y etiquetas de tus entradas) a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, Telegram, Mastodon) cuando publicas contenido en redes sociales. Los tokens de acceso se almacenan cifrados en la base de datos de WordPress."
+msgstr ""
+
+#: convoca-publisher.php:170
+#: includes/class-admin.php:191
+msgid "He leído y acepto este aviso"
+msgstr ""
+
+#: includes/channels/class-facebook.php:32
+#: includes/class-admin.php:522
+msgid "Facebook / Instagram"
+msgstr ""
+
+#: includes/channels/class-facebook.php:48
+#: includes/channels/class-facebook.php:147
+msgid "Token o Page ID no configurados."
+msgstr ""
+
+#: includes/channels/class-facebook.php:83
+#: includes/channels/class-facebook.php:173
+msgid "Error desconocido de Meta API."
+msgstr ""
+
+#: includes/channels/class-facebook.php:91
+msgid "Token de Acceso (Page Access Token)"
+msgstr ""
+
+#: includes/channels/class-facebook.php:93
+msgid "Token de página de Facebook con permisos pages_manage_posts y pages_read_engagement."
+msgstr ""
+
+#: includes/channels/class-facebook.php:96
+msgid "ID de la Página de Facebook"
+msgstr ""
+
+#: includes/channels/class-facebook.php:98
+msgid "ID numérico de tu página de Facebook."
+msgstr ""
+
+#: includes/channels/class-facebook.php:101
+msgid "ID de Instagram Business (opcional)"
+msgstr ""
+
+#: includes/channels/class-facebook.php:103
+msgid "Si tu Instagram está vinculado a la página de Facebook, se publicará también allí."
+msgstr ""
+
+#: includes/channels/class-facebook.php:107
+#: includes/channels/class-linkedin.php:113
+#: includes/channels/class-mastodon.php:130
+#: includes/channels/class-telegram.php:109
+msgid "Plantilla del mensaje"
+msgstr ""
+
+#: includes/channels/class-facebook.php:109
+msgid "{title}, {excerpt}, {url}, {hashtags}, {date}, {author}. Por defecto: {title} — {url} {hashtags}"
+msgstr ""
+
+#: includes/channels/class-facebook.php:118
+msgid "El token de Facebook es obligatorio."
+msgstr ""
+
+#: includes/channels/class-facebook.php:121
+msgid "El ID de página de Facebook es obligatorio."
+msgstr ""
+
+#: includes/channels/class-facebook.php:155
+#: includes/channels/class-googlemybusiness.php:155
+#: includes/channels/class-linkedin.php:148
+#: includes/channels/class-mastodon.php:166
+#: includes/channels/class-telegram.php:140
+#: includes/channels/class-twitter.php:159
+msgid "Error de conexión: "
+msgstr ""
+
+#. translators: %s: Facebook page name
+#: includes/channels/class-facebook.php:164
+#, php-format
+msgid "✅ Conexión correcta. Página: %s"
+msgstr ""
+
+#: includes/channels/class-facebook.php:168
+msgid "Instagram vinculado"
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:32
+#: includes/class-admin.php:585
+msgid "Google My Business"
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:46
+msgid "Token o ubicación de GMB no configurados."
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:90
+#: includes/channels/class-googlemybusiness.php:168
+msgid "Error desconocido de GMB API."
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:98
+#: includes/channels/class-linkedin.php:103
+msgid "Access Token (OAuth 2.0)"
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:100
+msgid "Token de Google con permisos https://www.googleapis.com/auth/business.manage."
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:103
+msgid "Location ID"
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:105
+msgid "Formato: accounts/{accountId}/locations/{locationId}"
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:108
+msgid "Plantilla del post"
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:110
+msgid "{title}, {excerpt}, {url}. GMB limita a 1500 caracteres. Por defecto: {excerpt} — {url}"
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:119
+msgid "El token de Google es obligatorio."
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:122
+msgid "El Location ID de GMB es obligatorio."
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:133
+msgid "Token o Location ID de GMB no configurados."
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:138
+msgid "El token de Google no tiene un formato válido."
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:143
+msgid "El Location ID debe tener el formato: accounts/{accountId}/locations/{locationId}"
+msgstr ""
+
+#: includes/channels/class-googlemybusiness.php:164
+msgid "✅ Conexión correcta. Location ID válido y accesible."
+msgstr ""
+
+#: includes/channels/class-linkedin.php:32
+#: includes/class-admin.php:539
+msgid "LinkedIn"
+msgstr ""
+
+#: includes/channels/class-linkedin.php:46
+msgid "Token o URN de LinkedIn no configurados."
+msgstr ""
+
+#: includes/channels/class-linkedin.php:95
+#: includes/channels/class-linkedin.php:166
+msgid "Error desconocido de LinkedIn API."
+msgstr ""
+
+#: includes/channels/class-linkedin.php:105
+msgid "Token de LinkedIn con permisos w_organization_social o w_member_social."
+msgstr ""
+
+#: includes/channels/class-linkedin.php:108
+msgid "URN de perfil/página"
+msgstr ""
+
+#: includes/channels/class-linkedin.php:110
+msgid "Ej: urn:li:person:abc123 o urn:li:organization:xyz456"
+msgstr ""
+
+#: includes/channels/class-linkedin.php:115
+msgid "{title}, {excerpt}, {url}, {hashtags}, {date}, {author}. LinkedIn usa ARTICLE format."
+msgstr ""
+
+#: includes/channels/class-linkedin.php:124
+msgid "El token de LinkedIn es obligatorio."
+msgstr ""
+
+#: includes/channels/class-linkedin.php:127
+msgid "La URN de LinkedIn es obligatoria."
+msgstr ""
+
+#: includes/channels/class-linkedin.php:137
+msgid "Token de LinkedIn no configurado."
+msgstr ""
+
+#. translators: %s: LinkedIn user/profile name
+#: includes/channels/class-linkedin.php:160
+#, php-format
+msgid "✅ Conexión correcta. Perfil: %s"
+msgstr ""
+
+#: includes/channels/class-mastodon.php:32
+#: includes/class-admin.php:619
+msgid "Mastodon"
+msgstr ""
+
+#: includes/channels/class-mastodon.php:47
+#: includes/channels/class-mastodon.php:155
+msgid "Token o servidor de Mastodon no configurados."
+msgstr ""
+
+#: includes/channels/class-mastodon.php:107
+#: includes/channels/class-mastodon.php:184
+msgid "Error desconocido de Mastodon API."
+msgstr ""
+
+#: includes/channels/class-mastodon.php:115
+msgid "Servidor"
+msgstr ""
+
+#: includes/channels/class-mastodon.php:117
+msgid "Ej: https://mastodon.social"
+msgstr ""
+
+#: includes/channels/class-mastodon.php:120
+#: includes/channels/class-tiktok.php:94
+msgid "Access Token"
+msgstr ""
+
+#: includes/channels/class-mastodon.php:122
+msgid "Token de acceso de Mastodon (Desarrollo → Nuevo token → write:statuses)."
+msgstr ""
+
+#: includes/channels/class-mastodon.php:125
+msgid "Visibilidad"
+msgstr ""
+
+#: includes/channels/class-mastodon.php:127
+msgid "public, unlisted, private, direct (por defecto public)."
+msgstr ""
+
+#: includes/channels/class-mastodon.php:132
+msgid "{title}, {excerpt}, {url}, {hashtags}. Máximo 500 caracteres. Por defecto: {title} — {url} {hashtags}"
+msgstr ""
+
+#: includes/channels/class-mastodon.php:141
+msgid "El token de Mastodon es obligatorio."
+msgstr ""
+
+#: includes/channels/class-mastodon.php:144
+msgid "El servidor de Mastodon es obligatorio."
+msgstr ""
+
+#. translators: %s: Mastodon account handle
+#: includes/channels/class-mastodon.php:178
+#, php-format
+msgid "✅ Conexión correcta. Cuenta: @%s"
+msgstr ""
+
+#: includes/channels/class-telegram.php:32
+#: includes/class-admin.php:601
+msgid "Telegram"
+msgstr ""
+
+#: includes/channels/class-telegram.php:46
+msgid "Token o Chat ID de Telegram no configurados."
+msgstr ""
+
+#: includes/channels/class-telegram.php:87
+msgid "Error desconocido de Telegram API."
+msgstr ""
+
+#: includes/channels/class-telegram.php:94
+msgid "Token del Bot"
+msgstr ""
+
+#: includes/channels/class-telegram.php:96
+msgid "Token del bot de Telegram (de @BotFather)."
+msgstr ""
+
+#: includes/channels/class-telegram.php:99
+msgid "Chat ID"
+msgstr ""
+
+#: includes/channels/class-telegram.php:101
+msgid "ID del canal o grupo (negativo para grupos)."
+msgstr ""
+
+#: includes/channels/class-telegram.php:104
+msgid "Modo de parseo"
+msgstr ""
+
+#: includes/channels/class-telegram.php:106
+msgid "HTML o Markdown (por defecto HTML)."
+msgstr ""
+
+#: includes/channels/class-telegram.php:111
+msgid "{title}, {excerpt}, {url}, {hashtags}. Por defecto: {title} — {url} {hashtags}"
+msgstr ""
+
+#: includes/channels/class-telegram.php:120
+msgid "El token de Telegram es obligatorio."
+msgstr ""
+
+#: includes/channels/class-telegram.php:123
+msgid "El Chat ID de Telegram es obligatorio."
+msgstr ""
+
+#: includes/channels/class-telegram.php:134
+msgid "Token o Chat ID no configurados."
+msgstr ""
+
+#. translators: %s: Telegram bot username
+#: includes/channels/class-telegram.php:151
+#, php-format
+msgid "✅ Conexión correcta. Bot: @%s"
+msgstr ""
+
+#: includes/channels/class-telegram.php:157
+#: includes/class-admin.php:395
+msgid "Error desconocido"
+msgstr ""
+
+#: includes/channels/class-tiktok.php:32
+#: includes/class-admin.php:570
+msgid "TikTok"
+msgstr ""
+
+#: includes/channels/class-tiktok.php:46
+#: includes/channels/class-tiktok.php:129
+msgid "Token u Open ID de TikTok no configurados."
+msgstr ""
+
+#: includes/channels/class-tiktok.php:86
+msgid "Error desconocido de TikTok API."
+msgstr ""
+
+#: includes/channels/class-tiktok.php:96
+msgid "Token OAuth 2.0 de TikTok con permisos video.publish."
+msgstr ""
+
+#: includes/channels/class-tiktok.php:99
+msgid "Open ID"
+msgstr ""
+
+#: includes/channels/class-tiktok.php:101
+msgid "Open ID del usuario de TikTok que publicará."
+msgstr ""
+
+#: includes/channels/class-tiktok.php:104
+msgid "Título del video"
+msgstr ""
+
+#: includes/channels/class-tiktok.php:106
+msgid "{title} — máximo 100 caracteres. Por defecto: {title}"
+msgstr ""
+
+#: includes/channels/class-tiktok.php:115
+msgid "El token de TikTok es obligatorio."
+msgstr ""
+
+#: includes/channels/class-tiktok.php:118
+msgid "El Open ID de TikTok es obligatorio."
+msgstr ""
+
+#: includes/channels/class-tiktok.php:134
+msgid "El token de TikTok no tiene un formato válido (longitud incorrecta)."
+msgstr ""
+
+#: includes/channels/class-tiktok.php:139
+msgid "El Open ID de TikTok no tiene un formato válido."
+msgstr ""
+
+#: includes/channels/class-tiktok.php:144
+msgid "✅ Formato de credenciales válido. Nota: TikTok no permite verificación de conexión sin publicar. Verifica manualmente desde el Developer Portal."
+msgstr ""
+
+#: includes/channels/class-twitter.php:32
+#: includes/class-admin.php:555
+msgid "Twitter / X"
+msgstr ""
+
+#: includes/channels/class-twitter.php:46
+msgid "Bearer token de Twitter no configurado."
+msgstr ""
+
+#: includes/channels/class-twitter.php:84
+#: includes/channels/class-twitter.php:177
+msgid "Error desconocido de Twitter API."
+msgstr ""
+
+#: includes/channels/class-twitter.php:123
+#: includes/class-admin.php:564
+msgid "Bearer Token (OAuth 2.0)"
+msgstr ""
+
+#: includes/channels/class-twitter.php:125
+msgid "Token OAuth 2.0 de la app de Twitter/X con permisos tweet.read y tweet.write."
+msgstr ""
+
+#: includes/channels/class-twitter.php:128
+msgid "Plantilla del tweet"
+msgstr ""
+
+#: includes/channels/class-twitter.php:130
+msgid "{title}, {excerpt}, {url}, {hashtags}. Máximo 280 caracteres total. Por defecto: {title} {url} {hashtags}"
+msgstr ""
+
+#: includes/channels/class-twitter.php:138
+msgid "El Bearer Token de Twitter es obligatorio."
+msgstr ""
+
+#: includes/channels/class-twitter.php:148
+msgid "Bearer Token de Twitter no configurado."
+msgstr ""
+
+#. translators: %s: Twitter/X username
+#: includes/channels/class-twitter.php:171
+#, php-format
+msgid "✅ Conexión correcta. Usuario: @%s"
+msgstr ""
+
+#: includes/class-admin.php:48
+#: includes/class-admin.php:49
+msgid "Historial"
+msgstr ""
+
+#: includes/class-admin.php:57
+#: includes/class-admin.php:58
+msgid "Acerca de"
+msgstr ""
+
+#: includes/class-admin.php:136
+msgid "Configuración"
+msgstr ""
+
+#: includes/class-admin.php:139
+msgid "Canales"
+msgstr ""
+
+#: includes/class-admin.php:142
+msgid "Probar"
+msgstr ""
+
+#: includes/class-admin.php:145
+msgid "Plantillas"
+msgstr ""
+
+#: includes/class-admin.php:148
+msgid "Guía"
+msgstr ""
+
+#: includes/class-admin.php:174
+msgid "Aviso de privacidad actualizado."
+msgstr ""
+
+#: includes/class-admin.php:178
+msgid "Ajustes guardados."
+msgstr ""
+
+#: includes/class-admin.php:186
+msgid "🔐 Aviso de privacidad"
+msgstr ""
+
+#: includes/class-admin.php:187
+msgid "Este plugin envía el título, extracto, URL, imagen destacada y etiquetas de tus entradas a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, Telegram, Mastodon). Los tokens de acceso se almacenan cifrados en la base de datos de WordPress (AES-256-GCM)."
+msgstr ""
+
+#: includes/class-admin.php:198
+msgid "Configuración general"
+msgstr ""
+
+#: includes/class-admin.php:201
+msgid "Publicación automática"
+msgstr ""
+
+#: includes/class-admin.php:205
+msgid "Publicar automáticamente al publicar una entrada"
+msgstr ""
+
+#: includes/class-admin.php:210
+msgid "Programación"
+msgstr ""
+
+#: includes/class-admin.php:214
+msgid "Activar programación de entradas"
+msgstr ""
+
+#: includes/class-admin.php:216
+msgid "Publica automáticamente las entradas programadas cuando se publican."
+msgstr ""
+
+#: includes/class-admin.php:262
+msgid "Plantillas de mensaje"
+msgstr ""
+
+#: includes/class-admin.php:265
+msgid "Variables disponibles:"
+msgstr ""
+
+#: includes/class-admin.php:267
+msgid "Título de la entrada"
+msgstr ""
+
+#: includes/class-admin.php:268
+msgid "Extracto de la entrada"
+msgstr ""
+
+#: includes/class-admin.php:269
+msgid "Enlace permanente de la entrada"
+msgstr ""
+
+#: includes/class-admin.php:270
+msgid "Primeras 5 etiquetas como hashtags"
+msgstr ""
+
+#: includes/class-admin.php:271
+msgid "Fecha de publicación"
+msgstr ""
+
+#: includes/class-admin.php:272
+msgid "Nombre del autor"
+msgstr ""
+
+#: includes/class-admin.php:273
+msgid "URL de la imagen destacada"
+msgstr ""
+
+#: includes/class-admin.php:275
+msgid "Puedes configurar una plantilla global y/o plantillas específicas por canal."
+msgstr ""
+
+#: includes/class-admin.php:281
+msgid "Plantilla global"
+msgstr ""
+
+#: includes/class-admin.php:284
+msgid "Mensaje por defecto"
+msgstr ""
+
+#: includes/class-admin.php:287
+msgid "Se usa cuando un canal no tiene su propia plantilla."
+msgstr ""
+
+#: includes/class-admin.php:292
+msgid "Plantillas por canal"
+msgstr ""
+
+#: includes/class-admin.php:293
+msgid "Déjalo vacío para usar la plantilla global."
+msgstr ""
+
+#: includes/class-admin.php:301
+msgid "Usar plantilla global"
+msgstr ""
+
+#: includes/class-admin.php:302
+msgid "Plantilla específica para "
+msgstr ""
+
+#: includes/class-admin.php:326
+msgid "No hay canales disponibles."
+msgstr ""
+
+#: includes/class-admin.php:327
+msgid "Configura al menos un token en la pestaña de Ajustes."
+msgstr ""
+
+#: includes/class-admin.php:335
+msgid "Configurado y operativo"
+msgstr ""
+
+#: includes/class-admin.php:336
+msgid "No configurado — ve a Ajustes"
+msgstr ""
+
+#: includes/class-admin.php:343
+msgid "Verificar conexión"
+msgstr ""
+
+#: includes/class-admin.php:353
+msgid "Prueba de publicación"
+msgstr ""
+
+#: includes/class-admin.php:354
+msgid "Selecciona una entrada reciente y haz clic en \"Publicar en redes\" para probar la integración."
+msgstr ""
+
+#: includes/class-admin.php:360
+msgid "Entrada"
+msgstr ""
+
+#: includes/class-admin.php:366
+msgid "Seleccionar entrada..."
+msgstr ""
+
+#: includes/class-admin.php:376
+msgid "🚀 Publicar en redes"
+msgstr ""
+
+#: includes/class-admin.php:385
+msgid "Resultado:"
+msgstr ""
+
+#: includes/class-admin.php:393
+msgid "Publicado! ID: "
+msgstr ""
+
+#: includes/class-admin.php:412
+msgid "Historial de publicaciones"
+msgstr ""
+
+#: includes/class-admin.php:414
+msgid "No hay publicaciones registradas todavía."
+msgstr ""
+
+#: includes/class-admin.php:417
+msgid "¿Borrar todo el historial?"
+msgstr ""
+
+#: includes/class-admin.php:418
+msgid "Limpiar historial"
+msgstr ""
+
+#: includes/class-admin.php:430
+msgid "Post #"
+msgstr ""
+
+#: includes/class-admin.php:441
+msgid "Cola de reintentos"
+msgstr ""
+
+#: includes/class-admin.php:442
+msgid "Pendientes: "
+msgstr ""
+
+#: includes/class-admin.php:443
+msgid "Fallidos: "
+msgstr ""
+
+#: includes/class-admin.php:454
+msgid "Acerca de Convoca Publisher"
+msgstr ""
+
+#: includes/class-admin.php:457
+msgid "Plugin de publicación automática en redes sociales para WordPress."
+msgstr ""
+
+#: includes/class-admin.php:458
+msgid "Parte del ecosistema Convoca."
+msgstr ""
+
+#: includes/class-admin.php:463
+msgid "Canales disponibles"
+msgstr ""
+
+#: includes/class-admin.php:481
+#: includes/class-admin.php:495
+msgid "No tienes permisos."
+msgstr ""
+
+#: includes/class-admin.php:501
+msgid "Canal no encontrado."
+msgstr ""
+
+#: includes/class-admin.php:516
+msgid "📖 Guía de configuración"
+msgstr ""
+
+#: includes/class-admin.php:517
+msgid "Sigue estos pasos para configurar cada red social. Necesitarás una cuenta de desarrollador en cada plataforma para obtener los tokens de acceso."
+msgstr ""
+
+#: includes/class-admin.php:523
+#: includes/class-admin.php:540
+#: includes/class-admin.php:556
+#: includes/class-admin.php:571
+#: includes/class-admin.php:586
+#: includes/class-admin.php:602
+#: includes/class-admin.php:620
+msgid "Requiere:"
+msgstr ""
+
+#: includes/class-admin.php:523
+msgid "Página de Facebook, App de Facebook Developer"
+msgstr ""
+
+#: includes/class-admin.php:525
+#: includes/class-admin.php:542
+#: includes/class-admin.php:558
+#: includes/class-admin.php:573
+#: includes/class-admin.php:588
+#, php-format
+msgid "Ve a %s"
+msgstr ""
+
+#: includes/class-admin.php:526
+msgid "Crea una app tipo \"Business\" o \"Sin integración\""
+msgstr ""
+
+#: includes/class-admin.php:527
+msgid "En Productos, añade \"Facebook Login\" y \"Instagram Graph API\""
+msgstr ""
+
+#: includes/class-admin.php:528
+msgid "Ve a Herramientas → \"Generar token de página\""
+msgstr ""
+
+#: includes/class-admin.php:529
+msgid "Selecciona tu página y copia el token"
+msgstr ""
+
+#: includes/class-admin.php:530
+msgid "Copia también el ID de página (Page ID)"
+msgstr ""
+
+#: includes/class-admin.php:531
+msgid "Pega ambos en Ajustes → Facebook / Instagram"
+msgstr ""
+
+#: includes/class-admin.php:533
+#: includes/class-admin.php:549
+#: includes/class-admin.php:564
+#: includes/class-admin.php:579
+#: includes/class-admin.php:595
+#: includes/class-admin.php:613
+#: includes/class-admin.php:630
+msgid "Campos necesarios:"
+msgstr ""
+
+#: includes/class-admin.php:533
+msgid "Page Access Token, Page ID, Instagram Business ID (opcional)"
+msgstr ""
+
+#: includes/class-admin.php:534
+msgid "Documentación oficial de Meta"
+msgstr ""
+
+#: includes/class-admin.php:540
+msgid "Cuenta de LinkedIn, App de LinkedIn Developer"
+msgstr ""
+
+#: includes/class-admin.php:543
+msgid "Crea una nueva app"
+msgstr ""
+
+#: includes/class-admin.php:544
+msgid "Solicita los permisos (products): \"Share on LinkedIn\" y \"Sign In with LinkedIn\""
+msgstr ""
+
+#: includes/class-admin.php:545
+msgid "Ve a la pestaña Auth y genera un Access Token de prueba (OAuth 2.0)"
+msgstr ""
+
+#: includes/class-admin.php:546
+msgid "Copia el token y pégalo en Ajustes → LinkedIn"
+msgstr ""
+
+#: includes/class-admin.php:547
+msgid "Para la URN: usa tu perfil (urn:li:person:...) o página de empresa (urn:li:organization:...)"
+msgstr ""
+
+#: includes/class-admin.php:549
+msgid "Access Token (OAuth 2.0), URN de perfil/página"
+msgstr ""
+
+#: includes/class-admin.php:550
+msgid "Documentación oficial de LinkedIn"
+msgstr ""
+
+#: includes/class-admin.php:556
+msgid "Cuenta de desarrollador de X (antes Twitter), Proyecto en Developer Portal"
+msgstr ""
+
+#: includes/class-admin.php:559
+msgid "Crea un proyecto y una app (OAuth 2.0)"
+msgstr ""
+
+#: includes/class-admin.php:560
+msgid "En \"Keys and Tokens\", genera un Bearer Token (OAuth 2.0)"
+msgstr ""
+
+#: includes/class-admin.php:561
+msgid "Asegúrate de que la app tenga permisos tweet.read y tweet.write"
+msgstr ""
+
+#: includes/class-admin.php:562
+msgid "Copia el Bearer Token y pégalo en Ajustes → Twitter / X"
+msgstr ""
+
+#: includes/class-admin.php:565
+msgid "Documentación oficial de X API"
+msgstr ""
+
+#: includes/class-admin.php:571
+msgid "Cuenta de desarrollador de TikTok, App en TikTok Developer Portal"
+msgstr ""
+
+#: includes/class-admin.php:574
+msgid "Crea una app y selecciona los permisos \"video.publish\" y \"user.info.basic\""
+msgstr ""
+
+#: includes/class-admin.php:575
+msgid "Completa el flujo OAuth para obtener un Access Token"
+msgstr ""
+
+#: includes/class-admin.php:576
+msgid "Anota el Open ID (identificador único del usuario)"
+msgstr ""
+
+#: includes/class-admin.php:577
+msgid "Pega ambos en Ajustes → TikTok"
+msgstr ""
+
+#: includes/class-admin.php:579
+msgid "Access Token, Open ID"
+msgstr ""
+
+#: includes/class-admin.php:580
+msgid "Documentación oficial de TikTok"
+msgstr ""
+
+#: includes/class-admin.php:586
+msgid "Cuenta de Google, Proyecto en Google Cloud Console, Perfil de empresa en Google"
+msgstr ""
+
+#: includes/class-admin.php:589
+msgid "Crea un proyecto y habilita la API \"Google My Business API\""
+msgstr ""
+
+#: includes/class-admin.php:590
+msgid "Crea credenciales OAuth 2.0 y obtén un token de acceso"
+msgstr ""
+
+#: includes/class-admin.php:591
+msgid "Para obtener el Location ID: usa la API de GMB o la herramienta de administración de Google"
+msgstr ""
+
+#: includes/class-admin.php:592
+msgid "El formato del Location ID es: accounts/{accountId}/locations/{locationId}"
+msgstr ""
+
+#: includes/class-admin.php:593
+msgid "Pega ambos en Ajustes → Google My Business"
+msgstr ""
+
+#: includes/class-admin.php:595
+msgid "Access Token (OAuth 2.0), Location ID"
+msgstr ""
+
+#: includes/class-admin.php:596
+msgid "Documentación oficial de GMB API"
+msgstr ""
+
+#: includes/class-admin.php:602
+msgid "Un bot de Telegram"
+msgstr ""
+
+#: includes/class-admin.php:604
+msgid "Abre Telegram y busca @BotFather"
+msgstr ""
+
+#: includes/class-admin.php:605
+msgid "Envía /newbot y sigue las instrucciones"
+msgstr ""
+
+#: includes/class-admin.php:606
+msgid "Copia el token HTTP API que te da BotFather"
+msgstr ""
+
+#: includes/class-admin.php:607
+msgid "Envía /setprivacy y selecciona Disabled"
+msgstr ""
+
+#: includes/class-admin.php:608
+msgid "Para obtener el Chat ID: envía un mensaje a tu bot, luego visita:"
+msgstr ""
+
+#: includes/class-admin.php:610
+msgid "Copia el \"chat\":{\"id\":...} que aparece en la respuesta"
+msgstr ""
+
+#: includes/class-admin.php:611
+msgid "Pega token y chat ID en Ajustes → Telegram"
+msgstr ""
+
+#: includes/class-admin.php:613
+msgid "Token del Bot, Chat ID"
+msgstr ""
+
+#: includes/class-admin.php:614
+msgid "Documentación oficial de Telegram Bot API"
+msgstr ""
+
+#: includes/class-admin.php:620
+msgid "Cuenta en un servidor de Mastodon"
+msgstr ""
+
+#: includes/class-admin.php:622
+msgid "Inicia sesión en tu instancia de Mastodon (ej: mastodon.social)"
+msgstr ""
+
+#: includes/class-admin.php:623
+msgid "Ve a Preferencias → Desarrollo"
+msgstr ""
+
+#: includes/class-admin.php:624
+msgid "Haz clic en \"Nueva aplicación\""
+msgstr ""
+
+#: includes/class-admin.php:625
+msgid "Asigna un nombre (ej: Convoca Publisher) y marca el permiso \"write:statuses\""
+msgstr ""
+
+#: includes/class-admin.php:626
+msgid "Copia el \"Access Token\" que se genera"
+msgstr ""
+
+#: includes/class-admin.php:627
+msgid "Anota también la URL base de tu servidor (ej: https://mastodon.social)"
+msgstr ""
+
+#: includes/class-admin.php:628
+msgid "Pega ambos en Ajustes → Mastodon"
+msgstr ""
+
+#: includes/class-admin.php:630
+msgid "Servidor (URL base), Access Token, Visibilidad (opcional)"
+msgstr ""
+
+#: includes/class-admin.php:631
+msgid "Documentación oficial de Mastodon API"
+msgstr ""
+
+#: includes/class-metabox.php:56
+msgid "Publicado en redes"
+msgstr ""
+
+#: includes/class-metabox.php:64
+msgid "Error"
+msgstr ""
+
+#: includes/class-metabox.php:75
+msgid "↻ Republicar"
+msgstr ""
+
+#: includes/class-metabox.php:77
+msgid "Se publicará automáticamente al guardar."
+msgstr ""
+
+#: includes/class-metabox.php:81
+msgid "Canales:"
+msgstr ""
+
+#: includes/class-metabox.php:94
+msgid "Programar publicación:"
+msgstr ""
+
+#: includes/class-metabox.php:97
+msgid "Déjalo vacío para publicar al guardar el post."
+msgstr ""
+
+#: includes/class-metabox.php:108
+msgid "Publicando..."
+msgstr ""
+
+#: includes/class-notifications.php:45
+msgid "Convoca Publisher — Aviso de privacidad"
+msgstr ""
+
+#: includes/class-notifications.php:46
+msgid "Este plugin envía datos a APIs de terceros. Por favor, lee y acepta el aviso de privacidad en los ajustes."
+msgstr ""
+
+#: includes/class-notifications.php:61
+#: includes/class-notifications.php:75
+#: includes/class-notifications.php:84
+msgid "Convoca Publisher:"
+msgstr ""
+
+#: includes/class-notifications.php:63
+#, php-format
+msgid "Canales sin configurar: %s"
+msgstr ""
+
+#: includes/class-notifications.php:66
+msgid "Ir a ajustes"
+msgstr ""
+
+#: includes/class-notifications.php:77
+#, php-format
+msgid "%d publicaciones pendientes de reintentar."
+msgstr ""
+
+#: includes/class-notifications.php:86
+#, php-format
+msgid "%d publicaciones fallaron definitivamente. Revisa los tokens."
+msgstr ""
+
+#: includes/class-publisher.php:114
+msgid "El título del post está vacío."
+msgstr ""
+
+#: includes/class-publisher.php:117
+msgid "No hay imagen destacada. Algunas redes (Facebook, Twitter) requieren imagen."
+msgstr ""
+
+#: includes/class-rest.php:75
+msgid "Canal no encontrado o no configurado."
+msgstr ""
+
+#: includes/class-rest.php:83
+msgid "Post no encontrado."
+msgstr ""
+
+#: includes/class-rest.php:91
+#: includes/class-rest.php:162
+msgid "Publisher no inicializado."
+msgstr ""
+
+#: includes/class-rest.php:96
+msgid "Canal no procesado."
+msgstr ""
+
+#: includes/class-rest.php:133
+msgid "Post no encontrado o no publicado."
+msgstr ""
+
+#: includes/class-rest.php:148
+#, php-format
+msgid "Simulación: se publicaría en %s"
+msgstr ""
+
+#: includes/class-scheduler.php:47
+msgid "Cada 15 minutos"
 msgstr ""

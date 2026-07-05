@@ -1,26 +1,30 @@
 <?php
-
 /**
- * Plugin Name: Convoca Publisher
- * Plugin URI: https://github.com/josecarlosnieto91/convoca-publisher
- * Description: Publica automáticamente tus entradas de WordPress en redes sociales. Canales: Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram, Mastodon. Con plantillas personalizables por canal, cola de reintentos, cifrado de tokens y panel de monitoreo.
- * Version: 1.4.0
- * Requires PHP: 8.1
+ * Plugin Name:       Convoca Publisher
+ * Plugin URI:        https://getconvoca.app
+ * Description:       Publish WordPress posts to social media channels with customizable templates.
+ * Version:           1.4.0
  * Requires at least: 6.4
- * Tested up to: 7.0
- * Author: José Carlos Nieto Ramos
- * Author URI: https://josecarlosnietoramos.wordpress.com
- * License: GPL v2 or later
- * Text Domain: convoca-publisher
- * Domain Path: /languages
- * Requires Plugins: convoca-core
- *
- * Convoca Publisher — parte del ecosistema Convoca.
- *
- * @package ConvocaPublisher
+ * Requires PHP:      8.1
+ * Tested up to:      7.0
+ * Author:            Jose Carlos Nieto Ramos
+ * Author URI:        https://getconvoca.app
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       convoca-publisher
+ * Domain Path:       /languages
+ * Requires Plugins:  convoca-core
  */
 
+namespace Convoca\Publisher;
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
+
 namespace ConvocaPublisher;
+
 
 defined('ABSPATH') || exit;
 
@@ -80,7 +84,7 @@ function cp_activation_check(): void
         wp_die(
             sprintf(
                 esc_html__('Convoca Publisher requiere PHP %s o superior. Tu versión: %s', 'convoca-publisher'),
-                CP_MIN_PHP,
+                esc_html(CP_MIN_PHP),
                 PHP_VERSION
             )
         );
@@ -91,7 +95,7 @@ function cp_activation_check(): void
         wp_die(
             sprintf(
                 esc_html__('Convoca Publisher requiere WordPress %s o superior.', 'convoca-publisher'),
-                CP_MIN_WP
+                esc_html(CP_MIN_WP)
             )
         );
     }

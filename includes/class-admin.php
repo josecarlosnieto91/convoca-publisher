@@ -1,5 +1,21 @@
 <?php
 
+/**
+ * Convoca Publisher
+ *
+ * @package    Convoca\Publisher
+ * @subpackage Includes
+ *
+ * @copyright  Copyright (C) 2026 Jose Carlos Nieto Ramos
+ * @license    GPL-2.0-or-later
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ */
+
+
 namespace ConvocaPublisher;
 
 defined('ABSPATH') || exit;
@@ -303,7 +319,7 @@ class Admin
             delete_transient('cp_verify_result_' . get_current_user_id());
             $class = $verify_result['success'] ? 'notice-success' : 'notice-error';
             $icon = $verify_result['success'] ? '✅' : '❌';
-            echo '<div class="notice ' . esc_attr($class) . ' is-dismissible"><p>' . $icon . ' ' . esc_html($verify_result['message']) . '</p></div>';
+            echo '<div class="notice ' . esc_attr($class) . ' is-dismissible"><p>' . esc_html($icon) . ' ' . esc_html($verify_result['message']) . '</p></div>';
         }
 
         if (empty($channels)) {
@@ -347,7 +363,7 @@ class Admin
                             wp_dropdown_pages([
                                 'post_type'         => 'post',
                                 'name'              => 'cp_test_post_id',
-                                'show_option_none'  => __('Seleccionar entrada...', 'convoca-publisher'),
+                                'show_option_none'  => esc_html__('Seleccionar entrada...', 'convoca-publisher'),
                                 'option_none_value' => '',
                                 'selected'          => isset($_POST['cp_test_post_id']) ? intval($_POST['cp_test_post_id']) : 0,
                             ]);
@@ -372,7 +388,7 @@ class Admin
                         $results = $publisher->publish_post($post_id, true);
                         foreach ($results as $channel_id => $result) {
                             $icon = $result['success'] ? '✅' : '❌';
-                            echo '<p>' . $icon . ' <strong>' . esc_html($channel_id) . '</strong>: ';
+                            echo '<p>' . esc_html($icon) . ' <strong>' . esc_html($channel_id) . '</strong>: ';
                             if ($result['success']) {
                                 echo esc_html__('Publicado! ID: ', 'convoca-publisher') . esc_html($result['post_id'] ?? '');
                             } else {
