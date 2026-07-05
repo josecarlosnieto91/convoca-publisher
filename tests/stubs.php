@@ -11,7 +11,7 @@ function __(string $text, string $domain = 'default'): string
 }
 function _e(string $text, string $domain = 'default'): void
 {
-    echo $text;
+    echo esc_html($text);
 }
 function esc_html__(string $text, string $domain = 'default'): string
 {
@@ -272,7 +272,7 @@ function checked(mixed $checked, mixed $current = true, bool $echo = false): str
 }
 function submit_button(string $text = '', string $type = 'primary', string $name = 'submit', bool $wrap = true, array|string $other_attributes = []): void
 {
-    echo '<button type="submit">' . $text . '</button>';
+    echo '<button type="submit">' . esc_html($text) . '</button>';
 }
 function settings_fields(string $option_group): void
 {

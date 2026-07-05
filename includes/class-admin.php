@@ -522,7 +522,11 @@ class Admin
             <h2>📘 <?php echo esc_html__('Facebook / Instagram', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Página de Facebook, App de Facebook Developer', 'convoca-publisher'); ?></p>
             <ol>
-                <li><?php echo sprintf(esc_html__('Ve a %s', 'convoca-publisher'), '<a href="https://developers.facebook.com/apps/" target="_blank">developers.facebook.com/apps/</a>'); ?></li>
+                <li><?php echo sprintf(
+                    /* translators: %s: URL/link to the developer portal */
+                    esc_html__('Ve a %s', 'convoca-publisher'),
+                    '<a href="https://developers.facebook.com/apps/" target="_blank">developers.facebook.com/apps/</a>'
+                ); ?></li>
                 <li><?php echo esc_html__('Crea una app tipo "Business" o "Sin integración"', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('En Productos, añade "Facebook Login" y "Instagram Graph API"', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Ve a Herramientas → "Generar token de página"', 'convoca-publisher'); ?></li>
@@ -539,7 +543,11 @@ class Admin
             <h2>💼 <?php echo esc_html__('LinkedIn', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de LinkedIn, App de LinkedIn Developer', 'convoca-publisher'); ?></p>
             <ol>
-                <li><?php echo sprintf(esc_html__('Ve a %s', 'convoca-publisher'), '<a href="https://www.linkedin.com/developers/apps" target="_blank">linkedin.com/developers/apps</a>'); ?></li>
+                <li><?php echo sprintf(
+                    /* translators: %s: URL/link to the developer portal */
+                    esc_html__('Ve a %s', 'convoca-publisher'),
+                    '<a href="https://www.linkedin.com/developers/apps" target="_blank">linkedin.com/developers/apps</a>'
+                ); ?></li>
                 <li><?php echo esc_html__('Crea una nueva app', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Solicita los permisos (products): "Share on LinkedIn" y "Sign In with LinkedIn"', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Ve a la pestaña Auth y genera un Access Token de prueba (OAuth 2.0)', 'convoca-publisher'); ?></li>
@@ -555,7 +563,11 @@ class Admin
             <h2>🐦 <?php echo esc_html__('Twitter / X', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de desarrollador de X (antes Twitter), Proyecto en Developer Portal', 'convoca-publisher'); ?></p>
             <ol>
-                <li><?php echo sprintf(esc_html__('Ve a %s', 'convoca-publisher'), '<a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">developer.twitter.com</a>'); ?></li>
+                <li><?php echo sprintf(
+                    /* translators: %s: URL/link to the developer portal */
+                    esc_html__('Ve a %s', 'convoca-publisher'),
+                    '<a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">developer.twitter.com</a>'
+                ); ?></li>
                 <li><?php echo esc_html__('Crea un proyecto y una app (OAuth 2.0)', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('En "Keys and Tokens", genera un Bearer Token (OAuth 2.0)', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Asegúrate de que la app tenga permisos tweet.read y tweet.write', 'convoca-publisher'); ?></li>
@@ -570,7 +582,11 @@ class Admin
             <h2>🎵 <?php echo esc_html__('TikTok', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de desarrollador de TikTok, App en TikTok Developer Portal', 'convoca-publisher'); ?></p>
             <ol>
-                <li><?php echo sprintf(esc_html__('Ve a %s', 'convoca-publisher'), '<a href="https://developers.tiktok.com/" target="_blank">developers.tiktok.com</a>'); ?></li>
+                <li><?php echo sprintf(
+                    /* translators: %s: URL/link to the developer portal */
+                    esc_html__('Ve a %s', 'convoca-publisher'),
+                    '<a href="https://developers.tiktok.com/" target="_blank">developers.tiktok.com</a>'
+                ); ?></li>
                 <li><?php echo esc_html__('Crea una app y selecciona los permisos "video.publish" y "user.info.basic"', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Completa el flujo OAuth para obtener un Access Token', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Anota el Open ID (identificador único del usuario)', 'convoca-publisher'); ?></li>
@@ -585,7 +601,11 @@ class Admin
             <h2>🏪 <?php echo esc_html__('Google My Business', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de Google, Proyecto en Google Cloud Console, Perfil de empresa en Google', 'convoca-publisher'); ?></p>
             <ol>
-                <li><?php echo sprintf(esc_html__('Ve a %s', 'convoca-publisher'), '<a href="https://console.cloud.google.com/" target="_blank">console.cloud.google.com</a>'); ?></li>
+                <li><?php echo sprintf(
+                    /* translators: %s: URL/link to the developer portal */
+                    esc_html__('Ve a %s', 'convoca-publisher'),
+                    '<a href="https://console.cloud.google.com/" target="_blank">console.cloud.google.com</a>'
+                ); ?></li>
                 <li><?php echo esc_html__('Crea un proyecto y habilita la API "Google My Business API"', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Crea credenciales OAuth 2.0 y obtén un token de acceso', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Para obtener el Location ID: usa la API de GMB o la herramienta de administración de Google', 'convoca-publisher'); ?></li>

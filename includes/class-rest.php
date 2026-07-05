@@ -145,6 +145,7 @@ class Rest
                     'success'  => true,
                     'dry_run'  => true,
                     'message'  => sprintf(
+                        /* translators: %s: channel name */
                         __('Simulación: se publicaría en %s', 'convoca-publisher'),
                         $ch->get_name()
                     ),

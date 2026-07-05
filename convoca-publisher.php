@@ -83,7 +83,8 @@ function cp_activation_check(): void
         deactivate_plugins(plugin_basename(__FILE__));
         wp_die(
             sprintf(
-                esc_html__('Convoca Publisher requiere PHP %s o superior. Tu versión: %s', 'convoca-publisher'),
+                /* translators: %1$s: minimum required PHP version, %2$s: current PHP version */
+                esc_html__('Convoca Publisher requiere PHP %1$s o superior. Tu versión: %2$s', 'convoca-publisher'),
                 esc_html(CP_MIN_PHP),
                 PHP_VERSION
             )
@@ -94,6 +95,7 @@ function cp_activation_check(): void
         deactivate_plugins(plugin_basename(__FILE__));
         wp_die(
             sprintf(
+                /* translators: %s: minimum required WordPress version */
                 esc_html__('Convoca Publisher requiere WordPress %s o superior.', 'convoca-publisher'),
                 esc_html(CP_MIN_WP)
             )

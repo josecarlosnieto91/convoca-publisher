@@ -60,6 +60,7 @@ class Notifications
             echo '<div class="notice notice-warning is-dismissible cp-notice" data-key="unconfigured">';
             echo '<p><strong>🔌 ' . esc_html__('Convoca Publisher:', 'convoca-publisher') . '</strong> ';
             echo esc_html(sprintf(
+                /* translators: %s: comma-separated list of unconfigured channel names */
                 __('Canales sin configurar: %s', 'convoca-publisher'),
                 implode(', ', $unconfigured)
             ));
@@ -74,6 +75,7 @@ class Notifications
                 echo '<div class="notice notice-info is-dismissible">';
                 echo '<p>🔄 <strong>' . esc_html__('Convoca Publisher:', 'convoca-publisher') . '</strong> ';
                 echo esc_html(sprintf(
+                    /* translators: %d: number of pending retry publications */
                     __('%d publicaciones pendientes de reintentar.', 'convoca-publisher'),
                     $stats['pending']
                 ));
@@ -83,6 +85,7 @@ class Notifications
                 echo '<div class="notice notice-error is-dismissible">';
                 echo '<p>❌ <strong>' . esc_html__('Convoca Publisher:', 'convoca-publisher') . '</strong> ';
                 echo esc_html(sprintf(
+                    /* translators: %d: number of permanently failed publications */
                     __('%d publicaciones fallaron definitivamente. Revisa los tokens.', 'convoca-publisher'),
                     $stats['failed']
                 ));
