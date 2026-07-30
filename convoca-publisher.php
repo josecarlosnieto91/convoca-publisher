@@ -16,17 +16,11 @@
  * Requires Plugins:  convoca-core
  */
 
-namespace Convoca\Publisher;
+namespace ConvocaPublisher;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
-
-
-namespace ConvocaPublisher;
-
-
-defined('ABSPATH') || exit;
 
 /* ── Composer autoload ─────────────────────────────── */
 $composer_autoload = __DIR__ . '/vendor/autoload.php';

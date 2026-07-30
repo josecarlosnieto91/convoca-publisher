@@ -2,7 +2,7 @@
 
 **Publica tus entradas de WordPress en redes sociales automáticamente.**
 
-Parte del [ecosistema Convoca](https://github.com/josecarlosnieto91). Sin suscripciones, sin dependencias externas, sin límites artificiales.
+Parte del [ecosistema Convoca](https://github.com/josecarlosnieto91). 7 redes sociales desde tu WordPress. Canales gratuitos y PRO según tus necesidades.
 
 [![CI](https://github.com/josecarlosnieto91/convoca-publisher/actions/workflows/ci.yml/badge.svg)](https://github.com/josecarlosnieto91/convoca-publisher/actions/workflows/ci.yml)
 ![PHP](https://img.shields.io/badge/PHP-8.0%2B-777bb3)

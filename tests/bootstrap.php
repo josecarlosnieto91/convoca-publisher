@@ -2,7 +2,7 @@
 
 define('ABSPATH', true);
 define('CP_PLUGIN_DIR', dirname(__DIR__) . '/');
-define('CP_VERSION', '1.3.0');
+define('CP_VERSION', '1.4.0');
 
 // Load WordPress function stubs
 require_once __DIR__ . '/stubs.php';
