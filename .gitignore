@@ -19,3 +19,7 @@ Thumbs.db
 # Build artifacts
 composer.lock
 .phpunit.result.cache
+/.phpunit.cache/
+/test-results/
+*.zip
+.env
