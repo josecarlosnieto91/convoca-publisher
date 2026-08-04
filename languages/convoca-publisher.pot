@@ -2,21 +2,21 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: convoca-publisher 1.4.0\n"
+"Project-Id-Version: Convoca Publisher 1.4.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/convoca-publisher\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-05T06:52:09+00:00\n"
+"POT-Creation-Date: 2026-08-04T22:40:37+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: convoca-publisher\n"
 
 #. Plugin Name of the plugin
 #: convoca-publisher.php
-#: convoca-publisher.php:57
+#: convoca-publisher.php:51
 #: includes/class-admin.php:37
 #: includes/class-admin.php:38
 #: includes/class-admin.php:132
@@ -41,37 +41,39 @@ msgstr ""
 msgid "Jose Carlos Nieto Ramos"
 msgstr ""
 
-#: convoca-publisher.php:58
+#: convoca-publisher.php:52
 msgid "Este plugin requiere el plugin"
 msgstr ""
 
-#: convoca-publisher.php:59
+#: convoca-publisher.php:53
 msgid "Convoca Core"
 msgstr ""
 
-#: convoca-publisher.php:60
+#: convoca-publisher.php:54
 msgid "activo."
 msgstr ""
 
-#: convoca-publisher.php:86
+#. translators: %1$s: minimum required PHP version, %2$s: current PHP version
+#: convoca-publisher.php:81
 #, php-format
-msgid "Convoca Publisher requiere PHP %s o superior. Tu versión: %s"
+msgid "Convoca Publisher requiere PHP %1$s o superior. Tu versión: %2$s"
 msgstr ""
 
-#: convoca-publisher.php:97
+#. translators: %s: minimum required WordPress version
+#: convoca-publisher.php:93
 #, php-format
 msgid "Convoca Publisher requiere WordPress %s o superior."
 msgstr ""
 
-#: convoca-publisher.php:168
+#: convoca-publisher.php:164
 msgid "🔐 Convoca Publisher — Aviso de privacidad"
 msgstr ""
 
-#: convoca-publisher.php:169
+#: convoca-publisher.php:165
 msgid "Este plugin envía datos (título, extracto, URL, imagen destacada y etiquetas de tus entradas) a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, Telegram, Mastodon) cuando publicas contenido en redes sociales. Los tokens de acceso se almacenan cifrados en la base de datos de WordPress."
 msgstr ""
 
-#: convoca-publisher.php:170
+#: convoca-publisher.php:166
 #: includes/class-admin.php:191
 msgid "He leído y acepto este aviso"
 msgstr ""
@@ -154,7 +156,7 @@ msgid "Instagram vinculado"
 msgstr ""
 
 #: includes/channels/class-googlemybusiness.php:32
-#: includes/class-admin.php:585
+#: includes/class-admin.php:601
 msgid "Google My Business"
 msgstr ""
 
@@ -217,7 +219,7 @@ msgid "✅ Conexión correcta. Location ID válido y accesible."
 msgstr ""
 
 #: includes/channels/class-linkedin.php:32
-#: includes/class-admin.php:539
+#: includes/class-admin.php:543
 msgid "LinkedIn"
 msgstr ""
 
@@ -265,7 +267,7 @@ msgid "✅ Conexión correcta. Perfil: %s"
 msgstr ""
 
 #: includes/channels/class-mastodon.php:32
-#: includes/class-admin.php:619
+#: includes/class-admin.php:639
 msgid "Mastodon"
 msgstr ""
 
@@ -323,7 +325,7 @@ msgid "✅ Conexión correcta. Cuenta: @%s"
 msgstr ""
 
 #: includes/channels/class-telegram.php:32
-#: includes/class-admin.php:601
+#: includes/class-admin.php:621
 msgid "Telegram"
 msgstr ""
 
@@ -387,7 +389,7 @@ msgid "Error desconocido"
 msgstr ""
 
 #: includes/channels/class-tiktok.php:32
-#: includes/class-admin.php:570
+#: includes/class-admin.php:582
 msgid "TikTok"
 msgstr ""
 
@@ -441,7 +443,7 @@ msgid "✅ Formato de credenciales válido. Nota: TikTok no permite verificació
 msgstr ""
 
 #: includes/channels/class-twitter.php:32
-#: includes/class-admin.php:555
+#: includes/class-admin.php:563
 msgid "Twitter / X"
 msgstr ""
 
@@ -455,7 +457,7 @@ msgid "Error desconocido de Twitter API."
 msgstr ""
 
 #: includes/channels/class-twitter.php:123
-#: includes/class-admin.php:564
+#: includes/class-admin.php:576
 msgid "Bearer Token (OAuth 2.0)"
 msgstr ""
 
@@ -737,12 +739,12 @@ msgid "Sigue estos pasos para configurar cada red social. Necesitarás una cuent
 msgstr ""
 
 #: includes/class-admin.php:523
-#: includes/class-admin.php:540
-#: includes/class-admin.php:556
-#: includes/class-admin.php:571
-#: includes/class-admin.php:586
+#: includes/class-admin.php:544
+#: includes/class-admin.php:564
+#: includes/class-admin.php:583
 #: includes/class-admin.php:602
-#: includes/class-admin.php:620
+#: includes/class-admin.php:622
+#: includes/class-admin.php:640
 msgid "Requiere:"
 msgstr ""
 
@@ -750,250 +752,251 @@ msgstr ""
 msgid "Página de Facebook, App de Facebook Developer"
 msgstr ""
 
-#: includes/class-admin.php:525
-#: includes/class-admin.php:542
-#: includes/class-admin.php:558
-#: includes/class-admin.php:573
-#: includes/class-admin.php:588
+#. translators: %s: URL/link to the developer portal
+#: includes/class-admin.php:527
+#: includes/class-admin.php:548
+#: includes/class-admin.php:568
+#: includes/class-admin.php:587
+#: includes/class-admin.php:606
 #, php-format
 msgid "Ve a %s"
 msgstr ""
 
-#: includes/class-admin.php:526
+#: includes/class-admin.php:530
 msgid "Crea una app tipo \"Business\" o \"Sin integración\""
 msgstr ""
 
-#: includes/class-admin.php:527
+#: includes/class-admin.php:531
 msgid "En Productos, añade \"Facebook Login\" y \"Instagram Graph API\""
 msgstr ""
 
-#: includes/class-admin.php:528
+#: includes/class-admin.php:532
 msgid "Ve a Herramientas → \"Generar token de página\""
 msgstr ""
 
-#: includes/class-admin.php:529
+#: includes/class-admin.php:533
 msgid "Selecciona tu página y copia el token"
 msgstr ""
 
-#: includes/class-admin.php:530
+#: includes/class-admin.php:534
 msgid "Copia también el ID de página (Page ID)"
 msgstr ""
 
-#: includes/class-admin.php:531
+#: includes/class-admin.php:535
 msgid "Pega ambos en Ajustes → Facebook / Instagram"
 msgstr ""
 
-#: includes/class-admin.php:533
-#: includes/class-admin.php:549
-#: includes/class-admin.php:564
-#: includes/class-admin.php:579
+#: includes/class-admin.php:537
+#: includes/class-admin.php:557
+#: includes/class-admin.php:576
 #: includes/class-admin.php:595
-#: includes/class-admin.php:613
-#: includes/class-admin.php:630
+#: includes/class-admin.php:615
+#: includes/class-admin.php:633
+#: includes/class-admin.php:650
 msgid "Campos necesarios:"
 msgstr ""
 
-#: includes/class-admin.php:533
+#: includes/class-admin.php:537
 msgid "Page Access Token, Page ID, Instagram Business ID (opcional)"
 msgstr ""
 
-#: includes/class-admin.php:534
+#: includes/class-admin.php:538
 msgid "Documentación oficial de Meta"
 msgstr ""
 
-#: includes/class-admin.php:540
+#: includes/class-admin.php:544
 msgid "Cuenta de LinkedIn, App de LinkedIn Developer"
 msgstr ""
 
-#: includes/class-admin.php:543
+#: includes/class-admin.php:551
 msgid "Crea una nueva app"
 msgstr ""
 
-#: includes/class-admin.php:544
+#: includes/class-admin.php:552
 msgid "Solicita los permisos (products): \"Share on LinkedIn\" y \"Sign In with LinkedIn\""
 msgstr ""
 
-#: includes/class-admin.php:545
+#: includes/class-admin.php:553
 msgid "Ve a la pestaña Auth y genera un Access Token de prueba (OAuth 2.0)"
 msgstr ""
 
-#: includes/class-admin.php:546
+#: includes/class-admin.php:554
 msgid "Copia el token y pégalo en Ajustes → LinkedIn"
 msgstr ""
 
-#: includes/class-admin.php:547
+#: includes/class-admin.php:555
 msgid "Para la URN: usa tu perfil (urn:li:person:...) o página de empresa (urn:li:organization:...)"
 msgstr ""
 
-#: includes/class-admin.php:549
+#: includes/class-admin.php:557
 msgid "Access Token (OAuth 2.0), URN de perfil/página"
 msgstr ""
 
-#: includes/class-admin.php:550
+#: includes/class-admin.php:558
 msgid "Documentación oficial de LinkedIn"
 msgstr ""
 
-#: includes/class-admin.php:556
+#: includes/class-admin.php:564
 msgid "Cuenta de desarrollador de X (antes Twitter), Proyecto en Developer Portal"
 msgstr ""
 
-#: includes/class-admin.php:559
+#: includes/class-admin.php:571
 msgid "Crea un proyecto y una app (OAuth 2.0)"
 msgstr ""
 
-#: includes/class-admin.php:560
+#: includes/class-admin.php:572
 msgid "En \"Keys and Tokens\", genera un Bearer Token (OAuth 2.0)"
 msgstr ""
 
-#: includes/class-admin.php:561
+#: includes/class-admin.php:573
 msgid "Asegúrate de que la app tenga permisos tweet.read y tweet.write"
 msgstr ""
 
-#: includes/class-admin.php:562
+#: includes/class-admin.php:574
 msgid "Copia el Bearer Token y pégalo en Ajustes → Twitter / X"
 msgstr ""
 
-#: includes/class-admin.php:565
+#: includes/class-admin.php:577
 msgid "Documentación oficial de X API"
 msgstr ""
 
-#: includes/class-admin.php:571
+#: includes/class-admin.php:583
 msgid "Cuenta de desarrollador de TikTok, App en TikTok Developer Portal"
 msgstr ""
 
-#: includes/class-admin.php:574
+#: includes/class-admin.php:590
 msgid "Crea una app y selecciona los permisos \"video.publish\" y \"user.info.basic\""
 msgstr ""
 
-#: includes/class-admin.php:575
+#: includes/class-admin.php:591
 msgid "Completa el flujo OAuth para obtener un Access Token"
 msgstr ""
 
-#: includes/class-admin.php:576
+#: includes/class-admin.php:592
 msgid "Anota el Open ID (identificador único del usuario)"
 msgstr ""
 
-#: includes/class-admin.php:577
+#: includes/class-admin.php:593
 msgid "Pega ambos en Ajustes → TikTok"
 msgstr ""
 
-#: includes/class-admin.php:579
+#: includes/class-admin.php:595
 msgid "Access Token, Open ID"
 msgstr ""
 
-#: includes/class-admin.php:580
+#: includes/class-admin.php:596
 msgid "Documentación oficial de TikTok"
 msgstr ""
 
-#: includes/class-admin.php:586
+#: includes/class-admin.php:602
 msgid "Cuenta de Google, Proyecto en Google Cloud Console, Perfil de empresa en Google"
 msgstr ""
 
-#: includes/class-admin.php:589
+#: includes/class-admin.php:609
 msgid "Crea un proyecto y habilita la API \"Google My Business API\""
 msgstr ""
 
-#: includes/class-admin.php:590
+#: includes/class-admin.php:610
 msgid "Crea credenciales OAuth 2.0 y obtén un token de acceso"
 msgstr ""
 
-#: includes/class-admin.php:591
+#: includes/class-admin.php:611
 msgid "Para obtener el Location ID: usa la API de GMB o la herramienta de administración de Google"
 msgstr ""
 
-#: includes/class-admin.php:592
+#: includes/class-admin.php:612
 msgid "El formato del Location ID es: accounts/{accountId}/locations/{locationId}"
 msgstr ""
 
-#: includes/class-admin.php:593
+#: includes/class-admin.php:613
 msgid "Pega ambos en Ajustes → Google My Business"
 msgstr ""
 
-#: includes/class-admin.php:595
+#: includes/class-admin.php:615
 msgid "Access Token (OAuth 2.0), Location ID"
 msgstr ""
 
-#: includes/class-admin.php:596
+#: includes/class-admin.php:616
 msgid "Documentación oficial de GMB API"
 msgstr ""
 
-#: includes/class-admin.php:602
+#: includes/class-admin.php:622
 msgid "Un bot de Telegram"
 msgstr ""
 
-#: includes/class-admin.php:604
+#: includes/class-admin.php:624
 msgid "Abre Telegram y busca @BotFather"
 msgstr ""
 
-#: includes/class-admin.php:605
+#: includes/class-admin.php:625
 msgid "Envía /newbot y sigue las instrucciones"
 msgstr ""
 
-#: includes/class-admin.php:606
+#: includes/class-admin.php:626
 msgid "Copia el token HTTP API que te da BotFather"
 msgstr ""
 
-#: includes/class-admin.php:607
+#: includes/class-admin.php:627
 msgid "Envía /setprivacy y selecciona Disabled"
 msgstr ""
 
-#: includes/class-admin.php:608
+#: includes/class-admin.php:628
 msgid "Para obtener el Chat ID: envía un mensaje a tu bot, luego visita:"
 msgstr ""
 
-#: includes/class-admin.php:610
+#: includes/class-admin.php:630
 msgid "Copia el \"chat\":{\"id\":...} que aparece en la respuesta"
 msgstr ""
 
-#: includes/class-admin.php:611
+#: includes/class-admin.php:631
 msgid "Pega token y chat ID en Ajustes → Telegram"
 msgstr ""
 
-#: includes/class-admin.php:613
+#: includes/class-admin.php:633
 msgid "Token del Bot, Chat ID"
 msgstr ""
 
-#: includes/class-admin.php:614
+#: includes/class-admin.php:634
 msgid "Documentación oficial de Telegram Bot API"
 msgstr ""
 
-#: includes/class-admin.php:620
+#: includes/class-admin.php:640
 msgid "Cuenta en un servidor de Mastodon"
 msgstr ""
 
-#: includes/class-admin.php:622
+#: includes/class-admin.php:642
 msgid "Inicia sesión en tu instancia de Mastodon (ej: mastodon.social)"
 msgstr ""
 
-#: includes/class-admin.php:623
+#: includes/class-admin.php:643
 msgid "Ve a Preferencias → Desarrollo"
 msgstr ""
 
-#: includes/class-admin.php:624
+#: includes/class-admin.php:644
 msgid "Haz clic en \"Nueva aplicación\""
 msgstr ""
 
-#: includes/class-admin.php:625
+#: includes/class-admin.php:645
 msgid "Asigna un nombre (ej: Convoca Publisher) y marca el permiso \"write:statuses\""
 msgstr ""
 
-#: includes/class-admin.php:626
+#: includes/class-admin.php:646
 msgid "Copia el \"Access Token\" que se genera"
 msgstr ""
 
-#: includes/class-admin.php:627
+#: includes/class-admin.php:647
 msgid "Anota también la URL base de tu servidor (ej: https://mastodon.social)"
 msgstr ""
 
-#: includes/class-admin.php:628
+#: includes/class-admin.php:648
 msgid "Pega ambos en Ajustes → Mastodon"
 msgstr ""
 
-#: includes/class-admin.php:630
+#: includes/class-admin.php:650
 msgid "Servidor (URL base), Access Token, Visibilidad (opcional)"
 msgstr ""
 
-#: includes/class-admin.php:631
+#: includes/class-admin.php:651
 msgid "Documentación oficial de Mastodon API"
 msgstr ""
 
@@ -1038,26 +1041,29 @@ msgid "Este plugin envía datos a APIs de terceros. Por favor, lee y acepta el a
 msgstr ""
 
 #: includes/class-notifications.php:61
-#: includes/class-notifications.php:75
-#: includes/class-notifications.php:84
+#: includes/class-notifications.php:76
+#: includes/class-notifications.php:86
 msgid "Convoca Publisher:"
 msgstr ""
 
-#: includes/class-notifications.php:63
+#. translators: %s: comma-separated list of unconfigured channel names
+#: includes/class-notifications.php:64
 #, php-format
 msgid "Canales sin configurar: %s"
 msgstr ""
 
-#: includes/class-notifications.php:66
+#: includes/class-notifications.php:67
 msgid "Ir a ajustes"
 msgstr ""
 
-#: includes/class-notifications.php:77
+#. translators: %d: number of pending retry publications
+#: includes/class-notifications.php:79
 #, php-format
 msgid "%d publicaciones pendientes de reintentar."
 msgstr ""
 
-#: includes/class-notifications.php:86
+#. translators: %d: number of permanently failed publications
+#: includes/class-notifications.php:89
 #, php-format
 msgid "%d publicaciones fallaron definitivamente. Revisa los tokens."
 msgstr ""
@@ -1079,7 +1085,7 @@ msgid "Post no encontrado."
 msgstr ""
 
 #: includes/class-rest.php:91
-#: includes/class-rest.php:162
+#: includes/class-rest.php:163
 msgid "Publisher no inicializado."
 msgstr ""
 
@@ -1091,7 +1097,8 @@ msgstr ""
 msgid "Post no encontrado o no publicado."
 msgstr ""
 
-#: includes/class-rest.php:148
+#. translators: %s: channel name
+#: includes/class-rest.php:149
 #, php-format
 msgid "Simulación: se publicaría en %s"
 msgstr ""
