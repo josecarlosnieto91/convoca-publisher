@@ -8,7 +8,7 @@ Convoca Publisher publica automáticamente tus entradas de WordPress en **7 rede
 
 **Redes soportadas:** Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram, Mastodon.
 
-**Integración con biodevas.org / lugg.biodevas.org:** Perfecto para publicar actividades, talleres y noticias en redes sociales sin esfuerzo adicional.
+**Integración en cualquier sitio:** Perfecto para publicar actividades, talleres y noticias en redes sociales sin esfuerzo adicional.
 
 ## 2. Pestañas del panel
 
