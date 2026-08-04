@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  WPML String Translation configuration for Convoca Publisher.
+  Message templates are user-facing and translatable.
+-->
+<wpml-config>
+    <admin-texts>
+        <key name="cp_message_template"/>
+        <key name="cp_facebook_template"/>
+    </admin-texts>
+</wpml-config>
