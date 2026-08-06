@@ -1,15 +1,15 @@
 parameters:
 	level: 0
 	paths:
-		- includes
-		- stubs
-		- convoca-publisher.php
+		- ../includes
+		- ../stubs
+		- ../convoca-publisher.php
 	excludePaths:
 		analyseAndScan:
-			- vendor (?)
-			- tests (?)
-			- dev-tools (?)
-			- node_modules (?)
+			- ../vendor
+			- ../tests
+			- ../dev-tools
+			- ../node_modules (?)
 	scanFiles:
 		- /home/josecnr91/.openclaw/workspace/convoca-core/includes/Admin_Analytics.php
 		- /home/josecnr91/.openclaw/workspace/convoca-core/includes/admin-appearance.php
@@ -37,5 +37,5 @@ parameters:
 		- /home/josecnr91/.openclaw/workspace/convoca-core/includes/Utils.php
 		- /home/josecnr91/.openclaw/workspace/convoca-core/includes/Webhook_Manager.php
 	bootstrapFiles:
-		- vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
-		- phpstan-bootstrap.php
+		- ../vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+		- ../phpstan-bootstrap.php
