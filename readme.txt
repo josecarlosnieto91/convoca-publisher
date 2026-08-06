@@ -1,6 +1,6 @@
 === Convoca Publisher ===
 Contributors: josecarlosnietoramos
-Tags: social media, publish, facebook, twitter, linkedin, telegram, scheduling
+Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
@@ -49,3 +49,29 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 * New: Google My Business channel
 * Improvement: 42 unit tests, 148 assertions
 * Improvement: Detailed guide per channel in the admin dashboard
+
+== Screenshots ==
+
+1. Publishing metabox with per-network checkboxes
+2. Channel settings with token configuration
+3. Publishing history
+4. Message template editor
+
+== Frequently Asked Questions ==
+
+= Does it require Convoca Core? =
+
+Yes. Convoca Publisher requires Convoca Core to be active.
+
+= Which networks are supported? =
+
+Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram, and Mastodon.
+
+= How are tokens stored? =
+
+Tokens are encrypted with AES-256-GCM. No third-party service stores your credentials.
+
+== Upgrade Notice ==
+
+= 1.4.0 =
+* New features and compatibility improvements. Recommended update.
