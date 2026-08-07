@@ -32,6 +32,7 @@ class Publisher
         }
         add_action('publish_post', [self::$instance, 'on_publish_post'], 10, 2);
         add_action('future_to_publish', [self::$instance, 'on_scheduled_publish'], 10, 1);
+        add_action('cp_async_publish', [self::$instance, 'on_async_publish'], 10, 1);
         add_action('wp_ajax_cp_test_publish', [self::$instance, 'ajax_test_publish']);
         add_action('wp_ajax_cp_clear_log', [self::$instance, 'ajax_clear_log']);
     }
@@ -73,6 +74,18 @@ class Publisher
             return;
         }
 
+        // Envío DIFERIDO: encolar para el siguiente tick de cron.
+        // No bloquear el guardado del post con llamadas síncronas a las redes.
+        if (!wp_next_scheduled('cp_async_publish', [$post_id])) {
+            wp_schedule_single_event(time() + 5, 'cp_async_publish', [$post_id]);
+        }
+    }
+
+    /**
+     * Hook de cron para el envío diferido.
+     */
+    public function on_async_publish(int $post_id): void
+    {
         $this->publish_post($post_id);
     }
 
