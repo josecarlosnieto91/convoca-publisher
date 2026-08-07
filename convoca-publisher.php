@@ -110,22 +110,14 @@ function convoca_publisher_deactivation(): void
 
 /**
  * Migrar opciones heredadas a convoca_publisher_*
+ *
+ * Sin instalaciones antiguas (los prefijos sp_ y cp_ nunca existieron en
+ * producción), esta función es un no-op mantenido como guarda de futuras
+ * migraciones.
  */
 function convoca_publisher_migrate_legacy_options(): void
 {
-    // No hay instalaciones antiguas: sp_* y cp_* nunca existieron en producción.
-    // Este método se mantiene vacío como guarda contra futuras migraciones.
-    // Metadatos de posts (por si existieran en algún entorno de desarrollo)
-    global $wpdb;
-    $wpdb->query(
-        "UPDATE {$wpdb->postmeta} SET meta_key = 'convoca_publisher_published' WHERE meta_key IN ('_sp_published', '_convoca_publisher_published')"
-    );
-    $wpdb->query(
-        "UPDATE {$wpdb->postmeta} SET meta_key = 'convoca_publisher_publish_results' WHERE meta_key IN ('_sp_publish_results', '_convoca_publisher_publish_results')"
-    );
-    $wpdb->query(
-        "UPDATE {$wpdb->postmeta} SET meta_key = 'convoca_publisher_scheduled_publish' WHERE meta_key IN ('_sp_scheduled_publish', '_convoca_publisher_scheduled_publish')"
-    );
+    // No-op: sin instalaciones antiguas no hay nada que migrar.
 }
 
 // Aviso de privacidad
