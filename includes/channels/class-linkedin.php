@@ -34,13 +34,13 @@ class Linkedin implements ChannelInterface
 
     public function is_available(): bool
     {
-        return !empty(get_option('cp_linkedin_token', '')) && !empty(get_option('cp_linkedin_urn', ''));
+        return !empty(get_option('convoca_publisher_linkedin_token', '')) && !empty(get_option('convoca_publisher_linkedin_urn', ''));
     }
 
     public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
     {
-        $token = get_option('cp_linkedin_token', '');
-        $urn = get_option('cp_linkedin_urn', '');
+        $token = get_option('convoca_publisher_linkedin_token', '');
+        $urn = get_option('convoca_publisher_linkedin_urn', '');
 
         if (empty($token) || empty($urn)) {
             return ['success' => false, 'error' => __('Token o URN de LinkedIn no configurados.', 'convoca-publisher')];
@@ -99,17 +99,17 @@ class Linkedin implements ChannelInterface
     public function get_settings_fields(): array
     {
         return [
-            'cp_linkedin_token' => [
+            'convoca_publisher_linkedin_token' => [
                 'title'       => __('Access Token (OAuth 2.0)', 'convoca-publisher'),
                 'type'        => 'password',
                 'description' => __('Token de LinkedIn con permisos w_organization_social o w_member_social.', 'convoca-publisher'),
             ],
-            'cp_linkedin_urn' => [
+            'convoca_publisher_linkedin_urn' => [
                 'title'       => __('URN de perfil/página', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('Ej: urn:li:person:abc123 o urn:li:organization:xyz456', 'convoca-publisher'),
             ],
-            'cp_linkedin_template' => [
+            'convoca_publisher_linkedin_template' => [
                 'title'       => __('Plantilla del mensaje', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('{title}, {excerpt}, {url}, {hashtags}, {date}, {author}. LinkedIn usa ARTICLE format.', 'convoca-publisher'),
@@ -120,10 +120,10 @@ class Linkedin implements ChannelInterface
     public function validate_settings(array $settings): array
     {
         $errors = [];
-        if (empty($settings['cp_linkedin_token'])) {
+        if (empty($settings['convoca_publisher_linkedin_token'])) {
             $errors[] = __('El token de LinkedIn es obligatorio.', 'convoca-publisher');
         }
-        if (empty($settings['cp_linkedin_urn'])) {
+        if (empty($settings['convoca_publisher_linkedin_urn'])) {
             $errors[] = __('La URN de LinkedIn es obligatoria.', 'convoca-publisher');
         }
         return $errors;
@@ -131,7 +131,7 @@ class Linkedin implements ChannelInterface
 
     public function verify_connection(): array
     {
-        $token = get_option('cp_linkedin_token', '');
+        $token = get_option('convoca_publisher_linkedin_token', '');
 
         if (empty($token)) {
             return ['success' => false, 'message' => __('Token de LinkedIn no configurado.', 'convoca-publisher')];

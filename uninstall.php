@@ -36,89 +36,58 @@ global $wpdb;
 
 // 1. Eliminar opciones del plugin (cp_*)
 $options = [
-	'cp_version',
-	'cp_auto_publish',
-	'cp_enable_scheduler',
-	'cp_message_template',
-	'cp_publish_log',
-	'cp_encryption_key',
-	'cp_privacy_acknowledged',
+	'convoca_publisher_version',
+	'convoca_publisher_auto_publish',
+	'convoca_publisher_enable_scheduler',
+	'convoca_publisher_message_template',
+	'convoca_publisher_publish_log',
+	'convoca_publisher_encryption_key',
+	'convoca_publisher_privacy_acknowledged',
 	// Tokens de canales
-	'cp_facebook_token',
-	'cp_facebook_page_id',
-	'cp_instagram_business_id',
-	'cp_facebook_template',
-	'cp_linkedin_token',
-	'cp_linkedin_urn',
-	'cp_linkedin_template',
-	'cp_twitter_bearer_token',
-	'cp_twitter_template',
-	'cp_tiktok_token',
-	'cp_tiktok_open_id',
-	'cp_tiktok_template',
-	'cp_gmb_token',
-	'cp_gmb_location',
-	'cp_gmb_template',
-	'cp_telegram_token',
-	'cp_telegram_chat_id',
-	'cp_telegram_parse_mode',
-	'cp_telegram_template',
-	'cp_mastodon_server',
-	'cp_mastodon_token',
-	'cp_mastodon_visibility',
-	'cp_mastodon_template',
+	'convoca_publisher_facebook_token',
+	'convoca_publisher_facebook_page_id',
+	'convoca_publisher_instagram_business_id',
+	'convoca_publisher_facebook_template',
+	'convoca_publisher_linkedin_token',
+	'convoca_publisher_linkedin_urn',
+	'convoca_publisher_linkedin_template',
+	'convoca_publisher_twitter_bearer_token',
+	'convoca_publisher_twitter_template',
+	'convoca_publisher_tiktok_token',
+	'convoca_publisher_tiktok_open_id',
+	'convoca_publisher_tiktok_template',
+	'convoca_publisher_gmb_token',
+	'convoca_publisher_gmb_location',
+	'convoca_publisher_gmb_template',
+	'convoca_publisher_telegram_token',
+	'convoca_publisher_telegram_chat_id',
+	'convoca_publisher_telegram_parse_mode',
+	'convoca_publisher_telegram_template',
+	'convoca_publisher_mastodon_server',
+	'convoca_publisher_mastodon_token',
+	'convoca_publisher_mastodon_visibility',
+	'convoca_publisher_mastodon_template',
 ];
 
 foreach ($options as $option) {
 	delete_option($option);
 }
 
-// 2. Eliminar opciones heredadas sp_*
-$legacy_options = [
-	'sp_auto_publish',
-	'sp_enable_scheduler',
-	'sp_message_template',
-	'sp_publish_log',
-	'sp_facebook_token',
-	'sp_facebook_page_id',
-	'sp_instagram_business_id',
-	'sp_linkedin_token',
-	'sp_linkedin_urn',
-	'sp_twitter_bearer_token',
-	'sp_tiktok_token',
-	'sp_tiktok_open_id',
-	'sp_gmb_token',
-	'sp_gmb_location',
-	'sp_telegram_token',
-	'sp_telegram_chat_id',
-	'sp_telegram_parse_mode',
-	'sp_mastodon_server',
-	'sp_mastodon_token',
-	'sp_mastodon_visibility',
-];
+// 2. Eliminar metadatos de posts
+$wpdb->delete($wpdb->postmeta, ['meta_key' => '_convoca_publisher_published']);
+$wpdb->delete($wpdb->postmeta, ['meta_key' => '_convoca_publisher_publish_results']);
+$wpdb->delete($wpdb->postmeta, ['meta_key' => '_convoca_publisher_disabled_channels']);
+$wpdb->delete($wpdb->postmeta, ['meta_key' => '_convoca_publisher_scheduled_publish']);
+$wpdb->delete($wpdb->postmeta, ['meta_key' => '_convoca_publisher_schedule_time']);
+$wpdb->delete($wpdb->postmeta, ['meta_key' => '_convoca_publisher_channels']);
 
-foreach ($legacy_options as $option) {
-	delete_option($option);
-}
+// 3. Eliminar user meta (dismissed notices)
+$wpdb->query("DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE 'convoca_publisher_dismiss_%'");
 
-// 3. Eliminar metadatos de posts
-$wpdb->delete($wpdb->postmeta, ['meta_key' => '_cp_published']);
-$wpdb->delete($wpdb->postmeta, ['meta_key' => '_cp_publish_results']);
-$wpdb->delete($wpdb->postmeta, ['meta_key' => '_cp_disabled_channels']);
-$wpdb->delete($wpdb->postmeta, ['meta_key' => '_cp_scheduled_publish']);
-$wpdb->delete($wpdb->postmeta, ['meta_key' => '_sp_scheduled_publish']);
-// Legacy
-$wpdb->delete($wpdb->postmeta, ['meta_key' => '_sp_published']);
-$wpdb->delete($wpdb->postmeta, ['meta_key' => '_sp_publish_results']);
-
-// 4. Eliminar user meta (dismissed notices)
-$wpdb->query("DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE 'cp_dismiss_%'");
-
-// 5. Eliminar tabla de cola de reintentos
-$table = $wpdb->prefix . 'cp_retry_queue';
+// 4. Eliminar tabla de cola de reintentos
+$table = $wpdb->prefix . 'convoca_publisher_retry_queue';
 $wpdb->query("DROP TABLE IF EXISTS {$table}");
 
-// 6. Limpiar cron hooks
-wp_clear_scheduled_hook('cp_retry_failed_posts');
-wp_clear_scheduled_hook('cp_retry_process');
-wp_clear_scheduled_hook('sp_retry_failed_posts');
+// 5. Limpiar cron hooks
+wp_clear_scheduled_hook('convoca_publisher_retry_failed_posts');
+wp_clear_scheduled_hook('convoca_publisher_retry_process');

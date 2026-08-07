@@ -40,7 +40,7 @@ class Notifications
         }
 
         // 1. Privacy notice reminder (only on plugin pages)
-        if (str_contains($screen->id, 'convoca-publisher') && !get_option('cp_privacy_acknowledged', false)) {
+        if (str_contains($screen->id, 'convoca-publisher') && !get_option('convoca_publisher_privacy_acknowledged', false)) {
             echo '<div class="notice notice-warning is-dismissible cp-notice" data-key="privacy">';
             echo '<p><strong>🔐 ' . esc_html__('Convoca Publisher — Aviso de privacidad', 'convoca-publisher') . '</strong></p>';
             echo '<p>' . esc_html__('Este plugin envía datos a APIs de terceros. Por favor, lee y acepta el aviso de privacidad en los ajustes.', 'convoca-publisher') . '</p>';
@@ -56,7 +56,7 @@ class Notifications
             }
         }
 
-        if (!empty($unconfigured) && !get_user_meta(get_current_user_id(), 'cp_dismiss_unconfigured', true)) {
+        if (!empty($unconfigured) && !get_user_meta(get_current_user_id(), 'convoca_publisher_dismiss_unconfigured', true)) {
             echo '<div class="notice notice-warning is-dismissible cp-notice" data-key="unconfigured">';
             echo '<p><strong>🔌 ' . esc_html__('Convoca Publisher:', 'convoca-publisher') . '</strong> ';
             echo esc_html(sprintf(
@@ -96,9 +96,9 @@ class Notifications
 
     public static function dismiss(): void
     {
-        check_ajax_referer('cp_dismiss_notice', '_wpnonce');
+        check_ajax_referer('convoca_publisher_dismiss_notice', '_wpnonce');
         $key = isset($_POST['key']) ? sanitize_key($_POST['key']) : '';
-        update_user_meta(get_current_user_id(), 'cp_dismiss_' . $key, true);
+        update_user_meta(get_current_user_id(), 'convoca_publisher_dismiss_' . $key, true);
         wp_send_json(['success' => true]);
     }
 }

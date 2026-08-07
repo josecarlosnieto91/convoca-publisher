@@ -34,14 +34,14 @@ class Mastodon implements ChannelInterface
 
     public function is_available(): bool
     {
-        return !empty(get_option('cp_mastodon_token', '')) && !empty(get_option('cp_mastodon_server', ''));
+        return !empty(get_option('convoca_publisher_mastodon_token', '')) && !empty(get_option('convoca_publisher_mastodon_server', ''));
     }
 
     public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
     {
-        $token = get_option('cp_mastodon_token', '');
-        $server = rtrim(get_option('cp_mastodon_server', ''), '/');
-        $visibility = get_option('cp_mastodon_visibility', 'public');
+        $token = get_option('convoca_publisher_mastodon_token', '');
+        $server = rtrim(get_option('convoca_publisher_mastodon_server', ''), '/');
+        $visibility = get_option('convoca_publisher_mastodon_visibility', 'public');
 
         if (empty($token) || empty($server)) {
             return ['success' => false, 'error' => __('Token o servidor de Mastodon no configurados.', 'convoca-publisher')];
@@ -111,22 +111,22 @@ class Mastodon implements ChannelInterface
     public function get_settings_fields(): array
     {
         return [
-            'cp_mastodon_server' => [
+            'convoca_publisher_mastodon_server' => [
                 'title'       => __('Servidor', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('Ej: https://mastodon.social', 'convoca-publisher'),
             ],
-            'cp_mastodon_token' => [
+            'convoca_publisher_mastodon_token' => [
                 'title'       => __('Access Token', 'convoca-publisher'),
                 'type'        => 'password',
                 'description' => __('Token de acceso de Mastodon (Desarrollo → Nuevo token → write:statuses).', 'convoca-publisher'),
             ],
-            'cp_mastodon_visibility' => [
+            'convoca_publisher_mastodon_visibility' => [
                 'title'       => __('Visibilidad', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('public, unlisted, private, direct (por defecto public).', 'convoca-publisher'),
             ],
-            'cp_mastodon_template' => [
+            'convoca_publisher_mastodon_template' => [
                 'title'       => __('Plantilla del mensaje', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('{title}, {excerpt}, {url}, {hashtags}. Máximo 500 caracteres. Por defecto: {title} — {url} {hashtags}', 'convoca-publisher'),
@@ -137,10 +137,10 @@ class Mastodon implements ChannelInterface
     public function validate_settings(array $settings): array
     {
         $errors = [];
-        if (empty($settings['cp_mastodon_token'])) {
+        if (empty($settings['convoca_publisher_mastodon_token'])) {
             $errors[] = __('El token de Mastodon es obligatorio.', 'convoca-publisher');
         }
-        if (empty($settings['cp_mastodon_server'])) {
+        if (empty($settings['convoca_publisher_mastodon_server'])) {
             $errors[] = __('El servidor de Mastodon es obligatorio.', 'convoca-publisher');
         }
         return $errors;
@@ -148,8 +148,8 @@ class Mastodon implements ChannelInterface
 
     public function verify_connection(): array
     {
-        $token = get_option('cp_mastodon_token', '');
-        $server = rtrim(get_option('cp_mastodon_server', ''), '/');
+        $token = get_option('convoca_publisher_mastodon_token', '');
+        $server = rtrim(get_option('convoca_publisher_mastodon_server', ''), '/');
 
         if (empty($token) || empty($server)) {
             return ['success' => false, 'message' => __('Token o servidor de Mastodon no configurados.', 'convoca-publisher')];

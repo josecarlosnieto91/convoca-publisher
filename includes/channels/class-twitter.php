@@ -34,13 +34,13 @@ class Twitter implements ChannelInterface
 
     public function is_available(): bool
     {
-        $bearer = get_option('cp_twitter_bearer_token', '');
+        $bearer = get_option('convoca_publisher_twitter_bearer_token', '');
         return !empty($bearer);
     }
 
     public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
     {
-        $bearer = get_option('cp_twitter_bearer_token', '');
+        $bearer = get_option('convoca_publisher_twitter_bearer_token', '');
 
         if (empty($bearer)) {
             return ['success' => false, 'error' => __('Bearer token de Twitter no configurado.', 'convoca-publisher')];
@@ -119,12 +119,12 @@ class Twitter implements ChannelInterface
     public function get_settings_fields(): array
     {
         return [
-            'cp_twitter_bearer_token' => [
+            'convoca_publisher_twitter_bearer_token' => [
                 'title'       => __('Bearer Token (OAuth 2.0)', 'convoca-publisher'),
                 'type'        => 'password',
                 'description' => __('Token OAuth 2.0 de la app de Twitter/X con permisos tweet.read y tweet.write.', 'convoca-publisher'),
             ],
-            'cp_twitter_template' => [
+            'convoca_publisher_twitter_template' => [
                 'title'       => __('Plantilla del tweet', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('{title}, {excerpt}, {url}, {hashtags}. Máximo 280 caracteres total. Por defecto: {title} {url} {hashtags}', 'convoca-publisher'),
@@ -134,7 +134,7 @@ class Twitter implements ChannelInterface
 
     public function validate_settings(array $settings): array
     {
-        if (empty($settings['cp_twitter_bearer_token'])) {
+        if (empty($settings['convoca_publisher_twitter_bearer_token'])) {
             return [__('El Bearer Token de Twitter es obligatorio.', 'convoca-publisher')];
         }
         return [];
@@ -142,7 +142,7 @@ class Twitter implements ChannelInterface
 
     public function verify_connection(): array
     {
-        $bearer = get_option('cp_twitter_bearer_token', '');
+        $bearer = get_option('convoca_publisher_twitter_bearer_token', '');
 
         if (empty($bearer)) {
             return ['success' => false, 'message' => __('Bearer Token de Twitter no configurado.', 'convoca-publisher')];

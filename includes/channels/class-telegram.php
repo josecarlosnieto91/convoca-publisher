@@ -34,13 +34,13 @@ class Telegram implements ChannelInterface
 
     public function is_available(): bool
     {
-        return !empty(get_option('cp_telegram_token', '')) && !empty(get_option('cp_telegram_chat_id', ''));
+        return !empty(get_option('convoca_publisher_telegram_token', '')) && !empty(get_option('convoca_publisher_telegram_chat_id', ''));
     }
 
     public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
     {
-        $token = get_option('cp_telegram_token', '');
-        $chat_id = get_option('cp_telegram_chat_id', '');
+        $token = get_option('convoca_publisher_telegram_token', '');
+        $chat_id = get_option('convoca_publisher_telegram_chat_id', '');
 
         if (empty($token) || empty($chat_id)) {
             return ['success' => false, 'error' => __('Token o Chat ID de Telegram no configurados.', 'convoca-publisher')];
@@ -49,7 +49,7 @@ class Telegram implements ChannelInterface
         $text = html_entity_decode($message);
         $text .= "\n\n" . $url;
 
-        $parse_mode = get_option('cp_telegram_parse_mode', 'HTML');
+        $parse_mode = get_option('convoca_publisher_telegram_parse_mode', 'HTML');
         $body = [
             'chat_id'                  => $chat_id,
             'text'                     => mb_substr($text, 0, 4096),
@@ -90,22 +90,22 @@ class Telegram implements ChannelInterface
     public function get_settings_fields(): array
     {
         return [
-            'cp_telegram_token' => [
+            'convoca_publisher_telegram_token' => [
                 'title'       => __('Token del Bot', 'convoca-publisher'),
                 'type'        => 'password',
                 'description' => __('Token del bot de Telegram (de @BotFather).', 'convoca-publisher'),
             ],
-            'cp_telegram_chat_id' => [
+            'convoca_publisher_telegram_chat_id' => [
                 'title'       => __('Chat ID', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('ID del canal o grupo (negativo para grupos).', 'convoca-publisher'),
             ],
-            'cp_telegram_parse_mode' => [
+            'convoca_publisher_telegram_parse_mode' => [
                 'title'       => __('Modo de parseo', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('HTML o Markdown (por defecto HTML).', 'convoca-publisher'),
             ],
-            'cp_telegram_template' => [
+            'convoca_publisher_telegram_template' => [
                 'title'       => __('Plantilla del mensaje', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('{title}, {excerpt}, {url}, {hashtags}. Por defecto: {title} — {url} {hashtags}', 'convoca-publisher'),
@@ -116,10 +116,10 @@ class Telegram implements ChannelInterface
     public function validate_settings(array $settings): array
     {
         $errors = [];
-        if (empty($settings['cp_telegram_token'])) {
+        if (empty($settings['convoca_publisher_telegram_token'])) {
             $errors[] = __('El token de Telegram es obligatorio.', 'convoca-publisher');
         }
-        if (empty($settings['cp_telegram_chat_id'])) {
+        if (empty($settings['convoca_publisher_telegram_chat_id'])) {
             $errors[] = __('El Chat ID de Telegram es obligatorio.', 'convoca-publisher');
         }
         return $errors;
@@ -127,8 +127,8 @@ class Telegram implements ChannelInterface
 
     public function verify_connection(): array
     {
-        $token = get_option('cp_telegram_token', '');
-        $chat_id = get_option('cp_telegram_chat_id', '');
+        $token = get_option('convoca_publisher_telegram_token', '');
+        $chat_id = get_option('convoca_publisher_telegram_chat_id', '');
 
         if (empty($token) || empty($chat_id)) {
             return ['success' => false, 'message' => __('Token o Chat ID no configurados.', 'convoca-publisher')];

@@ -87,23 +87,23 @@ class Facebook implements ChannelInterface
     public function get_settings_fields(): array
     {
         return [
-            'cp_facebook_token' => [
+            'convoca_publisher_facebook_token' => [
                 'title'       => __('Token de Acceso (Page Access Token)', 'convoca-publisher'),
                 'type'        => 'password',
                 'description' => __('Token de página de Facebook con permisos pages_manage_posts y pages_read_engagement.', 'convoca-publisher'),
             ],
-            'cp_facebook_page_id' => [
+            'convoca_publisher_facebook_page_id' => [
                 'title'       => __('ID de la Página de Facebook', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('ID numérico de tu página de Facebook.', 'convoca-publisher'),
             ],
-            'cp_instagram_business_id' => [
+            'convoca_publisher_instagram_business_id' => [
                 'title'       => __('ID de Instagram Business (opcional)', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('Si tu Instagram está vinculado a la página de Facebook, se publicará también allí.', 'convoca-publisher'),
             ],
             // Plantilla de mensaje específica para este canal
-            'cp_facebook_template' => [
+            'convoca_publisher_facebook_template' => [
                 'title'       => __('Plantilla del mensaje', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('{title}, {excerpt}, {url}, {hashtags}, {date}, {author}. Por defecto: {title} — {url} {hashtags}', 'convoca-publisher'),
@@ -114,10 +114,10 @@ class Facebook implements ChannelInterface
     public function validate_settings(array $settings): array
     {
         $errors = [];
-        if (empty($settings['cp_facebook_token'])) {
+        if (empty($settings['convoca_publisher_facebook_token'])) {
             $errors[] = __('El token de Facebook es obligatorio.', 'convoca-publisher');
         }
-        if (empty($settings['cp_facebook_page_id'])) {
+        if (empty($settings['convoca_publisher_facebook_page_id'])) {
             $errors[] = __('El ID de página de Facebook es obligatorio.', 'convoca-publisher');
         }
         return $errors;
@@ -125,17 +125,17 @@ class Facebook implements ChannelInterface
 
     public function get_token(): string
     {
-        return get_option('cp_facebook_token', '');
+        return get_option('convoca_publisher_facebook_token', '');
     }
 
     private function get_page_id(): string
     {
-        return get_option('cp_facebook_page_id', '');
+        return get_option('convoca_publisher_facebook_page_id', '');
     }
 
     private function instagram_linked(): bool
     {
-        return !empty(get_option('cp_instagram_business_id', ''));
+        return !empty(get_option('convoca_publisher_instagram_business_id', ''));
     }
 
     public function verify_connection(): array

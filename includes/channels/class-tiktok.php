@@ -34,13 +34,13 @@ class Tiktok implements ChannelInterface
 
     public function is_available(): bool
     {
-        return !empty(get_option('cp_tiktok_token', '')) && !empty(get_option('cp_tiktok_open_id', ''));
+        return !empty(get_option('convoca_publisher_tiktok_token', '')) && !empty(get_option('convoca_publisher_tiktok_open_id', ''));
     }
 
     public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
     {
-        $token = get_option('cp_tiktok_token', '');
-        $open_id = get_option('cp_tiktok_open_id', '');
+        $token = get_option('convoca_publisher_tiktok_token', '');
+        $open_id = get_option('convoca_publisher_tiktok_open_id', '');
 
         if (empty($token) || empty($open_id)) {
             return ['success' => false, 'error' => __('Token u Open ID de TikTok no configurados.', 'convoca-publisher')];
@@ -90,17 +90,17 @@ class Tiktok implements ChannelInterface
     public function get_settings_fields(): array
     {
         return [
-            'cp_tiktok_token' => [
+            'convoca_publisher_tiktok_token' => [
                 'title'       => __('Access Token', 'convoca-publisher'),
                 'type'        => 'password',
                 'description' => __('Token OAuth 2.0 de TikTok con permisos video.publish.', 'convoca-publisher'),
             ],
-            'cp_tiktok_open_id' => [
+            'convoca_publisher_tiktok_open_id' => [
                 'title'       => __('Open ID', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('Open ID del usuario de TikTok que publicará.', 'convoca-publisher'),
             ],
-            'cp_tiktok_template' => [
+            'convoca_publisher_tiktok_template' => [
                 'title'       => __('Título del video', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('{title} — máximo 100 caracteres. Por defecto: {title}', 'convoca-publisher'),
@@ -111,10 +111,10 @@ class Tiktok implements ChannelInterface
     public function validate_settings(array $settings): array
     {
         $errors = [];
-        if (empty($settings['cp_tiktok_token'])) {
+        if (empty($settings['convoca_publisher_tiktok_token'])) {
             $errors[] = __('El token de TikTok es obligatorio.', 'convoca-publisher');
         }
-        if (empty($settings['cp_tiktok_open_id'])) {
+        if (empty($settings['convoca_publisher_tiktok_open_id'])) {
             $errors[] = __('El Open ID de TikTok es obligatorio.', 'convoca-publisher');
         }
         return $errors;
@@ -122,8 +122,8 @@ class Tiktok implements ChannelInterface
 
     public function verify_connection(): array
     {
-        $token = get_option('cp_tiktok_token', '');
-        $open_id = get_option('cp_tiktok_open_id', '');
+        $token = get_option('convoca_publisher_tiktok_token', '');
+        $open_id = get_option('convoca_publisher_tiktok_open_id', '');
 
         if (empty($token) || empty($open_id)) {
             return ['success' => false, 'message' => __('Token u Open ID de TikTok no configurados.', 'convoca-publisher')];

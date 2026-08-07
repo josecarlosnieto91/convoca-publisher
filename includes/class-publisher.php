@@ -32,7 +32,7 @@ class Publisher
         }
         add_action('publish_post', [self::$instance, 'on_publish_post'], 10, 2);
         add_action('future_to_publish', [self::$instance, 'on_scheduled_publish'], 10, 1);
-        add_action('cp_async_publish', [self::$instance, 'on_async_publish'], 10, 1);
+        add_action('convoca_publisher_async_publish', [self::$instance, 'on_async_publish'], 10, 1);
         add_action('wp_ajax_cp_test_publish', [self::$instance, 'ajax_test_publish']);
         add_action('wp_ajax_cp_clear_log', [self::$instance, 'ajax_clear_log']);
     }
@@ -61,23 +61,23 @@ class Publisher
         if ($post->post_status !== 'publish') {
             return;
         }
-        if (get_post_meta($post_id, '_cp_published', true)) {
+        if (get_post_meta($post_id, '_convoca_publisher_published', true)) {
             return;
         }
-        if (!get_option('cp_auto_publish', true)) {
+        if (!get_option('convoca_publisher_auto_publish', true)) {
             return;
         }
 
         // Si tiene programación, no publicar ahora (lo hará el cron)
-        $schedule_ts = (int) get_post_meta($post_id, '_cp_schedule_time', true);
+        $schedule_ts = (int) get_post_meta($post_id, '_convoca_publisher_schedule_time', true);
         if ($schedule_ts > 0) {
             return;
         }
 
         // Envío DIFERIDO: encolar para el siguiente tick de cron.
         // No bloquear el guardado del post con llamadas síncronas a las redes.
-        if (!wp_next_scheduled('cp_async_publish', [$post_id])) {
-            wp_schedule_single_event(time() + 5, 'cp_async_publish', [$post_id]);
+        if (!wp_next_scheduled('convoca_publisher_async_publish', [$post_id])) {
+            wp_schedule_single_event(time() + 5, 'convoca_publisher_async_publish', [$post_id]);
         }
     }
 
@@ -91,7 +91,7 @@ class Publisher
 
     public function on_scheduled_publish(\WP_Post $post): void
     {
-        if (!get_option('cp_enable_scheduler', true)) {
+        if (!get_option('convoca_publisher_enable_scheduler', true)) {
             return;
         }
         $this->publish_post($post->ID);
@@ -111,11 +111,11 @@ class Publisher
             return [];
         }
 
-        if (!$force && get_post_meta($post_id, '_cp_published', true)) {
+        if (!$force && get_post_meta($post_id, '_convoca_publisher_published', true)) {
             return [];
         }
 
-        $disabled_channels = get_post_meta($post_id, '_cp_disabled_channels', true) ?: [];
+        $disabled_channels = get_post_meta($post_id, '_convoca_publisher_disabled_channels', true) ?: [];
         $url = get_permalink($post);
         $image_url = $this->get_featured_image($post);
         $hashtags = $this->get_post_hashtags($post);
@@ -154,8 +154,8 @@ class Publisher
         }
 
         if (!empty($results)) {
-            update_post_meta($post_id, '_cp_published', true);
-            update_post_meta($post_id, '_cp_publish_results', $results);
+            update_post_meta($post_id, '_convoca_publisher_published', true);
+            update_post_meta($post_id, '_convoca_publisher_publish_results', $results);
         }
 
         // Adjuntar warnings al resultado si los hay
@@ -200,7 +200,7 @@ class Publisher
      */
     private function build_channel_message(\WP_Post $post, object $channel, string $url, string $hashtags): string
     {
-        $template_key = 'cp_' . $channel->get_id() . '_template';
+        $template_key = 'convoca_publisher_' . $channel->get_id() . '_template';
         $default_templates = [
             'facebook'        => '{title} — {url} {hashtags}',
             'linkedin'        => '{title} — {url} {hashtags}',
@@ -214,7 +214,7 @@ class Publisher
         $default = $default_templates[$channel->get_id()] ?? '{title} — {url}';
         $template = get_option($template_key, '');
         if (empty($template)) {
-            $template = get_option('cp_message_template', $default);
+            $template = get_option('convoca_publisher_message_template', $default);
         }
         if (empty($template)) {
             $template = $default;
@@ -271,17 +271,17 @@ class Publisher
 
     private function log_publish(array $entry): void
     {
-        $logs = get_option('cp_publish_log', []);
+        $logs = get_option('convoca_publisher_publish_log', []);
         $logs[] = $entry;
         if (count($logs) > 200) {
             $logs = array_slice($logs, -200);
         }
-        update_option('cp_publish_log', $logs, false);
+        update_option('convoca_publisher_publish_log', $logs, false);
     }
 
     public function ajax_test_publish(): void
     {
-        check_ajax_referer('cp_test_publish', '_wpnonce');
+        check_ajax_referer('convoca_publisher_test_publish', '_wpnonce');
         if (!current_user_can('manage_options')) {
             wp_die('-1');
         }
@@ -293,11 +293,11 @@ class Publisher
 
     public function ajax_clear_log(): void
     {
-        check_ajax_referer('cp_clear_log', '_wpnonce');
+        check_ajax_referer('convoca_publisher_clear_log', '_wpnonce');
         if (!current_user_can('manage_options')) {
             wp_die('-1');
         }
-        delete_option('cp_publish_log');
+        delete_option('convoca_publisher_publish_log');
         wp_send_json(['success' => true]);
     }
 }

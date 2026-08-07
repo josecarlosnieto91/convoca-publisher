@@ -3,7 +3,7 @@
 ## v1.4.1 (2026-08-07)
 
 ### ✨ Mejoras
-- **Envío diferido a redes**: la publicación se programa vía cron (`cp_async_publish`, ~5s después). El guardado del post ya no se bloquea por la latencia de las redes.
+- **Envío diferido a redes**: la publicación se programa vía cron (`convoca_publisher_async_publish`, ~5s después). El guardado del post ya no se bloquea por la latencia de las redes.
 
 ## v1.4.0 (2026-06-28)
 

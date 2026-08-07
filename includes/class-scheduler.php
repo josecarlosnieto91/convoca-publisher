@@ -24,16 +24,16 @@ defined('ABSPATH') || exit;
 
 class Scheduler
 {
-    const CRON_HOOK = 'cp_scheduled_publish';
+    const CRON_HOOK = 'convoca_publisher_scheduled_publish';
 
     public static function init(): void
     {
         add_filter('cron_schedules', [self::class, 'add_cron_interval']);
-        add_action('cp_retry_failed_posts', [self::class, 'retry_failed']);
+        add_action('convoca_publisher_retry_failed_posts', [self::class, 'retry_failed']);
         add_action(self::CRON_HOOK, [self::class, 'publish_scheduled']);
 
-        if (!wp_next_scheduled('cp_retry_failed_posts')) {
-            wp_schedule_event(time(), 'hourly', 'cp_retry_failed_posts');
+        if (!wp_next_scheduled('convoca_publisher_retry_failed_posts')) {
+            wp_schedule_event(time(), 'hourly', 'convoca_publisher_retry_failed_posts');
         }
         if (!wp_next_scheduled(self::CRON_HOOK)) {
             wp_schedule_event(time(), 'every_15min', self::CRON_HOOK);
@@ -58,7 +58,7 @@ class Scheduler
         $rows = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT post_id, meta_value FROM {$wpdb->postmeta}
-                 WHERE meta_key = '_cp_schedule_time'
+                 WHERE meta_key = '_convoca_publisher_schedule_time'
                  AND meta_value <= %d
                  AND meta_value > 0",
                 time()
@@ -75,13 +75,13 @@ class Scheduler
             if ($publisher) {
                 $publisher->publish_post($post_id, true);
             }
-            delete_post_meta($post_id, '_cp_schedule_time');
+            delete_post_meta($post_id, '_convoca_publisher_schedule_time');
         }
     }
 
     public static function retry_failed(): void
     {
-        $logs = get_option('cp_publish_log', []);
+        $logs = get_option('convoca_publisher_publish_log', []);
         $failed_posts = [];
 
         foreach ($logs as $log) {

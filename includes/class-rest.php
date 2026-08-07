@@ -179,8 +179,8 @@ class Rest
                         $image_url = $image ? $image[0] : '';
                     }
 
-                    $tkey = 'cp_' . $channel->get_id() . '_template';
-                    $template = get_option($tkey, get_option('cp_message_template', '{title} — {url}'));
+                    $tkey = 'convoca_publisher_' . $channel->get_id() . '_template';
+                    $template = get_option($tkey, get_option('convoca_publisher_message_template', '{title} — {url}'));
                     $message = str_replace(
                         ['{title}', '{url}', '{excerpt}', '{hashtags}', '{date}', '{author}'],
                         [$post->post_title, $url, wp_trim_words($post->post_excerpt ?: $post->post_title, 20), $hashtags, get_the_date('', $post), get_the_author_meta('display_name', (int) $post->post_author)],

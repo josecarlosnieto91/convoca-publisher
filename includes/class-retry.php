@@ -22,17 +22,17 @@ defined('ABSPATH') || exit;
 
 class Retry
 {
-    private const TABLE = 'cp_retry_queue';
+    private const TABLE = 'convoca_publisher_retry_queue';
     private const MAX_ATTEMPTS = 5;
     private const BACKOFF_MINUTES = [5, 15, 30, 60, 120];
 
     public static function init(): void
     {
         add_action('init', [self::class, 'create_table']);
-        add_action('cp_retry_process', [self::class, 'process_queue']);
+        add_action('convoca_publisher_retry_process', [self::class, 'process_queue']);
 
-        if (!wp_next_scheduled('cp_retry_process')) {
-            wp_schedule_event(time(), 'hourly', 'cp_retry_process');
+        if (!wp_next_scheduled('convoca_publisher_retry_process')) {
+            wp_schedule_event(time(), 'hourly', 'convoca_publisher_retry_process');
         }
     }
 

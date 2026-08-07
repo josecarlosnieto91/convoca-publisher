@@ -23,7 +23,7 @@ defined('ABSPATH') || exit;
 class Crypto
 {
     private const METHOD = 'aes-256-gcm';
-    private const KEY_OPTION = 'cp_encryption_key';
+    private const KEY_OPTION = 'convoca_publisher_encryption_key';
 
     /**
      * Cifrar un valor con AES-256-GCM.
@@ -95,11 +95,11 @@ class Crypto
             return $value;
         }
 
-        if (str_starts_with($value, 'cp_enc:')) {
+        if (str_starts_with($value, 'convoca_publisher_enc:')) {
             return $value;
         }
 
-        return 'cp_enc:' . self::encrypt($value);
+        return 'convoca_publisher_enc:' . self::encrypt($value);
     }
 
     /**
@@ -107,7 +107,7 @@ class Crypto
      */
     public static function decrypt_on_load($value, string $option)
     {
-        if (!is_string($value) || !str_starts_with($value, 'cp_enc:')) {
+        if (!is_string($value) || !str_starts_with($value, 'convoca_publisher_enc:')) {
             return $value;
         }
         return self::decrypt(substr($value, 7));

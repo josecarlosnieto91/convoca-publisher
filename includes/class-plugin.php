@@ -53,13 +53,13 @@ class Plugin
     private function register_crypto_hooks(): void
     {
         $token_options = [
-            'cp_facebook_token',
-            'cp_linkedin_token',
-            'cp_twitter_bearer_token',
-            'cp_tiktok_token',
-            'cp_gmb_token',
-            'cp_telegram_token',
-            'cp_mastodon_token',
+            'convoca_publisher_facebook_token',
+            'convoca_publisher_linkedin_token',
+            'convoca_publisher_twitter_bearer_token',
+            'convoca_publisher_tiktok_token',
+            'convoca_publisher_gmb_token',
+            'convoca_publisher_telegram_token',
+            'convoca_publisher_mastodon_token',
         ];
 
         add_action('pre_update_option', [Crypto::class, 'encrypt_on_save'], 10, 2);
@@ -76,8 +76,8 @@ class Plugin
 
     public function handle_privacy_ack(): void
     {
-        if (isset($_POST['cp_privacy_ack']) && current_user_can('manage_options')) {
-            update_option('cp_privacy_acknowledged', (bool) $_POST['cp_privacy_ack']);
+        if (isset($_POST['convoca_publisher_privacy_ack']) && current_user_can('manage_options')) {
+            update_option('convoca_publisher_privacy_acknowledged', (bool) $_POST['convoca_publisher_privacy_ack']);
         }
     }
 

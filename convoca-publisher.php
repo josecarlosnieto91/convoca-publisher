@@ -69,7 +69,7 @@ define('CP_MIN_WP', '6.0');
 
 // Comprobación de requisitos al activar
 register_activation_hook(__FILE__, 'ConvocaPublisher\\cp_activation_check');
-function cp_activation_check(): void
+function convoca_publisher_activation_check(): void
 {
     global $wp_version;
 
@@ -97,73 +97,44 @@ function cp_activation_check(): void
     }
 
     // Migración: renombrar opciones antiguas sp_* → cp_*
-    cp_migrate_legacy_options();
+    convoca_publisher_migrate_legacy_options();
 }
 
 // Desactivación
-register_deactivation_hook(__FILE__, 'ConvocaPublisher\\cp_deactivation');
-function cp_deactivation(): void
+register_deactivation_hook(__FILE__, 'convoca_publisher_deactivation');
+function convoca_publisher_deactivation(): void
 {
-    wp_clear_scheduled_hook('cp_retry_failed_posts');
-    wp_clear_scheduled_hook('cp_retry_process');
+    wp_clear_scheduled_hook('convoca_publisher_retry_failed_posts');
+    wp_clear_scheduled_hook('convoca_publisher_retry_process');
 }
 
 /**
- * Migrar opciones sp_* heredadas a cp_*
+ * Migrar opciones heredadas a convoca_publisher_*
  */
-function cp_migrate_legacy_options(): void
+function convoca_publisher_migrate_legacy_options(): void
 {
-    $legacy_map = [
-        'sp_auto_publish'          => 'cp_auto_publish',
-        'sp_enable_scheduler'      => 'cp_enable_scheduler',
-        'sp_message_template'      => 'cp_message_template',
-        'sp_publish_log'           => 'cp_publish_log',
-        'sp_facebook_token'        => 'cp_facebook_token',
-        'sp_facebook_page_id'      => 'cp_facebook_page_id',
-        'sp_instagram_business_id' => 'cp_instagram_business_id',
-        'sp_linkedin_token'        => 'cp_linkedin_token',
-        'sp_linkedin_urn'          => 'cp_linkedin_urn',
-        'sp_twitter_bearer_token'  => 'cp_twitter_bearer_token',
-        'sp_tiktok_token'          => 'cp_tiktok_token',
-        'sp_tiktok_open_id'        => 'cp_tiktok_open_id',
-        'sp_gmb_token'             => 'cp_gmb_token',
-        'sp_gmb_location'          => 'cp_gmb_location',
-        'sp_telegram_token'        => 'cp_telegram_token',
-        'sp_telegram_chat_id'      => 'cp_telegram_chat_id',
-        'sp_telegram_parse_mode'   => 'cp_telegram_parse_mode',
-        'sp_mastodon_server'       => 'cp_mastodon_server',
-        'sp_mastodon_token'        => 'cp_mastodon_token',
-        'sp_mastodon_visibility'   => 'cp_mastodon_visibility',
-    ];
-
-    foreach ($legacy_map as $old => $new) {
-        $old_val = get_option($old, null);
-        if (null !== $old_val) {
-            add_option($new, $old_val, '', false);
-            delete_option($old);
-        }
-    }
-
-    // Migrar metadatos de posts
+    // No hay instalaciones antiguas: sp_* y cp_* nunca existieron en producción.
+    // Este método se mantiene vacío como guarda contra futuras migraciones.
+    // Metadatos de posts (por si existieran en algún entorno de desarrollo)
     global $wpdb;
     $wpdb->query(
-        "UPDATE {$wpdb->postmeta} SET meta_key = '_cp_published' WHERE meta_key = '_sp_published'"
+        "UPDATE {$wpdb->postmeta} SET meta_key = 'convoca_publisher_published' WHERE meta_key IN ('_sp_published', '_convoca_publisher_published')"
     );
     $wpdb->query(
-        "UPDATE {$wpdb->postmeta} SET meta_key = '_cp_publish_results' WHERE meta_key = '_sp_publish_results'"
+        "UPDATE {$wpdb->postmeta} SET meta_key = 'convoca_publisher_publish_results' WHERE meta_key IN ('_sp_publish_results', '_convoca_publisher_publish_results')"
     );
     $wpdb->query(
-        "UPDATE {$wpdb->postmeta} SET meta_key = '_cp_scheduled_publish' WHERE meta_key = '_sp_scheduled_publish'"
+        "UPDATE {$wpdb->postmeta} SET meta_key = 'convoca_publisher_scheduled_publish' WHERE meta_key IN ('_sp_scheduled_publish', '_convoca_publisher_scheduled_publish')"
     );
 }
 
 // Aviso de privacidad
-function cp_privacy_notice(): void
+function convoca_publisher_privacy_notice(): void
 {
     echo '<div class="notice notice-info is-dismissible">';
     echo '<p><strong>' . esc_html__('🔐 Convoca Publisher — Aviso de privacidad', 'convoca-publisher') . '</strong></p>';
     echo '<p>' . esc_html__('Este plugin envía datos (título, extracto, URL, imagen destacada y etiquetas de tus entradas) a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, Telegram, Mastodon) cuando publicas contenido en redes sociales. Los tokens de acceso se almacenan cifrados en la base de datos de WordPress.', 'convoca-publisher') . '</p>';
-    echo '<p><label><input type="checkbox" name="cp_privacy_ack" value="1" ' . checked(get_option('cp_privacy_acknowledged', false), true, false) . '> ' . esc_html__('He leído y acepto este aviso', 'convoca-publisher') . '</label></p>';
+    echo '<p><label><input type="checkbox" name="convoca_publisher_privacy_ack" value="1" ' . checked(get_option('convoca_publisher_privacy_acknowledged', false), true, false) . '> ' . esc_html__('He leído y acepto este aviso', 'convoca-publisher') . '</label></p>';
     echo '</div>';
 }
 

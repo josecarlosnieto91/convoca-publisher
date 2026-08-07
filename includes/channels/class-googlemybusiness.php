@@ -34,13 +34,13 @@ class Googlemybusiness implements ChannelInterface
 
     public function is_available(): bool
     {
-        return !empty(get_option('cp_gmb_token', '')) && !empty(get_option('cp_gmb_location', ''));
+        return !empty(get_option('convoca_publisher_gmb_token', '')) && !empty(get_option('convoca_publisher_gmb_location', ''));
     }
 
     public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
     {
-        $token = get_option('cp_gmb_token', '');
-        $location = get_option('cp_gmb_location', '');
+        $token = get_option('convoca_publisher_gmb_token', '');
+        $location = get_option('convoca_publisher_gmb_location', '');
 
         if (empty($token) || empty($location)) {
             return ['success' => false, 'error' => __('Token o ubicación de GMB no configurados.', 'convoca-publisher')];
@@ -94,17 +94,17 @@ class Googlemybusiness implements ChannelInterface
     public function get_settings_fields(): array
     {
         return [
-            'cp_gmb_token' => [
+            'convoca_publisher_gmb_token' => [
                 'title'       => __('Access Token (OAuth 2.0)', 'convoca-publisher'),
                 'type'        => 'password',
                 'description' => __('Token de Google con permisos https://www.googleapis.com/auth/business.manage.', 'convoca-publisher'),
             ],
-            'cp_gmb_location' => [
+            'convoca_publisher_gmb_location' => [
                 'title'       => __('Location ID', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('Formato: accounts/{accountId}/locations/{locationId}', 'convoca-publisher'),
             ],
-            'cp_gmb_template' => [
+            'convoca_publisher_gmb_template' => [
                 'title'       => __('Plantilla del post', 'convoca-publisher'),
                 'type'        => 'text',
                 'description' => __('{title}, {excerpt}, {url}. GMB limita a 1500 caracteres. Por defecto: {excerpt} — {url}', 'convoca-publisher'),
@@ -115,10 +115,10 @@ class Googlemybusiness implements ChannelInterface
     public function validate_settings(array $settings): array
     {
         $errors = [];
-        if (empty($settings['cp_gmb_token'])) {
+        if (empty($settings['convoca_publisher_gmb_token'])) {
             $errors[] = __('El token de Google es obligatorio.', 'convoca-publisher');
         }
-        if (empty($settings['cp_gmb_location'])) {
+        if (empty($settings['convoca_publisher_gmb_location'])) {
             $errors[] = __('El Location ID de GMB es obligatorio.', 'convoca-publisher');
         }
         return $errors;
@@ -126,8 +126,8 @@ class Googlemybusiness implements ChannelInterface
 
     public function verify_connection(): array
     {
-        $token = get_option('cp_gmb_token', '');
-        $location = get_option('cp_gmb_location', '');
+        $token = get_option('convoca_publisher_gmb_token', '');
+        $location = get_option('convoca_publisher_gmb_location', '');
 
         if (empty($token) || empty($location)) {
             return ['success' => false, 'message' => __('Token o Location ID de GMB no configurados.', 'convoca-publisher')];
