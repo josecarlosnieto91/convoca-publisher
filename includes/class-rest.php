@@ -116,7 +116,7 @@ class Rest
         return new \WP_REST_Response([
             'channels'    => $data,
             'retry_queue' => $retry_stats,
-            'version'     => CP_VERSION,
+            'version'     => CONVOCA_PUBLISHER_VERSION,
         ]);
     }
 

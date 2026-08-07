@@ -71,7 +71,7 @@ class Plugin
 
     public function load_textdomain(): void
     {
-        load_plugin_textdomain('convoca-publisher', false, basename(CP_PLUGIN_DIR) . '/languages');
+        load_plugin_textdomain('convoca-publisher', false, basename(CONVOCA_PUBLISHER_PLUGIN_DIR) . '/languages');
     }
 
     public function handle_privacy_ack(): void
@@ -83,7 +83,7 @@ class Plugin
 
     private function load_channels(): void
     {
-        $channel_files = glob(CP_PLUGIN_DIR . 'includes/channels/class-*.php');
+        $channel_files = glob(CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/channels/class-*.php');
         foreach ($channel_files as $file) {
             $class_name = basename($file, '.php');
             $class_name = str_replace('class-', 'ConvocaPublisher\\Channels\\', $class_name);

@@ -61,10 +61,10 @@ add_action(
 	5
 );
 
-define('CP_VERSION', '1.4.0');
-define('CP_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('CP_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('CP_MIN_PHP', '8.0');
+define('CONVOCA_PUBLISHER_VERSION', '1.4.1');
+define('CONVOCA_PUBLISHER_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('CONVOCA_PUBLISHER_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('CONVOCA_PUBLISHER_MIN_PHP', '8.0');
 define('CP_MIN_WP', '6.0');
 
 // Comprobación de requisitos al activar
@@ -73,13 +73,13 @@ function convoca_publisher_activation_check(): void
 {
     global $wp_version;
 
-    if (version_compare(PHP_VERSION, CP_MIN_PHP, '<')) {
+    if (version_compare(PHP_VERSION, CONVOCA_PUBLISHER_MIN_PHP, '<')) {
         deactivate_plugins(plugin_basename(__FILE__));
         wp_die(
             sprintf(
                 /* translators: %1$s: minimum required PHP version, %2$s: current PHP version */
                 esc_html__('Convoca Publisher requiere PHP %1$s o superior. Tu versión: %2$s', 'convoca-publisher'),
-                esc_html(CP_MIN_PHP),
+                esc_html(CONVOCA_PUBLISHER_MIN_PHP),
                 PHP_VERSION
             )
         );
