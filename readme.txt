@@ -42,6 +42,9 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 
 == Changelog ==
 
+= 1.4.1 =
+* Fix: callback de activación correcto (convoca_publisher_activation_check)
+
 = 1.4.0 =
 * New: Social media post scheduling
 * New: Pre-publish validations (title, featured image)
