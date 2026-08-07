@@ -68,7 +68,7 @@ define('CONVOCA_PUBLISHER_MIN_PHP', '8.0');
 define('CP_MIN_WP', '6.0');
 
 // Comprobación de requisitos al activar
-register_activation_hook(__FILE__, 'ConvocaPublisher\\cp_activation_check');
+register_activation_hook(__FILE__, 'ConvocaPublisher\\convoca_publisher_activation_check');
 function convoca_publisher_activation_check(): void
 {
     global $wp_version;
