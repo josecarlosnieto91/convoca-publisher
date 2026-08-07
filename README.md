@@ -149,3 +149,8 @@ Prueba Convoca sin instalar nada:
 - [Convoca Shifts](https://github.com/josecarlosnieto91/convoca-shifts)
 - [Convoca Publisher](https://github.com/josecarlosnieto91/convoca-publisher)
 
+## 📖 Documentación
+
+La documentación completa (manual de usuario, API REST, hooks, instalación) vive en la wiki:
+
+👉 **[Convoca publisher](https://docs.getconvoca.app/plugins/convoca-publisher/)**
