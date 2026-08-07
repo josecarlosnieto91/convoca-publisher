@@ -107,9 +107,10 @@ class Crypto
      */
     public static function decrypt_on_load($value, string $option)
     {
-        if (!is_string($value) || !str_starts_with($value, 'convoca_publisher_enc:')) {
+        $prefix = 'convoca_publisher_enc:';
+        if (!is_string($value) || !str_starts_with($value, $prefix)) {
             return $value;
         }
-        return self::decrypt(substr($value, 7));
+        return self::decrypt(substr($value, strlen($prefix)));
     }
 }

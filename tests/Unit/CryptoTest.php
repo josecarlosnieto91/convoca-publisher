@@ -110,7 +110,7 @@ class CryptoTest extends TestCase
             '{}[]',
             '====',
             "with\nnewline",
-            'cp_enc:' . base64_encode('real-looking-but-not-encrypted'),
+            'convoca_publisher_enc:' . base64_encode('real-looking-but-not-encrypted'),
         ];
 
         foreach ($invalidBase64Cases as $input) {
@@ -178,12 +178,12 @@ class CryptoTest extends TestCase
 
         // Options ending in _token should be prefixed
         $result = Crypto::encrypt_on_save($value, 'my_service_token');
-        $this->assertStringStartsWith('cp_enc:', $result);
+        $this->assertStringStartsWith('convoca_publisher_enc:', $result);
         $this->assertNotEquals($value, $result);
 
         // Options ending in _bearer_token should be prefixed
         $result2 = Crypto::encrypt_on_save($value, 'api_bearer_token');
-        $this->assertStringStartsWith('cp_enc:', $result2);
+        $this->assertStringStartsWith('convoca_publisher_enc:', $result2);
 
         // Non-token options should NOT be modified
         $result3 = Crypto::encrypt_on_save($value, 'some_other_option');
@@ -211,13 +211,13 @@ class CryptoTest extends TestCase
         $this->assertSame('', Crypto::encrypt_on_save('', 'my_token'));
 
         // Already prefixed
-        $already = 'cp_enc:some_already_encrypted_data';
+        $already = 'convoca_publisher_enc:some_already_encrypted_data';
         $this->assertSame($already, Crypto::encrypt_on_save($already, 'my_token'));
     }
 
     /**
      * @test
-     * decrypt_on_load only decrypts cp_enc: prefixed values.
+     * decrypt_on_load only decrypts convoca_publisher_enc: prefixed values.
      */
     public function testDecryptOnLoadRoundtrip(): void
     {

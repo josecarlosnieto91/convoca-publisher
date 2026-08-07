@@ -54,7 +54,7 @@ class PublisherMessageTest extends TestCase
     public function testMessageUsesChannelTemplate(): void
     {
         // Set a channel-specific template
-        update_option('cp_facebook_template', '{title} - CHANNEL SPECIFIC');
+        update_option('convoca_publisher_facebook_template', '{title} - CHANNEL SPECIFIC');
         $publisher = new Publisher(['facebook' => $this->mockChannel]);
         $message = $publisher->get_channel_message(1, 'facebook');
 
@@ -65,8 +65,8 @@ class PublisherMessageTest extends TestCase
     public function testMessageUsesGlobalTemplateFallback(): void
     {
         // Set global template, no channel template
-        update_option('cp_message_template', '{title} - GLOBAL');
-        delete_option('cp_facebook_template');
+        update_option('convoca_publisher_message_template', '{title} - GLOBAL');
+        delete_option('convoca_publisher_facebook_template');
 
         $publisher = new Publisher(['facebook' => $this->mockChannel]);
         $message = $publisher->get_channel_message(1, 'facebook');
@@ -78,8 +78,8 @@ class PublisherMessageTest extends TestCase
     public function testMessageDefaultTemplate(): void
     {
         // No template at all - should use default
-        delete_option('cp_message_template');
-        delete_option('cp_facebook_template');
+        delete_option('convoca_publisher_message_template');
+        delete_option('convoca_publisher_facebook_template');
 
         $publisher = new Publisher(['facebook' => $this->mockChannel]);
         $message = $publisher->get_channel_message(1, 'facebook');
