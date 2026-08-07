@@ -97,8 +97,9 @@ Al publicar una entrada desde WordPress, Convoca Publisher:
 1. Detecta la publicación
 2. **Valida** que el título no esté vacío y que haya imagen destacada (avisa si falta)
 3. Prepara el mensaje con la plantilla de cada canal activo
-4. Publica en cada red social seleccionada
-5. Muestra el resultado en el metabox del editor
+4. **Programa el envío de forma diferida** (cron `cp_async_publish`, ~5s después): el guardado del post NO se bloquea aunque una red tarde en responder
+5. Publica en cada red social seleccionada
+6. Muestra el resultado en el metabox del editor
 
 ### 5.2 Metabox del editor
 
