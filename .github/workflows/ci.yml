@@ -39,7 +39,7 @@ jobs:
         run: find . -name '*.php' -not -path './vendor/*' -exec php -l {} \;
 
       - name: PHPStan
-        run: vendor/bin/phpstan analyse --memory-limit=2G --no-progress || true
+        run: vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=4G --no-progress
 
       - name: PHPUnit
-        run: vendor/bin/phpunit --no-coverage || true
+        run: vendor/bin/phpunit --no-coverage
