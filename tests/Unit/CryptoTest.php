@@ -176,13 +176,13 @@ class CryptoTest extends TestCase
     {
         $value = 'sensitive-data-here';
 
-        // Options ending in _token should be prefixed
-        $result = Crypto::encrypt_on_save($value, 'my_service_token');
+        // Plugin token options ending in _token should be prefixed.
+        $result = Crypto::encrypt_on_save($value, 'convoca_publisher_facebook_token');
         $this->assertStringStartsWith('convoca_publisher_enc:', $result);
         $this->assertNotEquals($value, $result);
 
-        // Options ending in _bearer_token should be prefixed
-        $result2 = Crypto::encrypt_on_save($value, 'api_bearer_token');
+        // Plugin options ending in _bearer_token should be prefixed.
+        $result2 = Crypto::encrypt_on_save($value, 'convoca_publisher_api_bearer_token');
         $this->assertStringStartsWith('convoca_publisher_enc:', $result2);
 
         // Non-token options should NOT be modified
