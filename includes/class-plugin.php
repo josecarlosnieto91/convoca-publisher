@@ -41,8 +41,6 @@ class Plugin
         // Cifrado automático de tokens (hooks cp_*)
         $this->register_crypto_hooks();
 
-        add_action('plugins_loaded', [$this, 'load_textdomain']);
-
         // Manejar aceptación de aviso de privacidad
         add_action('admin_init', [$this, 'handle_privacy_ack']);
     }
@@ -67,11 +65,6 @@ class Plugin
         foreach ($token_options as $option) {
             add_filter("option_{$option}", [Crypto::class, 'decrypt_on_load'], 10, 2);
         }
-    }
-
-    public function load_textdomain(): void
-    {
-        load_plugin_textdomain('convoca-publisher', false, basename(CONVOCA_PUBLISHER_PLUGIN_DIR) . '/languages');
     }
 
     public function handle_privacy_ack(): void
