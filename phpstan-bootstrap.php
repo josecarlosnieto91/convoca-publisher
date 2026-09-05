@@ -15,3 +15,9 @@ define( 'ARRAY_A', 'ARRAY_A' );
 define( 'OBJECT', 'OBJECT' );
 define( 'OBJECT_K', 'OBJECT_K' );
 define( 'WP_DEBUG', true );
+
+// Constantes del plugin (definidas en convoca-publisher.php en runtime).
+define( 'CONVOCA_PUBLISHER_VERSION', '1.4.2' );
+define( 'CONVOCA_PUBLISHER_PLUGIN_DIR', '/tmp/wp/wp-content/plugins/convoca-publisher/' );
+define( 'CONVOCA_PUBLISHER_PLUGIN_URL', 'https://example.org/wp-content/plugins/convoca-publisher/' );
+define( 'CONVOCA_PUBLISHER_MIN_PHP', '8.0' );

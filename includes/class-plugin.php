@@ -95,29 +95,6 @@ class Plugin
         }
     }
 
-    /**
-     * Limit channels based on license.
-     * FREE = facebook, twitter, linkedin (3)
-     * PRO  = all 7 channels
-     */
-    private function apply_license_gating(): void
-    {
-        if (!class_exists('Convoca\Core\License_Manager')) {
-            // Core not available, keep all channels
-            return;
-        }
-        $has_pro = \Convoca\Core\License_Manager::has_pro('publisher');
-        if ($has_pro) {
-            return; // PRO: all channels
-        }
-        // FREE: only facebook, twitter, linkedin
-        $free_channels = ['facebook', 'twitter', 'linkedin'];
-        $this->channels = array_intersect_key(
-            $this->channels,
-            array_flip($free_channels)
-        );
-    }
-
     public function get_channels(): array
     {
         return $this->channels;
