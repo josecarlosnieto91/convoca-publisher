@@ -83,6 +83,11 @@ class Crypto
      */
     public static function encrypt_on_save(mixed $value, string $option): mixed
     {
+        // Solo cifrar opciones propias del plugin — no tocar '_token' de terceros.
+        if (!str_starts_with($option, 'convoca_publisher_')) {
+            return $value;
+        }
+
         if (!is_string($value)) {
             return $value;
         }
