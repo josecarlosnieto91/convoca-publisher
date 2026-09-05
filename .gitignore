@@ -23,3 +23,5 @@ composer.lock
 /test-results/
 *.zip
 .env
+.php-cs-fixer.cache
+/phpstan-stubs/
