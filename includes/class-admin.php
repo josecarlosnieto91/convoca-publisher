@@ -304,19 +304,6 @@ class Admin
         }
         ?>
 
-        <?php
-        $mod_channels = get_option('convoca_publisher_moderation_channels', []);
-        $mod_channels = is_array($mod_channels) ? $mod_channels : [];
-        $mod_channels_html = '<input type="hidden" name="convoca_publisher_moderation_channels[]" value="" />';
-        foreach (convoca_publisher()->get_channels() as $channel) {
-            $checked = in_array($channel->get_id(), $mod_channels, true) ? 'checked' : '';
-            $mod_channels_html .= '<label style="display:block;margin:4px 0;">';
-            $mod_channels_html .= '<input type="checkbox" name="convoca_publisher_moderation_channels[]" value="' . esc_attr($channel->get_id()) . '" ' . esc_attr($checked) . '> ';
-            $mod_channels_html .= esc_html($channel->get_name());
-            $mod_channels_html .= '</label>';
-        }
-        ?>
-
         <div class="cp-settings-section">
             <h2><?php echo esc_html__('Moderación previa', 'convoca-publisher'); ?></h2>
             <table class="form-table">
@@ -334,7 +321,13 @@ class Admin
                 <tr>
                     <th scope="row"><?php echo esc_html__('Canales con moderación', 'convoca-publisher'); ?></th>
                     <td>
-                        <?php echo $mod_channels_html; ?>
+                        <input type="hidden" name="convoca_publisher_moderation_channels[]" value="" />
+                        <?php foreach (convoca_publisher()->get_channels() as $channel) : ?>
+                            <?php $checked = in_array($channel->get_id(), (array) get_option('convoca_publisher_moderation_channels', []), true) ? 'checked' : ''; ?>
+                            <label style="display:block;margin:4px 0;">
+                                <input type="checkbox" name="convoca_publisher_moderation_channels[]" value="<?php echo esc_attr($channel->get_id()); ?>" <?php echo esc_attr($checked); ?>> <?php echo esc_html($channel->get_name()); ?>
+                            </label>
+                        <?php endforeach; ?>
                         <p class="description"><?php echo esc_html__('Se aplican cuando el modo es "Solo canales seleccionados".', 'convoca-publisher'); ?></p>
                     </td>
                 </tr>
