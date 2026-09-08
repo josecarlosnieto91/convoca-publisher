@@ -4,6 +4,14 @@
  * WordPress function stubs for unit tests.
  */
 
+// --- Time constants (normalmente definidas por WP) ---
+define('MINUTE_IN_SECONDS', 60);
+define('HOUR_IN_SECONDS', 3600);
+define('DAY_IN_SECONDS', 86400);
+define('WEEK_IN_SECONDS', 604800);
+define('MONTH_IN_SECONDS', 2592000);
+define('YEAR_IN_SECONDS', 31536000);
+
 // --- Translation ---
 function __(string $text, string $domain = 'default'): string
 {
@@ -313,6 +321,63 @@ class WP_Error
     {
         return '';
     }
+}
+
+// --- wpdb (mínimo para probar la cola de reintentos/moderación) ---
+class wpdb
+{
+    public string $prefix = 'wp_';
+    public int $insert_id = 0;
+
+    public function prepare(string $query, mixed ...$args): string
+    {
+        return $query;
+    }
+
+    public function insert(string $table, array $data, array|string $format = null): int|false
+    {
+        $this->insert_id++;
+        $row = $data;
+        $row['id'] = $this->insert_id;
+        $GLOBALS['_cp_test_db']['rows'][$table][] = $row;
+        $GLOBALS['_cp_test_db']['inserts'][] = ['table' => $table, 'data' => $data];
+        return 1;
+    }
+
+    public function get_results(string $query = null, string $output = 'OBJECT'): array
+    {
+        return [];
+    }
+
+    public function get_row(string $query = null, string $output = 'OBJECT', int $y = 0): object|array|null
+    {
+        return null;
+    }
+
+    public function get_var(string $query = null, int $x = 0, int $y = 0): mixed
+    {
+        return null;
+    }
+
+    public function update(string $table, array $data, array $where, array|string $format = null, array|string $where_format = null): int|false
+    {
+        return 1;
+    }
+
+    public function delete(string $table, array $where, array|string $where_format = null): int|false
+    {
+        return 1;
+    }
+
+    public function get_charset_collate(): string
+    {
+        return '';
+    }
+}
+
+function wp_mail(string|array $to, string $subject, string $message, string|array $headers = '', string|array $attachments = []): bool
+{
+    return true;
 }
 
 // --- WP_Post ---

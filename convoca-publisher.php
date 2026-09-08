@@ -106,6 +106,7 @@ function convoca_publisher_deactivation(): void
 {
     wp_clear_scheduled_hook('convoca_publisher_retry_failed_posts');
     wp_clear_scheduled_hook('convoca_publisher_retry_process');
+    wp_clear_scheduled_hook('convoca_publisher_retry_event');
 }
 
 /**

@@ -7,6 +7,10 @@ define('CONVOCA_PUBLISHER_VERSION', '1.4.0');
 // Load WordPress function stubs
 require_once __DIR__ . '/stubs.php';
 
+// Global $wpdb usado por la cola de reintentos/moderación.
+$GLOBALS['wpdb'] = new wpdb();
+$GLOBALS['_cp_test_db'] = ['rows' => [], 'inserts' => []];
+
 // Load plugin files under test
 require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/channels/interface-channel.php';
 require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/channels/class-facebook.php';

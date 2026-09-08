@@ -98,13 +98,42 @@ class Publisher
     }
 
     /**
+     * Modo de moderación previa configurado (off|all|canal).
+     */
+    public function moderation_mode(): string
+    {
+        $mode = get_option('convoca_publisher_moderation', 'off');
+
+        return in_array($mode, ['off', 'all', 'canal'], true) ? $mode : 'off';
+    }
+
+    /**
+     * Indica si un canal concreto requiere moderación previa.
+     */
+    public function channel_needs_moderation(string $channel_id): bool
+    {
+        $mode = $this->moderation_mode();
+
+        if ($mode === 'all') {
+            return true;
+        }
+        if ($mode === 'canal') {
+            $channels = get_option('convoca_publisher_moderation_channels', []);
+            return is_array($channels) && in_array($channel_id, $channels, true);
+        }
+
+        return false;
+    }
+
+    /**
      * Publicar un post en todos los canales configurados.
      *
      * @param int  $post_id
-     * @param bool $force   Ignorar si ya fue publicado
+     * @param bool $force    Ignorar si ya fue publicado
+     * @param bool $approved Si es true, se salta la moderación previa (envío aprobado).
      * @return array
      */
-    public function publish_post(int $post_id, bool $force = false): array
+    public function publish_post(int $post_id, bool $force = false, bool $approved = false): array
     {
         $post = get_post($post_id);
         if (!$post || $post->post_type !== 'post') {
@@ -130,6 +159,9 @@ class Publisher
             $warnings[] = __('No hay imagen destacada. Algunas redes (Facebook, Twitter) requieren imagen.', 'convoca-publisher');
         }
 
+        $sent_any = false;
+        $pending_review = false;
+
         foreach ($this->channels as $channel_id => $channel) {
             if (!$channel->is_available()) {
                 continue;
@@ -140,8 +172,26 @@ class Publisher
 
             $message = $this->build_channel_message($post, $channel, $url, $hashtags);
 
+            // D15 — Moderación previa: encolar pendiente de revisión en vez de enviar.
+            if ($this->channel_needs_moderation($channel_id) && !$approved) {
+                Retry::enqueue_review($post_id, $channel_id, $message);
+                $pending_review = true;
+                $results[$channel_id] = ['success' => false, 'pending_review' => true];
+
+                $this->log_publish([
+                    'post_id'  => $post_id,
+                    'title'    => $post->post_title,
+                    'channel'  => $channel->get_name(),
+                    'success'  => false,
+                    'time'     => current_time('mysql'),
+                    'response' => __('Pendiente de revisión.', 'convoca-publisher'),
+                ]);
+                continue;
+            }
+
             $result = $channel->publish($post_id, $message, $url, $image_url);
             $results[$channel_id] = $result;
+            $sent_any = true;
 
             $this->log_publish([
                 'post_id'  => $post_id,
@@ -151,9 +201,18 @@ class Publisher
                 'time'     => current_time('mysql'),
                 'response' => $result['post_id'] ?? $result['error'] ?? '',
             ]);
+
+            // D14 — Si la red falla, encolar reintento con backoff.
+            if (empty($result['success'])) {
+                Retry::enqueue($post_id, $channel_id, $message, 0);
+            }
         }
 
-        if (!empty($results)) {
+        if ($pending_review) {
+            update_post_meta($post_id, '_convoca_publisher_moderation', 'pending');
+        }
+
+        if ($sent_any) {
             update_post_meta($post_id, '_convoca_publisher_published', true);
             update_post_meta($post_id, '_convoca_publisher_publish_results', $results);
         }

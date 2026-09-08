@@ -29,6 +29,8 @@ class Admin
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
         add_action('admin_action_cp_delete_log', [self::class, 'handle_delete_log']);
         add_action('admin_post_cp_verify_channel', [self::class, 'handle_verify_channel']);
+        add_action('admin_post_cp_approve_review', [self::class, 'handle_approve_review']);
+        add_action('admin_post_cp_reject_review', [self::class, 'handle_reject_review']);
     }
 
     public static function add_menu_page(): void
@@ -97,6 +99,54 @@ class Admin
         register_setting('convoca_publisher_settings', 'convoca_publisher_privacy_acknowledged', [
             'type' => 'boolean', 'default' => false,
         ]);
+        register_setting('convoca_publisher_settings', 'convoca_publisher_moderation', [
+            'type'              => 'string',
+            'sanitize_callback' => [self::class, 'sanitize_moderation_mode'],
+            'show_in_rest'      => false,
+            'default'           => 'off',
+        ]);
+        register_setting('convoca_publisher_settings', 'convoca_publisher_moderation_channels', [
+            'type'              => 'array',
+            'sanitize_callback' => [self::class, 'sanitize_moderation_channels'],
+            'show_in_rest'      => false,
+            'default'           => [],
+        ]);
+    }
+
+    /**
+     * Sanitizar el modo de moderación (off|all|canal).
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_moderation_mode($value): string
+    {
+        $value = (string) $value;
+
+        return in_array($value, ['off', 'all', 'canal'], true) ? $value : 'off';
+    }
+
+    /**
+     * Sanitizar la lista de canales con moderación previa.
+     *
+     * @param mixed $value
+     * @return array<int, string>
+     */
+    public static function sanitize_moderation_channels($value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        $valid = array_keys(convoca_publisher()->get_channels());
+        $clean = [];
+        foreach ($value as $channel) {
+            $channel = sanitize_key((string) $channel);
+            if ($channel !== '' && in_array($channel, $valid, true)) {
+                $clean[] = $channel;
+            }
+        }
+
+        return $clean;
     }
 
     public static function enqueue_assets(string $hook): void
@@ -144,6 +194,9 @@ class Admin
                 <a href="?page=convoca-publisher&amp;tab=templates" class="nav-tab <?php echo $active_tab === 'templates' ? 'nav-tab-active' : ''; ?>">
                     <?php echo esc_html__('Plantillas', 'convoca-publisher'); ?>
                 </a>
+                <a href="?page=convoca-publisher&amp;tab=moderation" class="nav-tab <?php echo $active_tab === 'moderation' ? 'nav-tab-active' : ''; ?>">
+                    <?php echo esc_html__('Moderación', 'convoca-publisher'); ?>
+                </a>
                 <a href="?page=convoca-publisher&amp;tab=guide" class="nav-tab <?php echo $active_tab === 'guide' ? 'nav-tab-active' : ''; ?>">
                     📖 <?php echo esc_html__('Guía', 'convoca-publisher'); ?>
                 </a>
@@ -156,6 +209,8 @@ class Admin
                 self::render_test_tab();
             } elseif ($active_tab === 'templates') {
                 self::render_templates_tab();
+            } elseif ($active_tab === 'moderation') {
+                self::render_moderation_tab();
             } elseif ($active_tab === 'guide') {
                 self::render_guide_tab();
             } else {
@@ -247,9 +302,46 @@ class Admin
             echo '</table>';
             echo '</div>';
         }
-
-        submit_button();
         ?>
+
+        <?php
+        $mod_channels = get_option('convoca_publisher_moderation_channels', []);
+        $mod_channels = is_array($mod_channels) ? $mod_channels : [];
+        $mod_channels_html = '<input type="hidden" name="convoca_publisher_moderation_channels[]" value="" />';
+        foreach (convoca_publisher()->get_channels() as $channel) {
+            $checked = in_array($channel->get_id(), $mod_channels, true) ? 'checked' : '';
+            $mod_channels_html .= '<label style="display:block;margin:4px 0;">';
+            $mod_channels_html .= '<input type="checkbox" name="convoca_publisher_moderation_channels[]" value="' . esc_attr($channel->get_id()) . '" ' . esc_attr($checked) . '> ';
+            $mod_channels_html .= esc_html($channel->get_name());
+            $mod_channels_html .= '</label>';
+        }
+        ?>
+
+        <div class="cp-settings-section">
+            <h2><?php echo esc_html__('Moderación previa', 'convoca-publisher'); ?></h2>
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="convoca_publisher_moderation"><?php echo esc_html__('Modo de moderación', 'convoca-publisher'); ?></label></th>
+                    <td>
+                        <select name="convoca_publisher_moderation" id="convoca_publisher_moderation">
+                            <option value="off" <?php selected(get_option('convoca_publisher_moderation', 'off'), 'off'); ?>><?php echo esc_html__('Desactivada (publicación automática)', 'convoca-publisher'); ?></option>
+                            <option value="all" <?php selected(get_option('convoca_publisher_moderation', 'off'), 'all'); ?>><?php echo esc_html__('Todas las publicaciones requieren revisión', 'convoca-publisher'); ?></option>
+                            <option value="canal" <?php selected(get_option('convoca_publisher_moderation', 'off'), 'canal'); ?>><?php echo esc_html__('Solo canales seleccionados', 'convoca-publisher'); ?></option>
+                        </select>
+                        <p class="description"><?php echo esc_html__('Cuando está activa, las publicaciones quedan pendientes de revisión en la pestaña Moderación antes de enviarse a las redes.', 'convoca-publisher'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php echo esc_html__('Canales con moderación', 'convoca-publisher'); ?></th>
+                    <td>
+                        <?php echo $mod_channels_html; ?>
+                        <p class="description"><?php echo esc_html__('Se aplican cuando el modo es "Solo canales seleccionados".', 'convoca-publisher'); ?></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <?php submit_button(); ?>
         </form>
         <?php
     }
@@ -503,6 +595,108 @@ class Admin
         $result = $channel->verify_connection();
         set_transient('convoca_publisher_verify_result_' . get_current_user_id(), $result, 30);
         wp_safe_redirect(add_query_arg('convoca_publisher_verified', $channel_id, wp_get_referer()));
+        exit;
+    }
+
+    /**
+     * Render the moderation queue tab: listado de pendientes con Aprobar/Rechazar.
+     */
+    private static function render_moderation_tab(): void
+    {
+        $items = Retry::get_review_items();
+
+        $notice = get_transient('convoca_publisher_review_notice');
+        if (false !== $notice) {
+            delete_transient('convoca_publisher_review_notice');
+            $class = !empty($notice['success']) ? 'notice-success' : 'notice-error';
+            $icon = !empty($notice['success']) ? '✅' : '❌';
+            $message = $notice['message'] ?? $notice['error'] ?? '';
+            echo '<div class="notice ' . esc_attr($class) . ' is-dismissible"><p>' . esc_html($icon) . ' ' . esc_html($message) . '</p></div>';
+        }
+        ?>
+        <div class="cp-settings-section">
+            <h2><?php echo esc_html__('Cola de moderación', 'convoca-publisher'); ?></h2>
+            <?php if (empty($items)): ?>
+                <p><?php echo esc_html__('No hay publicaciones pendientes de revisión.', 'convoca-publisher'); ?></p>
+            <?php else: ?>
+                <table class="widefat striped">
+                    <thead>
+                        <tr>
+                            <th><?php echo esc_html__('Entrada', 'convoca-publisher'); ?></th>
+                            <th><?php echo esc_html__('Canal', 'convoca-publisher'); ?></th>
+                            <th><?php echo esc_html__('Fecha', 'convoca-publisher'); ?></th>
+                            <th><?php echo esc_html__('Acciones', 'convoca-publisher'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($items as $item):
+                        $review_id = (int) $item->id;
+                        $post = get_post((int) $item->post_id);
+                        $approve_url = wp_nonce_url(admin_url('admin-post.php?action=cp_approve_review&id=' . $review_id), 'convoca_publisher_review_' . $review_id);
+                        $reject_url = wp_nonce_url(admin_url('admin-post.php?action=cp_reject_review&id=' . $review_id), 'convoca_publisher_review_' . $review_id);
+                        ?>
+                        <tr>
+                            <td>
+                                <?php if ($post): ?>
+                                    <a href="<?php echo esc_url(get_edit_post_link((int) $item->post_id)); ?>"><?php echo esc_html($post->post_title); ?></a>
+                                <?php else: ?>
+                                    <?php echo esc_html__('(entrada eliminada)', 'convoca-publisher') . ' #' . intval($item->post_id); ?>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo esc_html((string) $item->channel); ?></td>
+                            <td><?php echo esc_html((string) ($item->created_at ?? '')); ?></td>
+                            <td>
+                                <a href="<?php echo esc_url($approve_url); ?>" class="button button-primary"><?php echo esc_html__('Aprobar', 'convoca-publisher'); ?></a>
+                                <a href="<?php echo esc_url($reject_url); ?>" class="button"><?php echo esc_html__('Rechazar', 'convoca-publisher'); ?></a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * Aprobar una publicación pendiente de moderación.
+     */
+    public static function handle_approve_review(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        check_admin_referer('convoca_publisher_review_' . $id);
+
+        $result = Retry::approve($id);
+        set_transient('convoca_publisher_review_notice', [
+            'success' => !empty($result['success']),
+            'message' => !empty($result['success']) ? __('Publicación aprobada y enviada.', 'convoca-publisher') : ($result['error'] ?? __('No se pudo publicar.', 'convoca-publisher')),
+        ], 30);
+
+        wp_safe_redirect(admin_url('admin.php?page=convoca-publisher&tab=moderation'));
+        exit;
+    }
+
+    /**
+     * Rechazar una publicación pendiente de moderación.
+     */
+    public static function handle_reject_review(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        check_admin_referer('convoca_publisher_review_' . $id);
+
+        Retry::reject($id);
+        set_transient('convoca_publisher_review_notice', [
+            'success' => true,
+            'message' => __('Publicación rechazada.', 'convoca-publisher'),
+        ], 30);
+
+        wp_safe_redirect(admin_url('admin.php?page=convoca-publisher&tab=moderation'));
         exit;
     }
 
