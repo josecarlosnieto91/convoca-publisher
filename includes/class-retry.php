@@ -45,6 +45,8 @@ class Retry
 
     private const STATUS_PENDING = 'pending';
 
+    private const STATUS_PROCESSING = 'processing';
+
     private const STATUS_PENDING_REVIEW = 'pending_review';
 
     private const STATUS_FAILED = 'failed';
@@ -264,8 +266,13 @@ class Retry
 
         $items = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM {$table} WHERE status = %s AND next_attempt <= %s ORDER BY next_attempt ASC LIMIT 20",
+                "SELECT * FROM {$table}
+                 WHERE (status = %s OR (status = %s AND last_attempt < %s))
+                   AND next_attempt <= %s
+                 ORDER BY next_attempt ASC LIMIT 20",
                 self::STATUS_PENDING,
+                self::STATUS_PROCESSING,
+                gmdate('Y-m-d H:i:s', time() - 2 * HOUR_IN_SECONDS), // recuperar claims huérfanos (>2h)
                 current_time('mysql')
             )
         );
@@ -275,6 +282,22 @@ class Retry
         }
 
         foreach ($items as $item) {
+            // Claim atómico: transicionar pending -> processing solo si nadie
+            // más lo reclamó (evita doble publicación si dos crons se solapan).
+            $claimed = $wpdb->update(
+                $table,
+                [
+                    'status'       => self::STATUS_PROCESSING,
+                    'last_attempt' => current_time('mysql'),
+                ],
+                ['id' => $item->id, 'status' => self::STATUS_PENDING]
+            );
+
+            if ($claimed === false || $claimed === 0) {
+                // Otro proceso ya lo reclamó (o cambió de estado): saltar.
+                continue;
+            }
+
             $post = get_post((int) $item->post_id);
             $channel = convoca_publisher()->get_channel((string) $item->channel);
 
@@ -319,6 +342,7 @@ class Retry
                 [
                     'attempts'     => $attempt,
                     'error_text'   => $error,
+                    'status'       => self::STATUS_PENDING,
                     'last_attempt' => current_time('mysql'),
                     'next_attempt' => gmdate('Y-m-d H:i:s', self::get_next_attempt_time($attempt)),
                 ],

@@ -238,4 +238,141 @@ class RetryAndModerationTest extends TestCase
         $this->assertSame('pending', end($inserts)['data']['status']);
         $this->assertSame('telegram', end($inserts)['data']['channel']);
     }
+
+    // ── QA2 — Claim atómico en process_queue ────────────────────────────
+
+    /**
+     * Mock stateful de wpdb: filas en la cola, transición de estado
+     * pending→processing solo si sigue pending (devuelve 0 si otro ya
+     * reclamó), y registro de updates.
+     */
+    private function makeQueueWpdb(array $rows): object
+    {
+        $mock = new class ($rows) {
+            public array $rows;
+            public array $updates = [];
+            public string $prefix = 'wp_';
+            public int $insert_id = 0;
+
+            public function __construct(array $rows)
+            {
+                $this->rows = $rows;
+            }
+
+            public function prepare(string $q, mixed ...$a): string
+            {
+                return $q;
+            }
+
+            public function get_results(string $q = null, string $o = 'OBJECT'): array
+            {
+                // El código real compara con current_time('mysql') — hora local.
+                // strtotime interpreta next_attempt como local, así que comparamos
+                // contra el mismo instante en formato local.
+                $now_local = date('Y-m-d H:i:s');
+                return array_values(array_filter($this->rows, function ($r) use ($now_local) {
+                    $next = strtotime((string) ($r->next_attempt ?? ''));
+                    if ($r->status === 'pending') {
+                        return $next !== false && $next <= strtotime($now_local);
+                    }
+                    if ($r->status === 'processing') {
+                        $last = strtotime((string) ($r->last_attempt ?? ''));
+                        return $last !== false && $last < strtotime($now_local) - 2 * 3600; // huérfano >2h
+                    }
+                    return false;
+                }));
+            }
+
+            public function update(string $t, array $data, array $where): int
+            {
+                $this->updates[] = ['data' => $data, 'where' => $where];
+                foreach ($this->rows as $i => $r) {
+                    if ((int) $r->id === (int) $where['id']) {
+                        // Solo reclamable si sigue en el estado esperado.
+                        if (isset($where['status']) && $r->status !== $where['status']) {
+                            return 0;
+                        }
+                        foreach ($data as $k => $v) {
+                            $this->rows[$i]->$k = $v;
+                        }
+                        return 1;
+                    }
+                }
+                return 0;
+            }
+
+            public function delete(string $t, array $where): int
+            {
+                foreach ($this->rows as $i => $r) {
+                    if ((int) $r->id === (int) $where['id']) {
+                        unset($this->rows[$i]);
+                        return 1;
+                    }
+                }
+                return 0;
+            }
+
+            public function get_charset_collate(): string
+            {
+                return '';
+            }
+        };
+
+        return $mock;
+    }
+
+    public function testConcurrentProcessQueuePublishesOnce(): void
+    {
+        // Fila pending lista para reintentar (next_attempt en el pasado).
+        $row = (object) [
+            'id'          => 1,
+            'post_id'     => 42,
+            'channel'     => 'telegram',
+            'payload'     => 'hola',
+            'attempts'    => 0,
+            'status'      => 'pending',
+            'last_attempt' => null,
+            'next_attempt' => date('Y-m-d H:i:s', time() - 10), // hora local, como current_time('mysql')
+        ];
+
+        $wpdb = $this->makeQueueWpdb([$row]);
+        $GLOBALS['wpdb'] = $wpdb;
+
+        $calls = 0;
+        $channel = $this->makeChannel('telegram', static function () use (&$calls): array {
+            $calls++;
+            return ['success' => true, 'post_id' => 'x'];
+        });
+
+        // Stub global convoca_publisher(): devuelve un plugin mock con get_channel().
+        // La función se define en el namespace global (PHP cae a global al resolver).
+        if (!function_exists('convoca_publisher')) {
+            eval('namespace { function convoca_publisher() { return $GLOBALS["_cp_publisher_stub"]; } }');
+        }
+        $GLOBALS['_cp_publisher_stub'] = new class ($channel) {
+            private $channel;
+
+            public function __construct($channel)
+            {
+                $this->channel = $channel;
+            }
+
+            public function get_channel(string $id)
+            {
+                return $id === 'telegram' ? $this->channel : null;
+            }
+        };
+
+        // Simular dos crons solapados: ambos ven la misma fila pending.
+        Retry::process_queue();
+        Retry::process_queue();
+
+        $this->assertSame(1, $calls, 'La publicación debe ocurrir una sola vez aunque dos crons se solapen.');
+
+        // El primer update debe ser el claim atómico pending→processing.
+        $first = $wpdb->updates[0] ?? null;
+        $this->assertNotNull($first);
+        $this->assertSame('processing', $first['data']['status'] ?? null);
+        $this->assertSame('pending', $first['where']['status'] ?? null);
+    }
 }
