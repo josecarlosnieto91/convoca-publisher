@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,10 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.4.3 =
+* Fix: desactivar el plugin lanzaba un fatal («convoca_publisher_deactivation not found») porque el hook de desactivación se registraba sin el namespace. También afectaba a la desinstalación.
+* Desinstalación: borra su tabla de cola, sus opciones y su cron; respeta el ajuste de conservar datos.
 
 = 1.4.2 =
 * Security: cifrado de tokens limitado a opciones propias (convoca_publisher_*) — antes cifraba cualquier opción *_token de terceros sin filtro de descifrado.
