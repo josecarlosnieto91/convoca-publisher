@@ -61,7 +61,10 @@ add_action(
 	5
 );
 
-define('CONVOCA_PUBLISHER_VERSION', '1.4.1');
+// Cache-buster de los assets y version del endpoint REST. Debe seguir la version
+// del plugin: si se queda fija, la CDN sirve JS/CSS viejos para esa misma URL.
+$convoca_publisher_header = get_file_data(__FILE__, array('Version' => 'Version'), 'plugin');
+define('CONVOCA_PUBLISHER_VERSION', !empty($convoca_publisher_header['Version']) ? $convoca_publisher_header['Version'] : '1.4.2');
 define('CONVOCA_PUBLISHER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CONVOCA_PUBLISHER_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('CONVOCA_PUBLISHER_MIN_PHP', '8.0');
