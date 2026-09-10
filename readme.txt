@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.4.4
+Stable tag: 1.4.5
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,10 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.4.5 =
+* El registro de canales ya no depende del classmap de Composer: si un canal es nuevo y nadie regeneró el classmap, se carga su fichero y se toma la clase declarada. Se comprueba en la propia batería de pruebas, con el autoloader real y un canal que el classmap no conoce.
+
 
 = 1.4.4 =
 * Arreglado: el plugin se quedaba **sin ningún canal**. El registro pedía el nombre de la clase en minúsculas («...\facebook») y el autoload de Composer no lo resolvía, así que no cargaba ningún canal: no publicaba en ninguna red y la pantalla de configuración no mostraba ningún campo de token (con el aviso «Configura al menos un token en la pestaña de Ajustes»).

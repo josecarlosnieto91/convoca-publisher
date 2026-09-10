@@ -101,6 +101,35 @@ class Plugin
     }
 
     /**
+     * Clase declarada en el fichero que corresponde a un nombre esperado.
+     *
+     * Es la red que evita depender del classmap: si el nombre derivado no existe,
+     * se incluye el fichero y se devuelve la clase que declare (o cadena vacía).
+     *
+     * @param string $expected Nombre de clase esperado.
+     */
+    private static function class_from_file(string $expected): string
+    {
+        $short = substr($expected, (int) strrpos($expected, '\\') + 1);
+        $file  = CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/channels/class-' . strtolower($short) . '.php';
+
+        if (!file_exists($file)) {
+            return '';
+        }
+
+        $before = get_declared_classes();
+        require_once $file;
+
+        foreach (array_diff(get_declared_classes(), $before) as $declared) {
+            if (is_subclass_of($declared, Channels\ChannelInterface::class)) {
+                return $declared;
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * Instancias de todos los canales disponibles.
      *
      * @return array<string, Channels\ChannelInterface>
@@ -110,7 +139,13 @@ class Plugin
         $channels = [];
 
         foreach (self::channel_class_names() as $class) {
-            if (!class_exists($class) || !is_subclass_of($class, Channels\ChannelInterface::class)) {
+            if (!class_exists($class)) {
+                // El classmap se quedó atrás (un canal nuevo sin `composer dump-autoload`):
+                // se carga su fichero y se sigue con la clase declarada.
+                $class = self::class_from_file($class);
+            }
+
+            if ('' === $class || !is_subclass_of($class, Channels\ChannelInterface::class)) {
                 continue;
             }
 

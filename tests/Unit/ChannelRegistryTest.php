@@ -155,5 +155,62 @@ namespace ConvocaPublisher\Tests {
                 'Una base abstracta de canal no se instancia ni se registra.'
             );
         }
+
+        /**
+         * El registro no puede depender del classmap de Composer.
+         *
+         * Si alguien añade un canal y nadie regenera el classmap, su fichero tiene que
+         * cargarse igual. Se comprueba en un proceso aparte (aquí las clases ya están
+         * cargadas) con el autoloader real y un canal inventado que el classmap no
+         * conoce.
+         */
+        public function testANewChannelIsFoundEvenIfTheClassmapIsStale(): void
+        {
+            $autoload = CONVOCA_PUBLISHER_PLUGIN_DIR . 'vendor/autoload.php';
+
+            if (!file_exists($autoload)) {
+                $this->markTestSkipped('Sin `composer install` no hay autoloader que probar.');
+            }
+
+            $dir = sys_get_temp_dir() . '/hermes-verify-canal-' . uniqid();
+            mkdir($dir . '/includes/channels', 0777, true);
+
+            foreach (glob(CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/channels/*.php') ?: [] as $file) {
+                copy($file, $dir . '/includes/channels/' . basename($file));
+            }
+
+            file_put_contents($dir . '/includes/channels/class-inventado.php', <<<'PHP'
+            <?php
+            namespace ConvocaPublisher\Channels;
+            class Inventado implements ChannelInterface
+            {
+                public function get_id(): string { return 'inventado'; }
+                public function get_name(): string { return 'Inventado'; }
+                public function is_available(): bool { return true; }
+                public function publish(int $post_id, string $message, string $url, string $image_url = ''): array { return ['success' => true]; }
+                public function get_settings_fields(): array { return ['inventado_token' => ['label' => 'Token']]; }
+                public function validate_settings(array $settings): array { return []; }
+                public function verify_connection(): array { return ['success' => true]; }
+            }
+            PHP);
+
+            $code = 'define("ABSPATH", true);'
+                . ' define("CONVOCA_PUBLISHER_PLUGIN_DIR", ' . var_export($dir . '/', true) . ');'
+                . ' require ' . var_export($autoload, true) . ';'
+                . ' $c = \ConvocaPublisher\Plugin::discover_channels();'
+                . ' echo count($c) . ":" . implode(",", array_keys($c));';
+
+            $out = (string) shell_exec(escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg($code) . ' 2>&1');
+
+            foreach (glob($dir . '/includes/channels/*.php') ?: [] as $file) {
+                unlink($file);
+            }
+            rmdir($dir . '/includes/channels');
+            rmdir($dir . '/includes');
+            rmdir($dir);
+
+            $this->assertStringStartsWith('8:', $out, 'Un canal nuevo debe cargarse aunque el classmap no lo conozca: ' . $out);
+            $this->assertStringContainsString('inventado', $out);
+        }
     }
 }
