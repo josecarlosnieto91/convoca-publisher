@@ -180,19 +180,19 @@ namespace ConvocaPublisher\Tests {
             }
 
             file_put_contents($dir . '/includes/channels/class-inventado.php', <<<'PHP'
-            <?php
-            namespace ConvocaPublisher\Channels;
-            class Inventado implements ChannelInterface
-            {
-                public function get_id(): string { return 'inventado'; }
-                public function get_name(): string { return 'Inventado'; }
-                public function is_available(): bool { return true; }
-                public function publish(int $post_id, string $message, string $url, string $image_url = ''): array { return ['success' => true]; }
-                public function get_settings_fields(): array { return ['inventado_token' => ['label' => 'Token']]; }
-                public function validate_settings(array $settings): array { return []; }
-                public function verify_connection(): array { return ['success' => true]; }
-            }
-            PHP);
+                <?php
+                namespace ConvocaPublisher\Channels;
+                class Inventado implements ChannelInterface
+                {
+                    public function get_id(): string { return 'inventado'; }
+                    public function get_name(): string { return 'Inventado'; }
+                    public function is_available(): bool { return true; }
+                    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array { return ['success' => true]; }
+                    public function get_settings_fields(): array { return ['inventado_token' => ['label' => 'Token']]; }
+                    public function validate_settings(array $settings): array { return []; }
+                    public function verify_connection(): array { return ['success' => true]; }
+                }
+                PHP);
 
             $code = 'define("ABSPATH", true);'
                 . ' define("CONVOCA_PUBLISHER_PLUGIN_DIR", ' . var_export($dir . '/', true) . ');'
