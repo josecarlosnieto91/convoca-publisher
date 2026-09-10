@@ -40,9 +40,6 @@ class Plugin
 
         // Cifrado automático de tokens (hooks cp_*)
         $this->register_crypto_hooks();
-
-        // Manejar aceptación de aviso de privacidad
-        add_action('admin_init', [$this, 'handle_privacy_ack']);
     }
 
     /**
@@ -64,13 +61,6 @@ class Plugin
 
         foreach ($token_options as $option) {
             add_filter("option_{$option}", [Crypto::class, 'decrypt_on_load'], 10, 2);
-        }
-    }
-
-    public function handle_privacy_ack(): void
-    {
-        if (isset($_POST['convoca_publisher_privacy_ack']) && current_user_can('manage_options')) {
-            update_option('convoca_publisher_privacy_acknowledged', (bool) $_POST['convoca_publisher_privacy_ack']);
         }
     }
 

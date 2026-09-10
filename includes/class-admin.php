@@ -97,7 +97,9 @@ class Admin
             'type' => 'boolean', 'default' => true,
         ]);
         register_setting('convoca_publisher_settings', 'convoca_publisher_privacy_acknowledged', [
-            'type' => 'boolean', 'default' => false,
+            'type' => 'boolean',
+            'default' => false,
+            'sanitize_callback' => [self::class, 'sanitize_privacy_ack'],
         ]);
         register_setting('convoca_publisher_settings', 'convoca_publisher_moderation', [
             'type'              => 'string',
@@ -123,6 +125,25 @@ class Admin
         $value = (string) $value;
 
         return in_array($value, ['off', 'all', 'canal'], true) ? $value : 'off';
+    }
+
+    /**
+     * Sanitize the privacy acknowledgement.
+     *
+     * El aviso vive solo en la pestaña Ajustes, pero el grupo de opciones se
+     * guarda también desde otras pestañas (Plantillas). Si el campo no viene en
+     * el POST, se conserva el valor guardado en lugar de desmarcarlo.
+     *
+     * @param mixed $value Valor enviado.
+     * @return bool
+     */
+    public static function sanitize_privacy_ack($value): bool
+    {
+        if (!isset($_POST['convoca_publisher_privacy_acknowledged'])) {
+            return (bool) get_option('convoca_publisher_privacy_acknowledged', false);
+        }
+
+        return !empty($value);
     }
 
     /**
@@ -223,12 +244,6 @@ class Admin
 
     private static function render_settings_tab(): void
     {
-        // Handle privacy ack
-        if (isset($_POST['convoca_publisher_privacy_ack']) && isset($_POST['_convoca_publisher_settings_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_convoca_publisher_settings_nonce'])), 'convoca_publisher_settings')) {
-            update_option('convoca_publisher_privacy_acknowledged', !empty($_POST['convoca_publisher_privacy_ack']));
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Aviso de privacidad actualizado.', 'convoca-publisher') . '</p></div>';
-        }
-
         if (isset($_POST['submit'])) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Ajustes guardados.', 'convoca-publisher') . '</p></div>';
         }
@@ -242,11 +257,11 @@ class Admin
                 <p><?php echo esc_html__('Este plugin envía el título, extracto, URL, imagen destacada y etiquetas de tus entradas a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, Telegram, Mastodon). Los tokens de acceso se almacenan cifrados en la base de datos de WordPress (AES-256-GCM).', 'convoca-publisher'); ?></p>
                 <p>
                     <label>
-                        <input type="checkbox" name="convoca_publisher_privacy_ack" value="1" <?php checked(get_option('convoca_publisher_privacy_acknowledged', false)); ?> />
+                        <input type="hidden" name="convoca_publisher_privacy_acknowledged" value="0" />
+                        <input type="checkbox" name="convoca_publisher_privacy_acknowledged" value="1" <?php checked(get_option('convoca_publisher_privacy_acknowledged', false)); ?> />
                         <?php echo esc_html__('He leído y acepto este aviso', 'convoca-publisher'); ?>
                     </label>
                 </p>
-                <?php wp_nonce_field('convoca_publisher_settings', '_convoca_publisher_settings_nonce'); ?>
             </div>
             
             <div class="cp-settings-section">
