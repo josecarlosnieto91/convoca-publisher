@@ -52,8 +52,21 @@ composer test
 ```
 
 
-### 1.3.1
-- docs: add MANUAL_USUARIO.md with 7 social networks admin guide
+## 🏷️ Versión
+
+1.4.2
+
+## 🧩 Hooks
+
+| Hook | Tipo | Descripción |
+|------|------|-------------|
+| `convoca_publisher_async_publish` | action | Publicación diferida programada por cron |
+| `convoca_publisher_retry_failed_posts` | action | Reintento de publicaciones fallidas (cron) |
+| `convoca_publisher_retry_failed` | action | Un reintento ha fallado |
+| `convoca_publisher_retry_backoff` | filter | Intervalo de backoff de los reintentos |
+| `convoca_publisher_retry_failed_notify_email` | filter | Activar/desactivar email de aviso de reintentos fallidos |
+
+El historial completo de versiones está en [CHANGELOG.md](CHANGELOG.md).
 
 ## 📋 Requisitos
 

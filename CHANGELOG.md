@@ -1,5 +1,10 @@
 # Changelog — convoca-publisher
 
+## v1.4.2 (2026-09-05)
+
+### 🔐 Security
+- Cifrado de tokens solo para opciones propias (`convoca_publisher_*`)
+
 ## v1.4.1 (2026-08-07)
 
 ### ✨ Mejoras
