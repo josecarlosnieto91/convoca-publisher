@@ -28,7 +28,10 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 // ─── Keep data mode ───
 // Define CONVOCA_KEEP_DATA_ON_UNINSTALL in wp-config.php to preserve all data
 // when uninstalling. Useful for temporary deactivation + reactivation.
-if ( defined( 'CONVOCA_KEEP_DATA_ON_UNINSTALL' ) && CONVOCA_KEEP_DATA_ON_UNINSTALL ) {
+$convoca_conservar = ( defined( 'CONVOCA_KEEP_DATA_ON_UNINSTALL' ) && CONVOCA_KEEP_DATA_ON_UNINSTALL )
+	|| 1 === (int) get_option( 'convoca_uninstall_keep_data', 0 );
+
+if ( $convoca_conservar ) {
 	return;
 }
 
@@ -41,6 +44,8 @@ $options = [
 	'convoca_publisher_enable_scheduler',
 	'convoca_publisher_message_template',
 	'convoca_publisher_publish_log',
+	'convoca_publisher_retry_table_version',
+	'convoca_publisher_version',
 	'convoca_publisher_encryption_key',
 	'convoca_publisher_privacy_acknowledged',
 	// Tokens de canales
