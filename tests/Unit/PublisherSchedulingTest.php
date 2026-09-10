@@ -1,7 +1,9 @@
 <?php
+
 /**
  * Tests for Convoca Publisher — scheduling, queue and validation.
  */
+
 namespace Convoca\Tests\Publisher\Unit;
 
 use PHPUnit\Framework\TestCase;
@@ -42,7 +44,7 @@ class PublisherSchedulingTest extends TestCase
     {
         $max_retries = 2;
         $attempts = 0;
-        
+
         // Simulate retries
         for ($i = 0; $i < $max_retries; $i++) {
             $attempts++;

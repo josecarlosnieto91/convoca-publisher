@@ -93,6 +93,18 @@ class Plugin
         // otro camino), cuenta igual aunque su nombre no salga del fichero.
         foreach (get_declared_classes() as $class) {
             if (str_starts_with($class, __NAMESPACE__ . '\\Channels\\')) {
+                // Solo valen las clases declaradas por un fichero de canales del plugin: una
+                // clase anónima o un doble de pruebas en este namespace no es un canal (y
+                // `new` sobre ella reventaría). Aquí solo se listan nombres: quien decide
+                // si una clase sirve como canal es `discover_channels()`.
+                $reflection = new \ReflectionClass($class);
+
+                $file = (string) $reflection->getFileName();
+
+                if (!str_starts_with($file, CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/channels/')) {
+                    continue;
+                }
+
                 $names[] = $class;
             }
         }
@@ -150,7 +162,9 @@ class Plugin
             }
 
             $reflection = new \ReflectionClass($class);
-            if ($reflection->isAbstract()) {
+            // Ni una base abstracta ni una clase anónima se pueden instanciar como canal, y
+            // aquí es justo donde se instancian: se descartan en este punto.
+            if ($reflection->isAbstract() || $reflection->isAnonymous()) {
                 continue;
             }
 

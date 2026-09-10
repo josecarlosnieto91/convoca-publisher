@@ -15,7 +15,6 @@
  * (at your option) any later version.
  */
 
-
 namespace ConvocaPublisher;
 
 defined('ABSPATH') || exit;
@@ -130,7 +129,7 @@ class Admin
     /**
      * Sanitize the privacy acknowledgement.
      *
-     * El aviso vive solo en la pestaña Ajustes, pero el grupo de opciones se
+     * El aviso vive solo en la pestaña Configuración, pero el grupo de opciones se
      * guarda también desde otras pestañas (Plantillas). Si el campo no viene en
      * el POST, se conserva el valor guardado en lugar de desmarcarlo.
      *
@@ -172,23 +171,34 @@ class Admin
 
     public static function enqueue_assets(string $hook): void
     {
-        if (str_contains($hook, 'convoca-publisher')) {
-            wp_add_inline_style('dashicons', '
-                .cp-settings-section { background: #fff; padding: 20px; margin: 20px 0; border: 1px solid #c3c4c7; border-radius: 4px; }
-                .cp-settings-section h2 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-                .cp-channel-card { background: #f0f6fc; padding: 15px; border-left: 4px solid #2271b1; margin: 10px 0; border-radius: 0 4px 4px 0; }
-                .cp-channel-card.active { border-left-color: #46b450; }
-                .cp-channel-card.inactive { border-left-color: #dc3232; }
-                .cp-log-row { padding: 8px 0; border-bottom: 1px solid #f0f0f0; display: flex; gap: 15px; align-items: center; }
-                .cp-log-row .cp-status { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; text-transform: uppercase; font-weight: 600; }
-                .cp-log-row .cp-status.ok { background: #46b450; color: #fff; }
-                .cp-log-row .cp-status.fail { background: #dc3232; color: #fff; }
-                .cp-template-help { background: #f6f7f7; padding: 10px 15px; border-radius: 4px; margin: 10px 0; font-size: 12px; }
-                .cp-template-help code { background: #e8e8e8; padding: 2px 6px; border-radius: 3px; }
-                .cp-channel-template { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; }
-                .cp-privacy-notice { background: #fff4e5; padding: 15px; border-left: 4px solid #f0b849; margin: 20px 0; border-radius: 0 4px 4px 0; }
-            ');
+        $es_pantalla_del_plugin = str_contains($hook, 'convoca-publisher');
+        $es_editor              = in_array($hook, ['post.php', 'post-new.php'], true);
+
+        if (!$es_pantalla_del_plugin && !$es_editor) {
+            return;
         }
+
+        // Ficheros de verdad, encolados solo donde hacen falta (antes iban en un
+        // `wp_add_inline_style` colgado de `dashicons`: dependía de que WordPress
+        // encolara ese fichero y el estilo no se podía cachear).
+        wp_enqueue_style(
+            'convoca-publisher-admin',
+            CONVOCA_PUBLISHER_PLUGIN_URL . 'assets/css/admin.css',
+            [],
+            CONVOCA_PUBLISHER_VERSION
+        );
+
+        if (!$es_pantalla_del_plugin) {
+            return;
+        }
+
+        wp_enqueue_script(
+            'convoca-publisher-admin',
+            CONVOCA_PUBLISHER_PLUGIN_URL . 'assets/js/admin.js',
+            [],
+            CONVOCA_PUBLISHER_VERSION,
+            true
+        );
     }
 
     public static function render_page(): void
@@ -197,47 +207,199 @@ class Admin
             return;
         }
 
-        $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'settings';
+        $channels = convoca_publisher()->get_channels();
+        $channel_id = isset($_GET['canal']) ? sanitize_key(wp_unslash((string) $_GET['canal'])) : '';
+
+        // La pantalla de un canal concreto manda sobre las pestañas.
+        if ('' !== $channel_id && isset($channels[$channel_id])) {
+            self::render_channel_screen($channels[$channel_id]);
+
+            return;
+        }
+
+        $active_tab = isset($_GET['tab']) ? sanitize_key(wp_unslash((string) $_GET['tab'])) : 'channels';
+
+        $tabs = [
+            'channels'   => __('Canales', 'convoca-publisher'),
+            'settings'   => __('Configuración', 'convoca-publisher'),
+            'templates'  => __('Plantillas', 'convoca-publisher'),
+            'test'       => __('Probar', 'convoca-publisher'),
+            'moderation' => __('Moderación', 'convoca-publisher'),
+            'guide'      => __('Guía', 'convoca-publisher'),
+        ];
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('Convoca Publisher', 'convoca-publisher'); ?></h1>
-            
+
             <nav class="nav-tab-wrapper">
-                <a href="?page=convoca-publisher&amp;tab=settings" class="nav-tab <?php echo $active_tab === 'settings' ? 'nav-tab-active' : ''; ?>">
-                    <?php echo esc_html__('Configuración', 'convoca-publisher'); ?>
-                </a>
-                <a href="?page=convoca-publisher&amp;tab=channels" class="nav-tab <?php echo $active_tab === 'channels' ? 'nav-tab-active' : ''; ?>">
-                    <?php echo esc_html__('Canales', 'convoca-publisher'); ?>
-                </a>
-                <a href="?page=convoca-publisher&amp;tab=test" class="nav-tab <?php echo $active_tab === 'test' ? 'nav-tab-active' : ''; ?>">
-                    <?php echo esc_html__('Probar', 'convoca-publisher'); ?>
-                </a>
-                <a href="?page=convoca-publisher&amp;tab=templates" class="nav-tab <?php echo $active_tab === 'templates' ? 'nav-tab-active' : ''; ?>">
-                    <?php echo esc_html__('Plantillas', 'convoca-publisher'); ?>
-                </a>
-                <a href="?page=convoca-publisher&amp;tab=moderation" class="nav-tab <?php echo $active_tab === 'moderation' ? 'nav-tab-active' : ''; ?>">
-                    <?php echo esc_html__('Moderación', 'convoca-publisher'); ?>
-                </a>
-                <a href="?page=convoca-publisher&amp;tab=guide" class="nav-tab <?php echo $active_tab === 'guide' ? 'nav-tab-active' : ''; ?>">
-                    📖 <?php echo esc_html__('Guía', 'convoca-publisher'); ?>
-                </a>
+                <?php foreach ($tabs as $slug => $label) : ?>
+                    <a href="<?php echo esc_url(self::tab_url($slug)); ?>" class="nav-tab <?php echo $active_tab === $slug ? 'nav-tab-active' : ''; ?>">
+                        <?php echo esc_html($label); ?>
+                    </a>
+                <?php endforeach; ?>
             </nav>
-            
+
             <?php
-            if ($active_tab === 'channels') {
-                self::render_channels_tab();
-            } elseif ($active_tab === 'test') {
-                self::render_test_tab();
-            } elseif ($active_tab === 'templates') {
-                self::render_templates_tab();
-            } elseif ($active_tab === 'moderation') {
-                self::render_moderation_tab();
-            } elseif ($active_tab === 'guide') {
-                self::render_guide_tab();
-            } else {
-                self::render_settings_tab();
+            switch ($active_tab) {
+                case 'settings':
+                    self::render_settings_tab();
+                    break;
+                case 'templates':
+                    self::render_templates_tab();
+                    break;
+                case 'test':
+                    self::render_test_tab();
+                    break;
+                case 'moderation':
+                    self::render_moderation_tab();
+                    break;
+                case 'guide':
+                    self::render_guide_tab();
+                    break;
+                case 'channels':
+                default:
+                    self::render_channels_tab();
+                    break;
             }
         ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * URL de una pestaña del panel (una sola forma de construirla en todo el plugin).
+     */
+    public static function tab_url(string $tab, array $extra = []): string
+    {
+        return add_query_arg(
+            array_merge(
+                [
+                    'page' => 'convoca-publisher',
+                    'tab'  => $tab,
+                ],
+                $extra
+            ),
+            admin_url('admin.php')
+        );
+    }
+
+    /**
+     * Pantalla de un canal: estado, campos, verificación, plantilla y su guía, todo
+     * junto. Es el sitio único de un canal: no hay que ir a otra pestaña a buscar nada.
+     */
+    private static function render_channel_screen(object $channel): void
+    {
+        $channel_id   = $channel->get_id();
+        $status       = self::channel_status($channel);
+        $available    = $channel->is_available();
+        $fields       = $channel->get_settings_fields();
+        $template_key = 'convoca_publisher_' . $channel_id . '_template';
+        ?>
+        <div class="wrap">
+            <h1 class="wp-heading-inline"><?php echo esc_html($channel->get_name()); ?></h1>
+            <?php echo self::status_badge($status); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
+
+            <p>
+                <a href="<?php echo esc_url(self::tab_url('channels')); ?>">&larr; <?php echo esc_html__('Todos los canales', 'convoca-publisher'); ?></a>
+            </p>
+
+            <?php if (!$available) : ?>
+                <div class="cp-notice cp-notice--warn">
+                    <p><?php echo esc_html__('Todavía faltan datos para que este canal funcione: no se publicará nada por aquí hasta que estén. Rellénalos, guarda y usa «Verificar conexión».', 'convoca-publisher'); ?></p>
+                </div>
+            <?php elseif (!empty($status['detail'])) : ?>
+                <div class="cp-notice cp-notice--warn">
+                    <p><?php echo esc_html($status['detail']); ?></p>
+                </div>
+            <?php endif; ?>
+
+            <form method="post" action="options.php">
+                <?php settings_fields('convoca_publisher_settings'); ?>
+
+                <div class="cp-section">
+                    <h2><?php echo esc_html__('Credenciales y datos', 'convoca-publisher'); ?></h2>
+                    <?php if (empty($fields)) : ?>
+                        <p><?php echo esc_html__('Este canal no necesita configuración.', 'convoca-publisher'); ?></p>
+                    <?php endif; ?>
+
+                    <?php foreach ($fields as $key => $field) : ?>
+                        <?php if ($key === $template_key) : ?>
+                            <?php continue; ?>
+                        <?php endif; ?>
+
+                        <?php $type = ($field['type'] ?? 'text') === 'password' ? 'password' : 'text'; ?>
+                        <div class="cp-field">
+                            <label for="<?php echo esc_attr($key); ?>"><?php echo esc_html($field['title'] ?? $key); ?></label>
+
+                            <input
+                                type="<?php echo esc_attr($type); ?>"
+                                id="<?php echo esc_attr($key); ?>"
+                                name="<?php echo esc_attr($key); ?>"
+                                value="<?php echo esc_attr((string) get_option($key, '')); ?>"
+                                class="cp-input regular-text"
+                            />
+
+                            <?php if ('password' === $type) : ?>
+                                <button
+                                    type="button"
+                                    class="button-link"
+                                    data-cp-toggle="#<?php echo esc_attr($key); ?>"
+                                    data-cp-show="<?php echo esc_attr__('Mostrar', 'convoca-publisher'); ?>"
+                                    data-cp-hide="<?php echo esc_attr__('Ocultar', 'convoca-publisher'); ?>"
+                                    aria-pressed="false"
+                                ><?php echo esc_html__('Mostrar', 'convoca-publisher'); ?></button>
+                            <?php endif; ?>
+
+                            <?php if (!empty($field['description'])) : ?>
+                                <p class="description"><?php echo esc_html($field['description']); ?></p>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <?php if (isset($fields[$template_key])) : ?>
+                    <div class="cp-section">
+                        <h2><?php echo esc_html__('Plantilla de este canal', 'convoca-publisher'); ?></h2>
+                        <div class="cp-field">
+                            <label for="<?php echo esc_attr($template_key); ?>"><?php echo esc_html($fields[$template_key]['title'] ?? __('Mensaje', 'convoca-publisher')); ?></label>
+                            <input
+                                type="text"
+                                id="<?php echo esc_attr($template_key); ?>"
+                                name="<?php echo esc_attr($template_key); ?>"
+                                value="<?php echo esc_attr((string) get_option($template_key, '')); ?>"
+                                class="cp-input cp-input--wide"
+                                placeholder="<?php echo esc_attr__('Usar la plantilla global', 'convoca-publisher'); ?>"
+                            />
+                            <p class="description">
+                                <?php echo esc_html__('Déjalo vacío para usar la plantilla global. Variables: {title}, {excerpt}, {url}, {hashtags}, {date}, {author}.', 'convoca-publisher'); ?>
+                            </p>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php submit_button(__('Guardar cambios', 'convoca-publisher')); ?>
+            </form>
+
+            <div class="cp-section">
+                <h2><?php echo esc_html__('Verificar la conexión', 'convoca-publisher'); ?></h2>
+                <p><?php echo esc_html__('Pregunta a la red si la credencial sigue sirviendo. No publica nada ni gasta cuota de envío.', 'convoca-publisher'); ?></p>
+                <p><?php echo self::verify_button($channel); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?></p>
+            </div>
+
+            <div class="cp-section">
+                <h2><?php echo esc_html__('Cómo conseguir estas credenciales', 'convoca-publisher'); ?></h2>
+                <p>
+                    <a href="<?php echo esc_url(self::tab_url('guide') . '#canal-' . $channel_id); ?>">
+                        <?php
+                        printf(
+                            /* translators: %s: nombre de la red social */
+                            esc_html__('Guía paso a paso de %s', 'convoca-publisher'),
+                            esc_html($channel->get_name())
+                        );
+        ?>
+                    </a>
+                </p>
+            </div>
         </div>
         <?php
     }
@@ -245,14 +407,14 @@ class Admin
     private static function render_settings_tab(): void
     {
         if (isset($_POST['submit'])) {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Ajustes guardados.', 'convoca-publisher') . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Cambios guardados.', 'convoca-publisher') . '</p></div>';
         }
         ?>
         <form method="post" action="options.php">
             <?php settings_fields('convoca_publisher_settings'); ?>
             
             <!-- Aviso de privacidad -->
-            <div class="cp-privacy-notice">
+            <div class="cp-notice cp-notice--warn">
                 <h3><?php echo esc_html__('🔐 Aviso de privacidad', 'convoca-publisher'); ?></h3>
                 <p><?php echo esc_html__('Este plugin envía el título, extracto, URL, imagen destacada y etiquetas de tus entradas a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, Telegram, Mastodon). Los tokens de acceso se almacenan cifrados en la base de datos de WordPress (AES-256-GCM).', 'convoca-publisher'); ?></p>
                 <p>
@@ -264,7 +426,7 @@ class Admin
                 </p>
             </div>
             
-            <div class="cp-settings-section">
+            <div class="cp-section">
                 <h2><?php echo esc_html__('Configuración general', 'convoca-publisher'); ?></h2>
                 <table class="form-table">
                     <tr>
@@ -289,37 +451,14 @@ class Admin
                 </table>
             </div>
             
-            <?php
-            $channels = convoca_publisher()->get_channels();
-        foreach ($channels as $channel) {
-            echo '<div class="cp-settings-section">';
-            echo '<h2>' . esc_html($channel->get_name()) . '</h2>';
-            echo '<table class="form-table">';
-            foreach ($channel->get_settings_fields() as $key => $field) {
-                if (str_ends_with($key, '_template')) {
-                    continue; // Templates go in the Templates tab
-                }
-                $value = get_option($key, '');
-                echo '<tr>';
-                echo '<th scope="row"><label for="' . esc_attr($key) . '">' . esc_html($field['title']) . '</label></th>';
-                echo '<td>';
-                if (($field['type'] ?? 'text') === 'password') {
-                    echo '<input type="password" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="regular-text" />';
-                } else {
-                    echo '<input type="text" id="' . esc_attr($key) . '" name="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="regular-text" />';
-                }
-                if (!empty($field['description'])) {
-                    echo '<p class="description">' . esc_html($field['description']) . '</p>';
-                }
-                echo '</td>';
-                echo '</tr>';
-            }
-            echo '</table>';
-            echo '</div>';
-        }
-        ?>
+            <div class="cp-notice">
+                <p>
+                    <?php echo esc_html__('Los datos y las plantillas de cada red viven en su propia pantalla.', 'convoca-publisher'); ?>
+                    <a href="<?php echo esc_url(self::tab_url('channels')); ?>"><?php echo esc_html__('Ir a Canales', 'convoca-publisher'); ?></a>
+                </p>
+            </div>
 
-        <div class="cp-settings-section">
+        <div class="cp-section">
             <h2><?php echo esc_html__('Moderación previa', 'convoca-publisher'); ?></h2>
             <table class="form-table">
                 <tr>
@@ -339,8 +478,8 @@ class Admin
                         <input type="hidden" name="convoca_publisher_moderation_channels[]" value="" />
                         <?php foreach (convoca_publisher()->get_channels() as $channel) : ?>
                             <?php $checked = in_array($channel->get_id(), (array) get_option('convoca_publisher_moderation_channels', []), true) ? 'checked' : ''; ?>
-                            <label style="display:block;margin:4px 0;">
-                                <input type="checkbox" name="convoca_publisher_moderation_channels[]" value="<?php echo esc_attr($channel->get_id()); ?>" <?php echo esc_attr($checked); ?>> <?php echo esc_html($channel->get_name()); ?>
+                            <label class="cp-check" data-cp-moderation-group>
+                                <input type="checkbox" name="convoca_publisher_moderation_channels[]" value="<?php echo esc_attr($channel->get_id()); ?>" data-cp-moderation-channel <?php echo esc_attr($checked); ?>> <?php echo esc_html($channel->get_name()); ?>
                             </label>
                         <?php endforeach; ?>
                         <p class="description"><?php echo esc_html__('Se aplican cuando el modo es "Solo canales seleccionados".', 'convoca-publisher'); ?></p>
@@ -358,10 +497,10 @@ class Admin
     {
         $channels = convoca_publisher()->get_channels();
         ?>
-        <div class="cp-settings-section">
+        <div class="cp-section">
             <h2><?php echo esc_html__('Plantillas de mensaje', 'convoca-publisher'); ?></h2>
             
-            <div class="cp-template-help">
+            <div class="cp-help">
                 <p><strong><?php echo esc_html__('Variables disponibles:', 'convoca-publisher'); ?></strong></p>
                 <p>
                     <code>{title}</code> — <?php echo esc_html__('Título de la entrada', 'convoca-publisher'); ?><br>
@@ -383,7 +522,7 @@ class Admin
                     <tr>
                         <th scope="row"><?php echo esc_html__('Mensaje por defecto', 'convoca-publisher'); ?></th>
                         <td>
-                            <input type="text" name="convoca_publisher_message_template" value="<?php echo esc_attr(get_option('convoca_publisher_message_template', '{title} — {url}')); ?>" class="regular-text" style="width:100%;max-width:500px;" />
+                            <input type="text" name="convoca_publisher_message_template" value="<?php echo esc_attr(get_option('convoca_publisher_message_template', '{title} — {url}')); ?>" class="cp-input cp-input--wide" />
                             <p class="description"><?php echo esc_html__('Se usa cuando un canal no tiene su propia plantilla.', 'convoca-publisher'); ?></p>
                         </td>
                     </tr>
@@ -398,7 +537,7 @@ class Admin
                     ?>
                 <div class="cp-channel-template">
                     <h4><?php echo esc_html($channel->get_name()); ?></h4>
-                    <input type="text" name="<?php echo esc_attr($tkey); ?>" value="<?php echo esc_attr($tval); ?>" class="regular-text" style="width:100%;max-width:500px;" placeholder="<?php echo esc_attr__('Usar plantilla global', 'convoca-publisher'); ?>" />
+                    <input type="text" name="<?php echo esc_attr($tkey); ?>" value="<?php echo esc_attr($tval); ?>" class="cp-input cp-input--wide" placeholder="<?php echo esc_attr__('Usar plantilla global', 'convoca-publisher'); ?>" />
                     <p class="description"><?php echo esc_html__('Plantilla específica para ', 'convoca-publisher') . esc_html($channel->get_name()); ?></p>
                 </div>
                 <?php endforeach; ?>
@@ -409,47 +548,208 @@ class Admin
         <?php
     }
 
+    /**
+     * Estado de un canal, tal y como se ve en su tarjeta y en su pantalla.
+     *
+     * ✅ Configurado · ❌ Falta token · ⚠️ Error al verificar · 🔑 Necesita reconexión.
+     * El resultado de la última verificación solo cuenta si la configuración no ha
+     * cambiado desde entonces: si el token es otro, el estado viejo no vale.
+     *
+     * @return array{key: string, class: string, icon: string, label: string, detail?: string}
+     */
+    public static function channel_status(object $channel): array
+    {
+        $channel_id = $channel->get_id();
+
+        if (!$channel->is_available()) {
+            return [
+                'key'   => 'missing',
+                'class' => 'cp-status--off',
+                'icon'  => '❌',
+                'label' => __('Falta token', 'convoca-publisher'),
+            ];
+        }
+
+        $estados = (array) get_option('convoca_publisher_verify_status', []);
+        $estado  = isset($estados[$channel_id]) ? (array) $estados[$channel_id] : [];
+
+        if ($estado && ($estado['fingerprint'] ?? '') !== self::channel_fingerprint($channel)) {
+            $estado = []; // La configuración cambió: el resultado anterior ya no dice nada.
+        }
+
+        if ($estado && empty($estado['success'])) {
+            $detalle    = (string) ($estado['message'] ?? '');
+            $reconectar = self::looks_like_auth_error($detalle);
+
+            return [
+                'key'    => $reconectar ? 'reconnect' : 'error',
+                'class'  => $reconectar ? 'cp-status--warn' : 'cp-status--fail',
+                'icon'   => $reconectar ? '🔑' : '⚠️',
+                'label'  => $reconectar
+                    ? __('Necesita reconexión', 'convoca-publisher')
+                    : __('Error al verificar', 'convoca-publisher'),
+                'detail' => $detalle,
+            ];
+        }
+
+        return [
+            'key'   => 'ok',
+            'class' => 'cp-status--ok',
+            'icon'  => '✅',
+            'label' => __('Configurado', 'convoca-publisher'),
+        ];
+    }
+
+    /**
+     * Huella de la configuración de un canal: sirve para saber si el resultado de una
+     * verificación sigue siendo válido.
+     */
+    public static function channel_fingerprint(object $channel): string
+    {
+        $valores = [];
+
+        foreach (array_keys($channel->get_settings_fields()) as $key) {
+            $valores[$key] = (string) get_option($key, '');
+        }
+
+        return md5((string) wp_json_encode($valores));
+    }
+
+    /**
+     * ¿El error suena a credencial caducada o sin permiso?
+     */
+    public static function looks_like_auth_error(string $message): bool
+    {
+        $agujas = ['token', '401', '403', 'expired', 'caduc', 'invalid', 'unauthorized', 'permission', 'forbidden', 'oauth'];
+
+        foreach ($agujas as $aguja) {
+            if (false !== stripos($message, $aguja)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Etiqueta de estado (marcado ya escapado: no volver a escaparla).
+     */
+    public static function status_badge(array $status): string
+    {
+        return sprintf(
+            '<span class="cp-status %1$s">%2$s %3$s</span>',
+            esc_attr($status['class']),
+            esc_html($status['icon']),
+            esc_html($status['label'])
+        );
+    }
+
+    /**
+     * Botón de «Verificar conexión» de un canal (llama a su API y guarda el resultado).
+     */
+    public static function verify_button(object $channel): string
+    {
+        $url = wp_nonce_url(
+            admin_url('admin-post.php?action=cp_verify_channel&channel=' . $channel->get_id()),
+            'convoca_publisher_verify_channel'
+        );
+
+        return sprintf(
+            '<a href="%1$s" class="button">%2$s %3$s</a>',
+            esc_url($url),
+            esc_html('🔍'),
+            esc_html__('Verificar conexión', 'convoca-publisher')
+        );
+    }
+
     private static function render_channels_tab(): void
     {
         $channels = convoca_publisher()->get_channels();
 
-        // Show verification result transient if present
         $verify_result = get_transient('convoca_publisher_verify_result_' . get_current_user_id());
+
         if (false !== $verify_result) {
             delete_transient('convoca_publisher_verify_result_' . get_current_user_id());
-            $class = $verify_result['success'] ? 'notice-success' : 'notice-error';
-            $icon = $verify_result['success'] ? '✅' : '❌';
-            echo '<div class="notice ' . esc_attr($class) . ' is-dismissible"><p>' . esc_html($icon) . ' ' . esc_html($verify_result['message']) . '</p></div>';
+            ?>
+            <div class="notice <?php echo !empty($verify_result['success']) ? 'notice-success' : 'notice-error'; ?> is-dismissible">
+                <p><?php echo esc_html((!empty($verify_result['success']) ? '✅ ' : '❌ ') . ($verify_result['message'] ?? '')); ?></p>
+            </div>
+            <?php
         }
 
         if (empty($channels)) {
-            echo '<div class="notice notice-warning"><p>' . esc_html__('No hay canales disponibles.', 'convoca-publisher') . '</p></div>';
-            echo '<p>' . esc_html__('Configura al menos un token en la pestaña de Ajustes.', 'convoca-publisher') . '</p>';
+            ?>
+            <div class="cp-notice cp-notice--warn">
+                <p><?php echo esc_html__('No se ha cargado ningún canal. Es un fallo del plugin, no de tu configuración: revisa que la carpeta includes/channels esté completa.', 'convoca-publisher'); ?></p>
+            </div>
+            <?php
+
+            return;
         }
-        foreach ($channels as $channel) {
-            $available = $channel->is_available();
-            $class = $available ? 'active' : 'inactive';
-            echo '<div class="cp-channel-card ' . esc_attr($class) . '">';
-            echo '<h3>' . esc_html($channel->get_name()) . '</h3>';
-            echo '<p>' . ($available
-                ? '<span style="color:#46b450;">✅ ' . esc_html__('Configurado y operativo', 'convoca-publisher') . '</span>'
-                : '<span style="color:#dc3232;">❌ ' . esc_html__('No configurado — ve a Ajustes', 'convoca-publisher') . '</span>')
-                . '</p>';
-            // Verify button
-            $verify_url = wp_nonce_url(
-                admin_url('admin-post.php?action=cp_verify_channel&channel=' . $channel->get_id()),
-                'convoca_publisher_verify_channel'
-            );
-            echo '<p><a href="' . esc_url($verify_url) . '" class="button">🔍 ' . esc_html__('Verificar conexión', 'convoca-publisher') . '</a></p>';
-            echo '</div>';
+
+        $configurados = array_filter($channels, static fn(object $channel): bool => $channel->is_available());
+
+        if (empty($configurados)) {
+            ?>
+            <div class="cp-notice">
+                <h2><?php echo esc_html__('Por dónde empezar', 'convoca-publisher'); ?></h2>
+                <p><?php echo esc_html__('Todavía no hay ningún canal configurado: mientras no lo esté, el plugin no publica en ninguna red. El orden que menos guerra da:', 'convoca-publisher'); ?></p>
+                <ol class="cp-steps">
+                    <li>
+                        <strong><?php echo esc_html__('Telegram', 'convoca-publisher'); ?></strong> —
+                        <?php echo esc_html__('un bot con BotFather y el identificador del chat. Dos minutos y se verifica en un clic.', 'convoca-publisher'); ?>
+                    </li>
+                    <li>
+                        <strong><?php echo esc_html__('Mastodon', 'convoca-publisher'); ?></strong> —
+                        <?php echo esc_html__('la dirección de tu instancia y un token de acceso. No caduca por sí solo.', 'convoca-publisher'); ?>
+                    </li>
+                    <li>
+                        <strong><?php echo esc_html__('El resto', 'convoca-publisher'); ?></strong> —
+                        <?php echo esc_html__('Facebook, LinkedIn, Twitter/X, TikTok y Google piden cuenta de desarrollador y tokens que caducan cada cierto tiempo.', 'convoca-publisher'); ?>
+                    </li>
+                </ol>
+                <?php if (isset($channels['telegram'])) : ?>
+                    <p><a class="button button-primary" href="<?php echo esc_url(self::tab_url('channels', ['canal' => 'telegram'])); ?>"><?php echo esc_html__('Empezar por Telegram', 'convoca-publisher'); ?></a></p>
+                <?php endif; ?>
+            </div>
+            <?php
         }
+
+        ?>
+        <p class="description">
+            <?php echo esc_html__('Cada canal se configura en su propia pantalla: token, plantilla, verificación y guía, todo junto.', 'convoca-publisher'); ?>
+        </p>
+
+        <div class="cp-channels">
+            <?php foreach ($channels as $channel_id => $channel) : ?>
+                <?php $status = self::channel_status($channel); ?>
+                <div class="cp-card">
+                    <div class="cp-card__head">
+                        <h3 class="cp-card__title"><?php echo esc_html($channel->get_name()); ?></h3>
+                        <?php echo self::status_badge($status); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
+                    </div>
+
+                    <?php if (!empty($status['detail'])) : ?>
+                        <p class="cp-card__desc"><?php echo esc_html($status['detail']); ?></p>
+                    <?php endif; ?>
+
+                    <div class="cp-card__foot">
+                        <a class="button button-primary" href="<?php echo esc_url(self::tab_url('channels', ['canal' => $channel_id])); ?>">
+                            <?php echo esc_html__('Configurar', 'convoca-publisher'); ?>
+                        </a>
+                        <?php echo self::verify_button($channel); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <?php
     }
 
     private static function render_test_tab(): void
     {
         $channels = convoca_publisher()->get_channels();
         ?>
-        <div class="cp-settings-section">
+        <div class="cp-section">
             <h2><?php echo esc_html__('Prueba de publicación', 'convoca-publisher'); ?></h2>
             <p><?php echo esc_html__('Selecciona una entrada reciente y haz clic en "Publicar en redes" para probar la integración.', 'convoca-publisher'); ?></p>
             
@@ -518,16 +818,16 @@ class Admin
                         <?php echo esc_html__('Limpiar historial', 'convoca-publisher'); ?>
                     </a>
                 </p>
-                <div style="max-height:500px;overflow-y:auto;background:#fff;padding:15px;border:1px solid #c3c4c7;">
+                <div class="cp-log__scroll">
                     <?php foreach (array_reverse($logs) as $log): ?>
-                        <div class="cp-log-row">
+                        <div class="cp-log__row">
                             <span class="cp-status <?php echo !empty($log['success']) ? 'ok' : 'fail'; ?>">
                                 <?php echo !empty($log['success']) ? 'OK' : 'FAIL'; ?>
                             </span>
-                            <span style="min-width:120px;color:#666;"><?php echo isset($log['time']) ? esc_html($log['time']) : ''; ?></span>
-                            <span style="min-width:80px;font-weight:600;"><?php echo isset($log['channel']) ? esc_html($log['channel']) : ''; ?></span>
-                            <span style="flex:1;"><?php echo isset($log['title']) ? esc_html($log['title']) : ''; ?></span>
-                            <span style="min-width:80px;font-size:11px;color:#999;"><?php echo esc_html__('Post #', 'convoca-publisher') . (isset($log['post_id']) ? intval($log['post_id']) : ''); ?></span>
+                            <span class="cp-log__time"><?php echo isset($log['time']) ? esc_html($log['time']) : ''; ?></span>
+                            <span class="cp-log__channel"><?php echo isset($log['channel']) ? esc_html($log['channel']) : ''; ?></span>
+                            <span class="cp-log__title"><?php echo isset($log['title']) ? esc_html($log['title']) : ''; ?></span>
+                            <span class="cp-log__id"><?php echo esc_html__('Post #', 'convoca-publisher') . (isset($log['post_id']) ? intval($log['post_id']) : ''); ?></span>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -537,7 +837,7 @@ class Admin
             <?php if (class_exists(Retry::class)):
                 $stats = Retry::get_queue_stats();
                 if ($stats['pending'] > 0 || $stats['failed'] > 0): ?>
-                <div class="cp-settings-section" style="margin-top:20px;">
+                <div class="cp-section">
                     <h2><?php echo esc_html__('Cola de reintentos', 'convoca-publisher'); ?></h2>
                     <p><?php echo esc_html__('Pendientes: ', 'convoca-publisher') . intval($stats['pending']); ?> | 
                     <?php echo esc_html__('Fallidos: ', 'convoca-publisher') . intval($stats['failed']); ?></p>
@@ -552,7 +852,7 @@ class Admin
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('Acerca de Convoca Publisher', 'convoca-publisher'); ?></h1>
-            <div class="cp-settings-section">
+            <div class="cp-section">
                 <h2><?php echo esc_html__('Convoca Publisher', 'convoca-publisher'); ?> v<?php echo esc_html(CONVOCA_PUBLISHER_VERSION); ?></h2>
                 <p><?php echo esc_html__('Plugin de publicación automática en redes sociales para WordPress.', 'convoca-publisher'); ?></p>
                 <p><?php echo esc_html__('Parte del ecosistema Convoca.', 'convoca-publisher'); ?></p>
@@ -601,6 +901,20 @@ class Admin
             wp_die(esc_html__('Canal no encontrado.', 'convoca-publisher'));
         }
         $result = $channel->verify_connection();
+
+        // El resultado se guarda por canal (no solo como aviso de un momento): es lo
+        // que alimenta el estado ✅/⚠️/🔑 de la tarjeta. La huella evita enseñar un
+        // error viejo cuando la credencial ya es otra.
+        $estados              = (array) get_option('convoca_publisher_verify_status', []);
+        $estados[$channel_id] = [
+            'success'     => !empty($result['success']),
+            'message'     => (string) $result['message'],
+            'time'        => current_time('mysql'),
+            'fingerprint' => self::channel_fingerprint($channel),
+        ];
+
+        update_option('convoca_publisher_verify_status', $estados, false);
+
         set_transient('convoca_publisher_verify_result_' . get_current_user_id(), $result, 30);
         wp_safe_redirect(add_query_arg('convoca_publisher_verified', $channel_id, wp_get_referer()));
         exit;
@@ -622,7 +936,7 @@ class Admin
             echo '<div class="notice ' . esc_attr($class) . ' is-dismissible"><p>' . esc_html($icon) . ' ' . esc_html($message) . '</p></div>';
         }
         ?>
-        <div class="cp-settings-section">
+        <div class="cp-section">
             <h2><?php echo esc_html__('Cola de moderación', 'convoca-publisher'); ?></h2>
             <?php if (empty($items)): ?>
                 <p><?php echo esc_html__('No hay publicaciones pendientes de revisión.', 'convoca-publisher'); ?></p>
@@ -714,13 +1028,13 @@ class Admin
     private static function render_guide_tab(): void
     {
         ?>
-        <div class="cp-settings-section">
+        <div class="cp-section">
             <h2><?php echo esc_html__('📖 Guía de configuración', 'convoca-publisher'); ?></h2>
             <p><?php echo esc_html__('Sigue estos pasos para configurar cada red social. Necesitarás una cuenta de desarrollador en cada plataforma para obtener los tokens de acceso.', 'convoca-publisher'); ?></p>
         </div>
 
         <!-- Facebook / Instagram -->
-        <div class="cp-settings-section">
+        <div class="cp-section" id="canal-facebook">
             <h2>📘 <?php echo esc_html__('Facebook / Instagram', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Página de Facebook, App de Facebook Developer', 'convoca-publisher'); ?></p>
             <ol>
@@ -734,14 +1048,14 @@ class Admin
                 <li><?php echo esc_html__('Ve a Herramientas → "Generar token de página"', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Selecciona tu página y copia el token', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Copia también el ID de página (Page ID)', 'convoca-publisher'); ?></li>
-                <li><?php echo esc_html__('Pega ambos en Ajustes → Facebook / Instagram', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Pega ambos en la pantalla del canal: Canales → Facebook / Instagram', 'convoca-publisher'); ?></li>
             </ol>
             <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Page Access Token, Page ID, Instagram Business ID (opcional)', 'convoca-publisher'); ?></p>
             <p><a href="https://developers.facebook.com/docs/pages/publishing/" target="_blank">📄 <?php echo esc_html__('Documentación oficial de Meta', 'convoca-publisher'); ?></a></p>
         </div>
 
         <!-- LinkedIn -->
-        <div class="cp-settings-section">
+        <div class="cp-section" id="canal-linkedin">
             <h2>💼 <?php echo esc_html__('LinkedIn', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de LinkedIn, App de LinkedIn Developer', 'convoca-publisher'); ?></p>
             <ol>
@@ -753,7 +1067,7 @@ class Admin
                 <li><?php echo esc_html__('Crea una nueva app', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Solicita los permisos (products): "Share on LinkedIn" y "Sign In with LinkedIn"', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Ve a la pestaña Auth y genera un Access Token de prueba (OAuth 2.0)', 'convoca-publisher'); ?></li>
-                <li><?php echo esc_html__('Copia el token y pégalo en Ajustes → LinkedIn', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Copia el token y pégalo en la pantalla del canal: Canales → LinkedIn', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Para la URN: usa tu perfil (urn:li:person:...) o página de empresa (urn:li:organization:...)', 'convoca-publisher'); ?></li>
             </ol>
             <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Access Token (OAuth 2.0), URN de perfil/página', 'convoca-publisher'); ?></p>
@@ -761,7 +1075,7 @@ class Admin
         </div>
 
         <!-- Twitter / X -->
-        <div class="cp-settings-section">
+        <div class="cp-section" id="canal-twitter">
             <h2>🐦 <?php echo esc_html__('Twitter / X', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de desarrollador de X (antes Twitter), Proyecto en Developer Portal', 'convoca-publisher'); ?></p>
             <ol>
@@ -773,14 +1087,14 @@ class Admin
                 <li><?php echo esc_html__('Crea un proyecto y una app (OAuth 2.0)', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('En "Keys and Tokens", genera un Bearer Token (OAuth 2.0)', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Asegúrate de que la app tenga permisos tweet.read y tweet.write', 'convoca-publisher'); ?></li>
-                <li><?php echo esc_html__('Copia el Bearer Token y pégalo en Ajustes → Twitter / X', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Copia el Bearer Token y pégalo en la pantalla del canal: Canales → Twitter / X', 'convoca-publisher'); ?></li>
             </ol>
             <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Bearer Token (OAuth 2.0)', 'convoca-publisher'); ?></p>
             <p><a href="https://developer.twitter.com/en/docs/twitter-api" target="_blank">📄 <?php echo esc_html__('Documentación oficial de X API', 'convoca-publisher'); ?></a></p>
         </div>
 
         <!-- TikTok -->
-        <div class="cp-settings-section">
+        <div class="cp-section" id="canal-tiktok">
             <h2>🎵 <?php echo esc_html__('TikTok', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de desarrollador de TikTok, App en TikTok Developer Portal', 'convoca-publisher'); ?></p>
             <ol>
@@ -792,14 +1106,14 @@ class Admin
                 <li><?php echo esc_html__('Crea una app y selecciona los permisos "video.publish" y "user.info.basic"', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Completa el flujo OAuth para obtener un Access Token', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Anota el Open ID (identificador único del usuario)', 'convoca-publisher'); ?></li>
-                <li><?php echo esc_html__('Pega ambos en Ajustes → TikTok', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Pega ambos en la pantalla del canal: Canales → TikTok', 'convoca-publisher'); ?></li>
             </ol>
             <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Access Token, Open ID', 'convoca-publisher'); ?></p>
             <p><a href="https://developers.tiktok.com/documentation" target="_blank">📄 <?php echo esc_html__('Documentación oficial de TikTok', 'convoca-publisher'); ?></a></p>
         </div>
 
         <!-- Google My Business -->
-        <div class="cp-settings-section">
+        <div class="cp-section" id="canal-googlemybusiness">
             <h2>🏪 <?php echo esc_html__('Google My Business', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta de Google, Proyecto en Google Cloud Console, Perfil de empresa en Google', 'convoca-publisher'); ?></p>
             <ol>
@@ -812,14 +1126,14 @@ class Admin
                 <li><?php echo esc_html__('Crea credenciales OAuth 2.0 y obtén un token de acceso', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Para obtener el Location ID: usa la API de GMB o la herramienta de administración de Google', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('El formato del Location ID es: accounts/{accountId}/locations/{locationId}', 'convoca-publisher'); ?></li>
-                <li><?php echo esc_html__('Pega ambos en Ajustes → Google My Business', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Pega ambos en la pantalla del canal: Canales → Google My Business', 'convoca-publisher'); ?></li>
             </ol>
             <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Access Token (OAuth 2.0), Location ID', 'convoca-publisher'); ?></p>
             <p><a href="https://developers.google.com/my-business" target="_blank">📄 <?php echo esc_html__('Documentación oficial de GMB API', 'convoca-publisher'); ?></a></p>
         </div>
 
         <!-- Telegram -->
-        <div class="cp-settings-section">
+        <div class="cp-section" id="canal-telegram">
             <h2>💬 <?php echo esc_html__('Telegram', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Un bot de Telegram', 'convoca-publisher'); ?></p>
             <ol>
@@ -830,14 +1144,14 @@ class Admin
                 <li><?php echo esc_html__('Para obtener el Chat ID: envía un mensaje a tu bot, luego visita:', 'convoca-publisher'); ?>
                     <br><code>https://api.telegram.org/bot&lt;TU_TOKEN&gt;/getUpdates</code></li>
                 <li><?php echo esc_html__('Copia el "chat":{"id":...} que aparece en la respuesta', 'convoca-publisher'); ?></li>
-                <li><?php echo esc_html__('Pega token y chat ID en Ajustes → Telegram', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Pega token y chat ID en la pantalla del canal: Canales → Telegram', 'convoca-publisher'); ?></li>
             </ol>
             <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Token del Bot, Chat ID', 'convoca-publisher'); ?></p>
             <p><a href="https://core.telegram.org/bots/api" target="_blank">📄 <?php echo esc_html__('Documentación oficial de Telegram Bot API', 'convoca-publisher'); ?></a></p>
         </div>
 
         <!-- Mastodon -->
-        <div class="cp-settings-section">
+        <div class="cp-section" id="canal-mastodon">
             <h2>🐘 <?php echo esc_html__('Mastodon', 'convoca-publisher'); ?></h2>
             <p><strong><?php echo esc_html__('Requiere:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Cuenta en un servidor de Mastodon', 'convoca-publisher'); ?></p>
             <ol>
@@ -847,7 +1161,7 @@ class Admin
                 <li><?php echo esc_html__('Asigna un nombre (ej: Convoca Publisher) y marca el permiso "write:statuses"', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Copia el "Access Token" que se genera', 'convoca-publisher'); ?></li>
                 <li><?php echo esc_html__('Anota también la URL base de tu servidor (ej: https://mastodon.social)', 'convoca-publisher'); ?></li>
-                <li><?php echo esc_html__('Pega ambos en Ajustes → Mastodon', 'convoca-publisher'); ?></li>
+                <li><?php echo esc_html__('Pega ambos en la pantalla del canal: Canales → Mastodon', 'convoca-publisher'); ?></li>
             </ol>
             <p><strong><?php echo esc_html__('Campos necesarios:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('Servidor (URL base), Access Token, Visibilidad (opcional)', 'convoca-publisher'); ?></p>
             <p><a href="https://docs.joinmastodon.org/api/" target="_blank">📄 <?php echo esc_html__('Documentación oficial de Mastodon API', 'convoca-publisher'); ?></a></p>

@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.4.5
+Stable tag: 1.5.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,14 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.5.0 =
+* Una pantalla por canal: estado, credenciales, plantilla, «Verificar conexión» y su guía, todo junto. Se acaban las vueltas por pestañas.
+* Estado del canal visible: ✅ Configurado · ❌ Falta token · ⚠️ Error al verificar · 🔑 Necesita reconexión (con el resultado de la última verificación, que se ignora si la credencial ha cambiado).
+* Asistente de inicio cuando no hay ningún canal configurado: por dónde empezar (Telegram → Mastodon → el resto).
+* Estilos y scripts en ficheros propios (assets/css/admin.css, assets/js/admin.js), encolados solo en las pantallas del plugin; fuera el CSS pegado a dashicons y los style="" sueltos.
+* Modo oscuro del escritorio, foco visible y etiquetas asociadas. Y ningún mensaje manda a una pestaña que no existe.
+
 
 = 1.4.5 =
 * El registro de canales ya no depende del classmap de Composer: si un canal es nuevo y nadie regeneró el classmap, se carga su fichero y se toma la clase declarada. Se comprueba en la propia batería de pruebas, con el autoloader real y un canal que el classmap no conoce.

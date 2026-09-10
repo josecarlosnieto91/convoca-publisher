@@ -212,5 +212,70 @@ namespace ConvocaPublisher\Tests {
             $this->assertStringStartsWith('8:', $out, 'Un canal nuevo debe cargarse aunque el classmap no lo conozca: ' . $out);
             $this->assertStringContainsString('inventado', $out);
         }
+
+        /**
+         * Ni una base abstracta ni una clase anónima pueden acabar en el registro: no se
+         * pueden instanciar. Se prueban en ficheros de canales de verdad (carpeta temporal
+         * con el nombre que el registro espera), que es el único caso en el que la ruta del
+         * fichero no las descarta por sí sola.
+         */
+        public function testAnAbstractOrAnonymousChannelClassIsNotRegistered(): void
+        {
+            $autoload = CONVOCA_PUBLISHER_PLUGIN_DIR . 'vendor/autoload.php';
+
+            if (!file_exists($autoload)) {
+                $this->markTestSkipped('Sin `composer install` no hay autoloader que probar.');
+            }
+
+            $dir = sys_get_temp_dir() . '/hermes-verify-base-' . uniqid();
+            mkdir($dir . '/includes/channels', 0777, true);
+
+            foreach (glob(CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/channels/*.php') ?: [] as $file) {
+                copy($file, $dir . '/includes/channels/' . basename($file));
+            }
+
+            $canal = <<<'PHP'
+                    public function get_id(): string { return 'ID_AQUI'; }
+                    public function get_name(): string { return 'Prueba'; }
+                    public function is_available(): bool { return true; }
+                    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array { return ['success' => true]; }
+                    public function get_settings_fields(): array { return []; }
+                    public function validate_settings(array $settings): array { return []; }
+                    public function verify_connection(): array { return ['success' => true]; }
+                PHP;
+
+            file_put_contents(
+                $dir . '/includes/channels/class-baseabstracta.php',
+                "<?php\nnamespace ConvocaPublisher\\Channels;\nabstract class Baseabstracta implements ChannelInterface\n{\n"
+                . str_replace('ID_AQUI', 'base', $canal)
+                . "\n}\n"
+            );
+
+            file_put_contents(
+                $dir . '/includes/channels/class-anonima.php',
+                "<?php\nnamespace ConvocaPublisher\\Channels;\nreturn new class implements ChannelInterface\n{\n"
+                . str_replace('ID_AQUI', 'anonima', $canal)
+                . "\n};\n"
+            );
+
+            $code = 'define("ABSPATH", true);'
+                . ' define("CONVOCA_PUBLISHER_PLUGIN_DIR", ' . var_export($dir . '/', true) . ');'
+                . ' require ' . var_export($autoload, true) . ';'
+                . ' $c = \ConvocaPublisher\Plugin::discover_channels();'
+                . ' echo count($c) . ":" . implode(",", array_keys($c));';
+
+            $out = (string) shell_exec(escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg($code) . ' 2>&1');
+
+            foreach (glob($dir . '/includes/channels/*.php') ?: [] as $file) {
+                unlink($file);
+            }
+            rmdir($dir . '/includes/channels');
+            rmdir($dir . '/includes');
+            rmdir($dir);
+
+            $this->assertStringStartsWith('7:', $out, 'Solo deben entrar los canales de verdad: ' . $out);
+            $this->assertStringNotContainsString('base', $out, 'Una base abstracta no se registra: ' . $out);
+            $this->assertStringNotContainsString('anonima', $out, 'Una clase anónima no se registra: ' . $out);
+        }
     }
 }

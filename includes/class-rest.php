@@ -15,7 +15,6 @@
  * (at your option) any later version.
  */
 
-
 namespace ConvocaPublisher;
 
 defined('ABSPATH') || exit;

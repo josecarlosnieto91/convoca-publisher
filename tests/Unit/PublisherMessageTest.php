@@ -13,16 +13,34 @@ class PublisherMessageTest extends TestCase
     {
         // Create a mock channel that returns known values
         $this->mockChannel = new class implements \ConvocaPublisher\Channels\ChannelInterface {
-            public function get_id(): string { return 'facebook'; }
-            public function get_name(): string { return 'Facebook'; }
-            public function is_available(): bool { return true; }
+            public function get_id(): string
+            {
+                return 'facebook';
+            }
+            public function get_name(): string
+            {
+                return 'Facebook';
+            }
+            public function is_available(): bool
+            {
+                return true;
+            }
             public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
             {
                 return ['success' => true, 'post_id' => '123'];
             }
-            public function get_settings_fields(): array { return []; }
-            public function validate_settings(array $settings): array { return []; }
-            public function verify_connection(): array { return ['success' => true, 'message' => 'OK']; }
+            public function get_settings_fields(): array
+            {
+                return [];
+            }
+            public function validate_settings(array $settings): array
+            {
+                return [];
+            }
+            public function verify_connection(): array
+            {
+                return ['success' => true, 'message' => 'OK'];
+            }
         };
     }
 

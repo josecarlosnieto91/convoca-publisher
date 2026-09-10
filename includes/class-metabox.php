@@ -15,7 +15,6 @@
  * (at your option) any later version.
  */
 
-
 namespace ConvocaPublisher;
 
 defined('ABSPATH') || exit;
@@ -50,25 +49,27 @@ class Metabox
         $disabled = get_post_meta($post->ID, '_convoca_publisher_disabled_channels', true) ?: [];
         $channels = convoca_publisher()->get_channels();
 
-        echo '<div style="margin: 8px 0;">';
+        echo '<div class="cp-meta">';
 
         if ($published) {
-            echo '<p style="color:#46b450;"><strong>✅ ' . esc_html__('Publicado en redes', 'convoca-publisher') . '</strong></p>';
+            echo '<p class="cp-meta__ok"><strong>✅ ' . esc_html__('Publicado en redes', 'convoca-publisher') . '</strong></p>';
             foreach ($results as $channel_id => $result) {
-                if ($channel_id === '_warnings') continue;
+                if ($channel_id === '_warnings') {
+                    continue;
+                }
                 $icon = !empty($result['success']) ? '✅' : '❌';
-                echo '<p style="margin:4px 0;font-size:12px;">' . esc_html($icon) . ' <strong>' . esc_html($channel_id) . '</strong>: ';
+                echo '<p class="cp-meta__row">' . esc_html($icon) . ' <strong>' . esc_html($channel_id) . '</strong>: ';
                 if (!empty($result['success'])) {
-                    echo '<span style="color:#46b450;">' . esc_html($result['post_id'] ?? 'OK') . '</span>';
+                    echo '<span class="cp-meta__ok">' . esc_html($result['post_id'] ?? 'OK') . '</span>';
                 } else {
-                    echo '<span style="color:#dc3232;">' . esc_html($result['error'] ?? __('Error', 'convoca-publisher')) . '</span>';
+                    echo '<span class="cp-meta__fail">' . esc_html($result['error'] ?? __('Error', 'convoca-publisher')) . '</span>';
                 }
                 echo '</p>';
             }
             // Mostrar warnings si existen
             if (!empty($results['_warnings'])) {
                 foreach ($results['_warnings'] as $w) {
-                    echo '<p style="margin:4px 0;font-size:11px;color:#dba617;">⚠️ ' . esc_html($w) . '</p>';
+                    echo '<p class="cp-meta__warn">⚠️ ' . esc_html($w) . '</p>';
                 }
             }
             echo '<p><button type="button" class="button button-small cp-republish" data-post-id="' . esc_attr((string) $post->ID) . '">'
@@ -81,7 +82,7 @@ class Metabox
             echo '<hr><p><strong>' . esc_html__('Canales:', 'convoca-publisher') . '</strong></p>';
             foreach ($channels as $id => $ch) {
                 $checked = in_array($id, $disabled, true) ? '' : 'checked';
-                echo '<label style="display:block;margin:4px 0;font-size:12px;">';
+                echo '<label class="cp-meta__check">';
                 echo '<input type="checkbox" name="convoca_publisher_channels[' . esc_attr($id) . ']" value="1" ' . esc_attr($checked) . '> ';
                 echo esc_html($ch->get_name());
                 echo '</label>';
@@ -92,9 +93,9 @@ class Metabox
         $schedule_ts = (int) get_post_meta($post->ID, '_convoca_publisher_schedule_time', true);
         $schedule_val = $schedule_ts ? wp_date('Y-m-d\TH:i', $schedule_ts) : '';
         echo '<hr><p><strong>' . esc_html__('Programar publicación:', 'convoca-publisher') . '</strong></p>';
-        echo '<label style="font-size:12px;">';
-        echo '<input type="datetime-local" name="convoca_publisher_schedule_time" value="' . esc_attr($schedule_val) . '" style="width:100%;">';
-        echo '<p class="description" style="font-size:11px;margin:4px 0;">' . esc_html__('Déjalo vacío para publicar al guardar el post.', 'convoca-publisher') . '</p>';
+        echo '<label class="cp-meta__label">';
+        echo '<input type="datetime-local" name="convoca_publisher_schedule_time" value="' . esc_attr($schedule_val) . '" class="cp-meta__input">';
+        echo '<p class="description cp-meta__help">' . esc_html__('Déjalo vacío para publicar al guardar el post.', 'convoca-publisher') . '</p>';
         echo '</label>';
 
         echo '</div>';

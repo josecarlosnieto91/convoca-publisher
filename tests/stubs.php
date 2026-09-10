@@ -66,9 +66,7 @@ function add_option(string $option, mixed $value, string $deprecated = '', bool 
 {
     return true;
 }
-function register_setting(string $option_group, string $option_name, array $args = []): void
-{
-}
+function register_setting(string $option_group, string $option_name, array $args = []): void {}
 
 // --- WP Core ---
 function wp_salt(string $scheme = 'auth'): string
@@ -181,19 +179,13 @@ function sanitize_title(string $title): string
 }
 
 // --- Hooks ---
-function add_action(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): void
-{
-}
-function add_filter(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): void
-{
-}
+function add_action(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): void {}
+function add_filter(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): void {}
 function apply_filters(string $hook_name, mixed $value, mixed ...$args): mixed
 {
     return $value;
 }
-function do_action(string $hook_name, mixed ...$args): void
-{
-}
+function do_action(string $hook_name, mixed ...$args): void {}
 function current_user_can(string $capability): bool
 {
     return true;
@@ -234,12 +226,8 @@ function wp_schedule_single_event(int $timestamp, string $hook, array $args = []
 {
     return true;
 }
-function wp_enqueue_style(string $handle, string $src = '', array $deps = [], $ver = null, string $media = 'all'): void
-{
-}
-function wp_add_inline_style(string $handle, string $data): void
-{
-}
+function wp_enqueue_style(string $handle, string $src = '', array $deps = [], $ver = null, string $media = 'all'): void {}
+function wp_add_inline_style(string $handle, string $data): void {}
 function plugin_dir_path(string $file): string
 {
     return '/tmp/test/wp-content/plugins/convoca-publisher/';
@@ -282,9 +270,7 @@ function submit_button(string $text = '', string $type = 'primary', string $name
 {
     echo '<button type="submit">' . esc_html($text) . '</button>';
 }
-function settings_fields(string $option_group): void
-{
-}
+function settings_fields(string $option_group): void {}
 function wp_kses_post(string $data): string
 {
     return $data;
@@ -303,7 +289,20 @@ function wp_safe_redirect(string $location, int $status = 302, string $x_redirec
 }
 function add_query_arg(string|array $key, string $value = '', string $url = ''): string
 {
-    return $url . '?' . (is_string($key) ? $key . '=' . $value : '');
+    if (is_array($key)) {
+        $params = $key;
+        $url    = (string) $value;
+    } else {
+        $params = [$key => $value];
+    }
+
+    $trozos = [];
+
+    foreach ($params as $k => $v) {
+        $trozos[] = rawurlencode((string) $k) . '=' . rawurlencode((string) $v);
+    }
+
+    return $url . (str_contains($url, '?') ? '&' : '?') . implode('&', $trozos);
 }
 function wp_get_referer(): string|false
 {
@@ -314,9 +313,7 @@ function wp_get_referer(): string|false
 class WP_Error
 {
     private array $errors = [];
-    public function __construct(string $code = '', string $message = '', mixed $data = '')
-    {
-    }
+    public function __construct(string $code = '', string $message = '', mixed $data = '') {}
     public function get_error_message(): string
     {
         return '';
@@ -391,4 +388,42 @@ class WP_Post
     public string $post_status = 'publish';
     public string $post_type = 'post';
     public string $post_date = '2026-06-13 08:00:00';
+}
+
+// --- Dobles que necesitan las pantallas del panel ---
+function esc_attr__(string $text, string $domain = 'default'): string
+{
+    return $text;
+}
+function esc_html_e(string $text, string $domain = 'default'): void
+{
+    echo $text;
+}
+function selected(mixed $selected, mixed $current = true, bool $echo = true): string
+{
+    return $echo ? (string) $selected === (string) $current ? 'selected' : '' : '';
+}
+function wp_nonce_url(string $actionurl, string|int $action = -1, string $name = '_wpnonce'): string
+{
+    return add_query_arg($name, 'nonce-de-prueba', $actionurl);
+}
+function sanitize_key(string $key): string
+{
+    return preg_replace('/[^a-z0-9_\-]/', '', strtolower($key)) ?? '';
+}
+function wp_unslash(mixed $value): mixed
+{
+    return is_string($value) ? stripslashes($value) : $value;
+}
+function delete_transient(string $transient): bool
+{
+    return true;
+}
+function number_format_i18n(float $number, int $decimals = 0): string
+{
+    return number_format($number, $decimals);
+}
+function _n(string $single, string $plural, int $number, string $domain = 'default'): string
+{
+    return 1 === $number ? $single : $plural;
 }

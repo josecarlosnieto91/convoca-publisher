@@ -18,13 +18,14 @@
 /**
  * Scheduler — publish posts to social media at a scheduled time.
  */
+
 namespace ConvocaPublisher;
 
 defined('ABSPATH') || exit;
 
 class Scheduler
 {
-    const CRON_HOOK = 'convoca_publisher_scheduled_publish';
+    public const CRON_HOOK = 'convoca_publisher_scheduled_publish';
 
     public static function init(): void
     {
