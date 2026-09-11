@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.9.2
+Stable tag: 1.9.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,12 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.9.3 =
+* Los plazos de caducidad miran la credencial que este plugin pide de verdad, que es un token pegado a mano y sin refresco: Facebook y LinkedIn 60 días, **TikTok 1 día** (su access token dura unas 24 h) y **Google My Business 1 día** (el de Google dura una hora). Antes esas dos últimas decían «no caduca», que era mentira.
+* Twitter/X, Telegram y Mastodon siguen sin plazo: lo que se pega es un token de aplicación o de bot, que no caduca por su cuenta.
+* Una prueba exige que las siete redes tengan plazo decidido: una red fuera de la tabla se trata como «no caduca» sin que nadie lo haya decidido.
+
 
 = 1.9.2 =
 * Aviso de credencial a punto de caducar: Facebook y LinkedIn caducan a los 60 días y el envío empezaba a fallar sin que nadie hubiera tocado nada. El canal lo dice **antes** («caduca pronto», «puede haber caducado»), con la fecha de la última comprobación y lo que dura el token de esa red.

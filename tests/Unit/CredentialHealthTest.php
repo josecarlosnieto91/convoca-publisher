@@ -78,6 +78,28 @@ namespace ConvocaPublisher\Tests {
             $this->assertSame(0, Credential_Health::lifetime('una-red-que-no-existe'));
         }
 
+        public function testUnTokenQueDuraHorasSeNotaAlDiaSiguiente(): void
+        {
+            // Las dos redes cuyo token pegado a mano dura horas: si alguna vuelve a «no caduca»,
+            // el aviso desaparece y el envío se pierde sin saber por qué.
+            $this->assertSame(1, Credential_Health::lifetime('tiktok'), 'El access token de TikTok dura un día.');
+            $this->assertSame(1, Credential_Health::lifetime('googlemybusiness'), 'El de Google dura una hora: con un día basta para saber que está muerto.');
+            $this->assertSame('caducada', Credential_Health::state('tiktok', $this->hace(2)));
+            $this->assertSame('caducada', Credential_Health::state('googlemybusiness', $this->hace(2)));
+            $this->assertSame('ok', Credential_Health::state('tiktok', $this->hace(0)), 'Recién pegado, todavía vale.');
+        }
+
+        public function testElPlazoDeCadaRedEsUnaDecisionYNoUnOlvido(): void
+        {
+            $sin_plazo = array_diff(array_keys(\ConvocaPublisher\Plugin::networks()), Credential_Health::networks());
+
+            $this->assertSame(
+                [],
+                array_values($sin_plazo),
+                'Una red fuera de la tabla se trata como «no caduca» sin que nadie lo haya decidido.'
+            );
+        }
+
         public function testElMensajeDiceDesdeCuandoYCuantoDura(): void
         {
             $mensaje = Credential_Health::message('facebook', $this->hace(61));

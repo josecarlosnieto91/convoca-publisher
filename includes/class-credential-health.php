@@ -27,20 +27,40 @@ defined('ABSPATH') || exit;
 class Credential_Health
 {
     /**
-     * Días que dura el token de cada red. 0 = no caduca por su cuenta.
+     * Días que dura la credencial de cada red **tal y como la pide este plugin**: un token que
+     * se pega a mano, sin refresco automático. 0 = no caduca por su cuenta.
      *
-     * Facebook: el token de página de larga duración dura unos 60 días (Meta avisa por correo
-     * antes de que expire). LinkedIn: el access token dura 60 días.
+     * - **Facebook** (60): el token de página de larga duración.
+     * - **LinkedIn** (60): el access token.
+     * - **TikTok** (1): el access token dura unas 24 h; el de refresco dura un año, pero aquí
+     *   se pega el de acceso, así que al día siguiente ya no vale.
+     * - **Google My Business** (1): el access token de Google dura una hora; con un día de
+     *   margen sobra para saber que está muerto.
+     * - **Twitter/X, Telegram y Mastodon** (0): lo que se pega es un token de aplicación o de
+     *   bot, que no caduca por su cuenta. Avisar aquí sería una falsa alarma.
+     *
+     * Los plazos cortos no son un detalle: enseñan que esas dos redes piden un token que hay
+     * que renovar a mano cada poco, y es mejor saberlo por un aviso que por un envío perdido.
      */
     private const LIFETIME = [
         'facebook'         => 60,
         'linkedin'         => 60,
+        'tiktok'           => 1,
+        'googlemybusiness' => 1,
         'twitter'          => 0,
         'telegram'         => 0,
         'mastodon'         => 0,
-        'tiktok'           => 0,
-        'googlemybusiness' => 0,
     ];
+
+    /**
+     * Las redes con plazo propio (las demás no caducan; se puede comprobar).
+     *
+     * @return string[]
+     */
+    public static function networks(): array
+    {
+        return array_keys(self::LIFETIME);
+    }
 
     /** A partir de aquí se avisa, para dar tiempo a reconectar sin prisa. */
     public const WARN_DAYS = 45;
