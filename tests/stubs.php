@@ -540,3 +540,32 @@ function wp_date(string $format, ?int $timestamp = null, ?DateTimeZone $timezone
 {
     return gmdate($format, $timestamp ?? time());
 }
+
+/**
+ * Doble del acceso al plugin. Vive aquí, y no en cada fichero de pruebas, porque una
+ * función global se define una sola vez: si cada fichero traía la suya, ganaba la del
+ * que cargara primero y en orden aleatorio las pruebas se encontraban el doble de otra.
+ *
+ * `_cp_publisher_stub` es la vía para inyectar un plugin de mentira concreto
+ * (`RetryAndModerationTest` lo usa para servir un canal concreto).
+ */
+function convoca_publisher(): object
+{
+    if (isset($GLOBALS['_cp_publisher_stub'])) {
+        return $GLOBALS['_cp_publisher_stub'];
+    }
+
+    return new class {
+        public function get_channels(): array
+        {
+            return ConvocaPublisher\Plugin::accounts();
+        }
+
+        public function get_channel(string $channel_id): ?object
+        {
+            $accounts = ConvocaPublisher\Plugin::accounts();
+
+            return $accounts[$channel_id] ?? ConvocaPublisher\Plugin::networks()[$channel_id] ?? null;
+        }
+    };
+}

@@ -12,6 +12,14 @@ use ConvocaPublisher\Retry;
 
 class RetryAndModerationTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        // El plugin de mentira es de esta prueba: si se quedara puesto, la siguiente lo usaría.
+        unset($GLOBALS['_cp_publisher_stub']);
+
+        parent::tearDown();
+    }
+
     protected function setUp(): void
     {
         $GLOBALS['_cp_test_postmeta'] = [];
@@ -348,11 +356,7 @@ class RetryAndModerationTest extends TestCase
             return ['success' => true, 'post_id' => 'x'];
         });
 
-        // Stub global convoca_publisher(): devuelve un plugin mock con get_channel().
-        // La función se define en el namespace global (PHP cae a global al resolver).
-        if (!function_exists('convoca_publisher')) {
-            eval('namespace { function convoca_publisher() { return $GLOBALS["_cp_publisher_stub"]; } }');
-        }
+        // El doble global vive en tests/stubs.php; aquí solo se le dice qué canal servir.
         $GLOBALS['_cp_publisher_stub'] = new class ($channel) {
             private $channel;
 
@@ -364,6 +368,11 @@ class RetryAndModerationTest extends TestCase
             public function get_channel(string $id)
             {
                 return $id === 'telegram' ? $this->channel : null;
+            }
+
+            public function get_channels(): array
+            {
+                return ['telegram' => $this->channel];
             }
         };
 

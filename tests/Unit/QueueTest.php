@@ -375,30 +375,4 @@ namespace ConvocaPublisher\Tests {
 }
 
 namespace {
-
-    if (!function_exists('convoca_publisher')) {
-        /**
-         * Doble del acceso al plugin (la cola pregunta por las cuentas configuradas).
-         */
-        function convoca_publisher(): object
-        {
-            if (isset($GLOBALS['_cp_publisher_stub'])) {
-                return $GLOBALS['_cp_publisher_stub'];
-            }
-
-            return new class {
-                public function get_channels(): array
-                {
-                    return \ConvocaPublisher\Plugin::accounts();
-                }
-
-                public function get_channel(string $channel_id): ?object
-                {
-                    $accounts = \ConvocaPublisher\Plugin::accounts();
-
-                    return $accounts[$channel_id] ?? \ConvocaPublisher\Plugin::networks()[$channel_id] ?? null;
-                }
-            };
-        }
-    }
 }

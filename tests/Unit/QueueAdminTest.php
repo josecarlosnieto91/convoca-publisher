@@ -29,7 +29,10 @@ namespace ConvocaPublisher\Tests {
             $GLOBALS['_cp_test_posts']    = [];
             $GLOBALS['_cp_test_titles']   = [];
             $GLOBALS['_cp_test_db']       = ['rows' => [], 'inserts' => [], 'results' => []];
-            $_GET                         = [];
+
+            // La pantalla actual se fija en una prueba (para los avisos): no puede quedarse puesta.
+            $GLOBALS['_cp_test_screen_id'] = '';
+            $_GET                          = [];
         }
 
         /**
@@ -192,15 +195,19 @@ namespace ConvocaPublisher\Tests {
         public function testLosAvisosNoMandanAAjustes(): void
         {
             $GLOBALS['_cp_test_options']['convoca_publisher_privacy_acknowledged'] = false;
-            $GLOBALS['_cp_test_screen_id'] = 'toplevel_page_convoca-publisher';
+            $GLOBALS['_cp_test_screen_id']                       = 'toplevel_page_convoca-publisher';
+
+            // Una cuenta sin credenciales: es lo que hace salir el segundo aviso, el del enlace.
+            Profile_Store::create('mastodon', 'Mastodon — sin configurar', []);
 
             ob_start();
             \ConvocaPublisher\Notifications::show_alerts();
 
             $aviso = (string) ob_get_clean();
 
-            $this->assertStringContainsString('Configuración', $aviso, 'El aviso manda a la pestaña que existe, que se llama Configuración.');
-            $this->assertStringNotContainsString('ajustes', strtolower($aviso), 'No se puede mandar a una pestaña que no se llama así.');
+            $this->assertStringContainsString('aviso de privacidad en Configuración', $aviso, 'El aviso de privacidad manda a la pestaña que existe.');
+            $this->assertStringContainsString('Ir a Configuración', $aviso, 'Y el de las cuentas sin configurar, también.');
+            $this->assertStringNotContainsString('ajustes', strtolower($aviso), 'Ninguno puede mandar a una pestaña que no se llama así.');
         }
 
         // ── Qué día y qué hora (lo que rompe las fechas) ────────────────────
@@ -229,30 +236,4 @@ namespace ConvocaPublisher\Tests {
 }
 
 namespace {
-
-    if (!function_exists('convoca_publisher')) {
-        /**
-         * Doble del acceso al plugin para renderizar la pantalla sin arrancar WordPress.
-         */
-        function convoca_publisher(): object
-        {
-            if (isset($GLOBALS['_cp_publisher_stub'])) {
-                return $GLOBALS['_cp_publisher_stub'];
-            }
-
-            return new class {
-                public function get_channels(): array
-                {
-                    return \ConvocaPublisher\Plugin::accounts();
-                }
-
-                public function get_channel(string $channel_id): ?object
-                {
-                    $accounts = \ConvocaPublisher\Plugin::accounts();
-
-                    return $accounts[$channel_id] ?? \ConvocaPublisher\Plugin::networks()[$channel_id] ?? null;
-                }
-            };
-        }
-    }
 }
