@@ -31,11 +31,15 @@ function esc_js(string $text): string
 }
 function esc_attr(string $text): string
 {
-    return $text;
+    // El de verdad escapa para meterlo en un atributo: devolverlo tal cual dejaba pasar en
+    // falso cualquier prueba sobre escapado.
+    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 }
 function esc_url(string $url): string
 {
-    return $url;
+    // Aproximación. Lo que importa para las pruebas es que NO devuelve el original cuando el
+    // protocolo no es de fiar (el de verdad filtra mucho más: protocolos, entidades, espacios).
+    return preg_match('/^\s*javascript:/i', $url) ? '' : $url;
 }
 function esc_html(string $text): string
 {
@@ -460,7 +464,10 @@ function submit_button(string $text = '', string $type = 'primary', string $name
 function settings_fields(string $option_group): void {}
 function wp_kses_post(string $data): string
 {
-    return $data;
+    // Aproximación: quita el HTML que no pintaría nada en un texto de ajustes. kses de verdad
+    // es mucho más fino (atributos, protocolos), así que el saneado delicado se verifica EN
+    // VIVO contra el sitio, no con este doble.
+    return strip_tags($data, '<a><strong><em><br><p><ul><ol><li><h2><h3>');
 }
 function set_transient(string $transient, mixed $value, int $expiration = 0): bool
 {
@@ -675,7 +682,13 @@ function _n(string $single, string $plural, int $number, string $domain = 'defau
 // --- Dobles del panel de cuentas ---
 function sanitize_text_field(string $str): string
 {
-    return trim(strip_tags($str));
+    // Como el de verdad, incluido lo que hizo difícil ver el fallo de las plantillas: los
+    // saltos de línea se convierten en espacios, así que un área de texto guardada así vuelve
+    // hecha una sola línea. El doble anterior los conservaba y por eso ninguna prueba lo vio.
+    $str = strip_tags($str);
+    $str = (string) preg_replace('/[\r\n\t ]+/', ' ', $str);
+
+    return trim($str);
 }
 
 // --- Dobles del calendario ---
