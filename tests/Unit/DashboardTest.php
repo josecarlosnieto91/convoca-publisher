@@ -101,6 +101,26 @@ namespace ConvocaPublisher\Tests {
             $this->assertCount(1, Dashboard::next_up(), 'Es el mismo envío: no puede aparecer dos veces.');
         }
 
+        public function testDosCuentasDeLaMismaEntradaSonDosEnvios(): void
+        {
+            // No es lo mismo deduplicar un envío repetido que juntar dos cuentas distintas: la
+            // misma entrada en la página y en el grupo de Facebook son dos envíos, y los dos
+            // tienen que aparecer.
+            foreach ([['telegram', 'Telegram — Canal'], ['mastodon', 'Mastodon']] as [$red, $nombre]) {
+                $perfil = Profile_Store::create($red, $nombre, [
+                    'convoca_publisher_' . $red . '_token' => 'T',
+                    'convoca_publisher_telegram_chat_id'   => '-100',
+                    'convoca_publisher_mastodon_server'    => 'https://mastodon.social',
+                ]);
+
+                $this->assertIsArray($perfil);
+            }
+
+            $this->programar(11, time() + HOUR_IN_SECONDS, 'Para dos cuentas');
+
+            $this->assertCount(2, Dashboard::next_up(), 'Una entrada, dos cuentas: dos envíos.');
+        }
+
         // ── Lo atascado ─────────────────────────────────────────────────────
 
         public function testLoAtrasadoYSinInsistirSaleJunto(): void
@@ -160,6 +180,26 @@ namespace ConvocaPublisher\Tests {
 
             $this->assertSame([], Queue::sent_entries(), 'Las filas de validación no son envíos.');
             $this->assertStringNotContainsString('❌', $this->pintar(), 'Y no se pintan como fallo de la red.');
+        }
+
+        public function testLosAvisosNoSeComenElTurnoDeLosEnvios(): void
+        {
+            $this->cuenta();
+
+            // Tres avisos del plugin y dos envíos de verdad, pidiendo dos: los dos envíos.
+            $avisos = [];
+            for ($i = 0; $i < 3; ++$i) {
+                $avisos[] = ['title' => 'Aviso ' . $i, 'channel' => 'VALIDACIÓN', 'success' => false, 'time' => wp_date('Y-m-d H:i:s'), 'response' => 'sin imagen'];
+            }
+            $avisos[] = ['title' => 'Salió bien', 'channel' => 'Telegram', 'success' => true, 'time' => wp_date('Y-m-d H:i:s'), 'response' => 'ok'];
+            $avisos[] = ['title' => 'Salió mal', 'channel' => 'Telegram', 'success' => false, 'time' => wp_date('Y-m-d H:i:s'), 'response' => 'nope'];
+
+            update_option('convoca_publisher_publish_log', $avisos);
+
+            $salidas = Queue::sent_entries(2);
+
+            $this->assertCount(2, $salidas, 'Los avisos no ocupan el sitio de los envíos.');
+            $this->assertSame(['Salió mal', 'Salió bien'], array_column($salidas, 'title'), 'Y salen los dos últimos, del más nuevo al más viejo.');
         }
 
         public function testSinNadaProgramadoLoDiceEnUnaLinea(): void
