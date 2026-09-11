@@ -1256,6 +1256,15 @@ class Admin
     {
         ?>
         <div class="cp-section">
+            <h2><?php echo esc_html__('📖 Cómo funciona esto', 'convoca-publisher'); ?></h2>
+            <ul class="cp-steps">
+                <li><strong><?php echo esc_html__('Una red puede tener varias cuentas.', 'convoca-publisher'); ?></strong> <?php echo esc_html__('La página y el grupo de Facebook son dos cuentas, cada una con sus credenciales y su plantilla. Se les puede poner nombre para reconocerlas (hasta 5 por red).', 'convoca-publisher'); ?></li>
+                <li><strong><?php echo esc_html__('El mensaje se decide de lo concreto a lo general:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('lo que escribas para un envío, el mensaje de esa entrada, la plantilla de la cuenta, la de la red y la global. En el editor ves cómo queda y cuánto ocupa para cada red.', 'convoca-publisher'); ?></li>
+                <li><strong><?php echo esc_html__('Lo que admite cada red se comprueba antes de enviar:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('si el mensaje no cabe, se recorta conservando el enlace y se te dice; no falla al enviar en silencio.', 'convoca-publisher'); ?></li>
+                <li><strong><?php echo esc_html__('La pestaña Cola es donde se ve todo lo que va a salir:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('calendario de mes y semana (arrastra un envío para reprogramarlo), lo que espera turno, lo que se quedó atrás y lo último que salió.', 'convoca-publisher'); ?></li>
+                <li><strong><?php echo esc_html__('Puedes compartir a mano en una sola cuenta', 'convoca-publisher'); ?></strong> <?php echo esc_html__('desde el editor (un botón por cuenta) o desde el listado de entradas, sin tocar las demás.', 'convoca-publisher'); ?></li>
+                <li><strong><?php echo esc_html__('Si algo falla, no se pierde en silencio:', 'convoca-publisher'); ?></strong> <?php echo esc_html__('se reintenta con espera creciente, y si se agotan los intentos se te avisa por correo y queda a la vista en la cola para darle salida a mano.', 'convoca-publisher'); ?></li>
+            </ul>
             <h2><?php echo esc_html__('📖 Guía de configuración', 'convoca-publisher'); ?></h2>
             <p><?php echo esc_html__('Sigue estos pasos para configurar cada red social. Necesitarás una cuenta de desarrollador en cada plataforma para obtener los tokens de acceso.', 'convoca-publisher'); ?></p>
         </div>

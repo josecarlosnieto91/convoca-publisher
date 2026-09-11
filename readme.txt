@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.11.0
+Stable tag: 1.11.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,11 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.11.1 =
+* La pestaña Guía explica cómo funciona el plugin (varias cuentas por red, de dónde sale el mensaje, lo que admite cada red, la cola y qué pasa cuando algo falla) antes de los pasos de cada red.
+* La documentación del plugin se pone al día: describía la versión 1.4.2, con cinco pestañas y los tokens en Configuración.
+
 
 = 1.11.0 =
 * Todo el código pasa el mismo control de estilo (46 de 46 ficheros): el proyecto queda con la línea base limpia, que es la que evita que cada cambio futuro traiga ruido.
