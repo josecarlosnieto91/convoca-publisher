@@ -149,6 +149,26 @@ namespace ConvocaPublisher\Tests {
             $this->assertStringContainsString('Lo siguiente', $html);
         }
 
+        public function testElAvisoCuentaTodosAunqueLaListaEsteRecortada(): void
+        {
+            $this->cuenta();
+
+            // Tres atrasadas y cuatro que ya no se reintentan: siete paradas en total.
+            for ($i = 1; $i <= 3; ++$i) {
+                $this->programar(100 + $i, time() - ($i * HOUR_IN_SECONDS), 'Atrasada ' . $i);
+            }
+
+            for ($i = 1; $i <= 4; ++$i) {
+                $this->programar(200 + $i, time() - HOUR_IN_SECONDS, 'Sin insistir ' . $i);
+                Queue::give_up(200 + $i);
+            }
+
+            $html = $this->pintar();
+
+            $this->assertStringContainsString('7 envíos no han salido', $html, 'El aviso dice cuántos hay de verdad.');
+            $this->assertSame(5, substr_count($html, '<li>'), 'Y la lista enseña los primeros, no todos.');
+        }
+
         // ── Lo que se pinta ─────────────────────────────────────────────────
 
         public function testCuandoAlgoSeQuedaParadoElEscritorioLoDiceYOfreceIr(): void

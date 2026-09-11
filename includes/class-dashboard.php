@@ -24,6 +24,9 @@ class Dashboard
 {
     public const WIDGET_ID = 'convoca_publisher_dashboard';
 
+    /** Cuántos envíos parados se listan (el aviso dice cuántos hay de verdad). */
+    private const STUCK_SHOWN = 5;
+
     public static function init(): void
     {
         add_action('wp_dashboard_setup', [self::class, 'register']);
@@ -84,7 +87,7 @@ class Dashboard
      *
      * @return array<int, array<string, mixed>>
      */
-    public static function stuck(int $limit = 5): array
+    public static function stuck(): array
     {
         $parados = Queue::overdue();
 
@@ -96,7 +99,7 @@ class Dashboard
             ];
         }
 
-        return array_slice($parados, 0, $limit);
+        return $parados;
     }
 
     public static function render(): void
@@ -120,7 +123,7 @@ class Dashboard
                     </strong>
                 </p>
                 <ul>
-                    <?php foreach ($parados as $parado) : ?>
+                    <?php foreach (array_slice($parados, 0, self::STUCK_SHOWN) as $parado) : ?>
                         <li>
                             <?php echo esc_html(wp_date('d/m/Y H:i', (int) ($parado['time'] ?? 0))); ?> —
                             <?php echo esc_html((string) ($parado['title'] ?? '')); ?>
