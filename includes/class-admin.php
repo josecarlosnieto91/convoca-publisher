@@ -574,7 +574,9 @@ class Admin
 
     private static function render_templates_tab(): void
     {
-        $channels = convoca_publisher()->get_channels();
+        // Plantillas por RED (es lo que lee el publicador cuando la cuenta no tiene la
+        // suya). Las de cuenta se editan en la pantalla de cada cuenta: aquí no pintan.
+        $networks = Plugin::networks();
         ?>
         <div class="cp-section">
             <h2><?php echo esc_html__('Plantillas de mensaje', 'convoca-publisher'); ?></h2>
@@ -590,7 +592,7 @@ class Admin
                     <code>{author}</code> — <?php echo esc_html__('Nombre del autor', 'convoca-publisher'); ?><br>
                     <code>{featured_image}</code> — <?php echo esc_html__('URL de la imagen destacada', 'convoca-publisher'); ?>
                 </p>
-                <p><?php echo esc_html__('Puedes configurar una plantilla global y/o plantillas específicas por canal.', 'convoca-publisher'); ?></p>
+                <p><?php echo esc_html__('Hay tres niveles: la plantilla de la cuenta (en su pantalla), la de su red y la global. Se usa la primera que esté puesta.', 'convoca-publisher'); ?></p>
             </div>
             
             <form method="post" action="options.php">
@@ -607,10 +609,10 @@ class Admin
                     </tr>
                 </table>
                 
-                <h3><?php echo esc_html__('Plantillas por canal', 'convoca-publisher'); ?></h3>
-                <p><?php echo esc_html__('Déjalo vacío para usar la plantilla global.', 'convoca-publisher'); ?></p>
-                
-                <?php foreach ($channels as $channel):
+                <h3><?php echo esc_html__('Plantillas por red', 'convoca-publisher'); ?></h3>
+                <p><?php echo esc_html__('Déjalo vacío para usar la plantilla global. Cada cuenta puede tener la suya propia en su pantalla.', 'convoca-publisher'); ?></p>
+
+                <?php foreach ($networks as $channel):
                     $tkey = 'convoca_publisher_' . $channel->get_id() . '_template';
                     $tval = get_option($tkey, '');
                     ?>
