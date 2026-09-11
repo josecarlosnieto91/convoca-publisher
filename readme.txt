@@ -79,10 +79,13 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 
 == Screenshots ==
 
-1. Publishing metabox with per-network checkboxes
-2. Channel settings with token configuration
-3. Publishing history
-4. Message template editor
+1. All channels at a glance: one card per network with its status (configured, missing token, verification error, needs reconnecting).
+2. Everything for one channel on a single screen: credentials, its own message template, the connection check and the step-by-step guide.
+3. General settings: automatic publishing, scheduling, moderation and the privacy notice.
+4. Message templates: the global template and the variables you can use.
+5. Test screen: publish a post to the selected channels to check the setup.
+6. Moderation queue: review what is about to go out before it does.
+7. Step-by-step guide for every network, linked from the channel it configures.
 
 == Frequently Asked Questions ==
 
