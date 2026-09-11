@@ -66,6 +66,21 @@ namespace ConvocaPublisher\Tests {
             $this->assertStringContainsString('No hay entradas publicadas', $html, 'Se explica, en vez de dejar un desplegable vacío sin decir por qué.');
         }
 
+        public function testLasPlantillasSonMultilineaYEnsenanLaDeFabrica(): void
+        {
+            // Eran campos de una línea, y no por gusto: el saneado era `sanitize_text_field`,
+            // que borra los saltos. Una plantilla de tres líneas volvía hecha una.
+            $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'templates']);
+
+            $this->assertSame(8, substr_count($html, '<textarea'), 'Una global y una por red (7), todas multilínea.');
+            $this->assertStringNotContainsString(
+                '<input type="text" name="convoca_publisher_message_template"',
+                $html,
+                'El campo global ya no es de una línea.'
+            );
+            $this->assertStringContainsString('la de fábrica para esta red', $html, 'Cada red dice con qué se queda si no escribes nada.');
+        }
+
         private function canal(string $channel_id): object
         {
             $channels = Plugin::discover_channels();

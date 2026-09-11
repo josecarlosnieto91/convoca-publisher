@@ -79,9 +79,11 @@ class Admin
         foreach ($channels as $channel) {
             foreach ($channel->get_settings_fields() as $key => $field) {
                 if (str_ends_with($key, '_template')) {
+                    // `wp_kses_post` y no `sanitize_text_field`: la segunda borra los saltos
+                    // de línea, así que una plantilla de varias líneas volvía hecha una sola.
                     register_setting('convoca_publisher_settings', $key, [
                         'type'              => 'string',
-                        'sanitize_callback' => 'sanitize_text_field',
+                        'sanitize_callback' => 'wp_kses_post',
                         'show_in_rest'      => false,
                         'default'           => '',
                     ]);
@@ -109,7 +111,9 @@ class Admin
             'default'           => Queue::DEFAULT_INTERVAL,
         ]);
         register_setting('convoca_publisher_settings', 'convoca_publisher_message_template', [
-            'type' => 'string', 'default' => '{title} — {url}',
+            'type'              => 'string',
+            'sanitize_callback' => 'wp_kses_post',
+            'default'           => '{title} — {url} {hashtags}',
         ]);
         register_setting('convoca_publisher_settings', 'convoca_publisher_auto_publish', [
             'type' => 'boolean', 'default' => true,
@@ -461,14 +465,13 @@ class Admin
                         <h2><?php echo esc_html__('Plantilla de esta cuenta', 'convoca-publisher'); ?></h2>
                         <div class="cp-field">
                             <label for="cuenta_plantilla"><?php echo esc_html__('Mensaje', 'convoca-publisher'); ?></label>
-                            <input
-                                type="text"
+                            <textarea
                                 id="cuenta_plantilla"
                                 name="cuenta_plantilla"
-                                value="<?php echo esc_attr($account ? $account->get_template() : ''); ?>"
+                                rows="3"
                                 class="cp-input cp-input--wide"
                                 placeholder="<?php echo esc_attr__('Usar la plantilla de la red', 'convoca-publisher'); ?>"
-                            />
+                            ><?php echo esc_textarea($account ? $account->get_template() : ''); ?></textarea>
                             <p class="description">
                                 <?php echo esc_html__('Déjalo vacío para usar la plantilla de la red (pestaña Plantillas). Variables: {title}, {excerpt}, {url}, {hashtags}, {date}, {author}.', 'convoca-publisher'); ?>
                             </p>
@@ -653,7 +656,7 @@ class Admin
                     <code>{author}</code> — <?php echo esc_html__('Nombre del autor', 'convoca-publisher'); ?><br>
                     <code>{featured_image}</code> — <?php echo esc_html__('URL de la imagen destacada', 'convoca-publisher'); ?>
                 </p>
-                <p><?php echo esc_html__('Hay tres niveles: la plantilla de la cuenta (en su pantalla), la de su red y la global. Se usa la primera que esté puesta.', 'convoca-publisher'); ?></p>
+                <p><?php echo esc_html__('Se usa la primera que esté puesta, de lo más concreto a lo más general: lo que se escribe para un envío concreto, lo de esa entrada, la plantilla de la cuenta (en su pantalla), la de su red y la global. Si no hay ninguna, la de fábrica de cada red, que se ve bajo cada campo.', 'convoca-publisher'); ?></p>
             </div>
             
             <form method="post" action="options.php">
@@ -664,7 +667,7 @@ class Admin
                     <tr>
                         <th scope="row"><?php echo esc_html__('Mensaje por defecto', 'convoca-publisher'); ?></th>
                         <td>
-                            <input type="text" name="convoca_publisher_message_template" value="<?php echo esc_attr(get_option('convoca_publisher_message_template', '{title} — {url}')); ?>" class="cp-input cp-input--wide" />
+                            <textarea name="convoca_publisher_message_template" rows="3" class="cp-input cp-input--wide"><?php echo esc_textarea((string) get_option('convoca_publisher_message_template', '{title} — {url} {hashtags}')); ?></textarea>
                             <p class="description"><?php echo esc_html__('Se usa cuando un canal no tiene su propia plantilla.', 'convoca-publisher'); ?></p>
                         </td>
                     </tr>
@@ -679,8 +682,15 @@ class Admin
                     ?>
                 <div class="cp-channel-template">
                     <h4><?php echo esc_html($channel->get_name()); ?></h4>
-                    <input type="text" name="<?php echo esc_attr($tkey); ?>" value="<?php echo esc_attr($tval); ?>" class="cp-input cp-input--wide" placeholder="<?php echo esc_attr__('Usar plantilla global', 'convoca-publisher'); ?>" />
-                    <p class="description"><?php echo esc_html__('Plantilla específica para ', 'convoca-publisher') . esc_html($channel->get_name()); ?></p>
+                    <textarea name="<?php echo esc_attr($tkey); ?>" rows="3" class="cp-input cp-input--wide" placeholder="<?php echo esc_attr__('Usar plantilla global', 'convoca-publisher'); ?>"><?php echo esc_textarea((string) $tval); ?></textarea>
+                    <p class="description">
+                        <?php if ('' === trim((string) $tval)) : ?>
+                            <?php echo esc_html__('Ahora mismo se usa la de fábrica para esta red:', 'convoca-publisher'); ?>
+                        <?php else : ?>
+                            <?php echo esc_html__('Se usa esta en vez de la global. La de fábrica para esta red es:', 'convoca-publisher'); ?>
+                        <?php endif; ?>
+                        <code><?php echo esc_html(Publisher::factory_templates()[$channel->get_id()] ?? '{title} — {url}'); ?></code>
+                    </p>
                 </div>
                 <?php endforeach; ?>
                 

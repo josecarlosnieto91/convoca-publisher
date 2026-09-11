@@ -50,6 +50,23 @@ class PublisherMessageTest extends TestCase
         };
     }
 
+    /**
+     * La plantilla de fábrica de cada red: es lo que se manda cuando no hay nada escrito,
+     * así que tiene que respetar lo que cada red admite (X no cabe con hashtags, Google My
+     * Business prefiere el extracto) y tiene que ser la misma que enseña la pantalla.
+     */
+    public function testLaFabricaDeCadaRedRespetaLoQueAdmiteLaRed(): void
+    {
+        $f = Publisher::factory_templates();
+
+        $this->assertCount(7, $f, 'Las siete redes tienen su plantilla de fábrica.');
+        $this->assertStringNotContainsString('{hashtags}', $f['twitter'], 'En X no caben las etiquetas con el enlace.');
+        $this->assertStringContainsString('{url}', $f['twitter'], 'Pero el enlace sí va.');
+        $this->assertStringContainsString('{hashtags}', $f['facebook'], 'Instagram vive en el canal de Facebook y sí las lleva.');
+        $this->assertStringContainsString('{excerpt}', $f['googlemybusiness'], 'Google My Business prefiere el extracto.');
+        $this->assertSame('{title}', $f['tiktok'], 'TikTok solo enseña el título como pie.');
+    }
+
     public function testMessageReplacesTitle(): void
     {
         $publisher = new Publisher(['facebook' => $this->mockChannel]);

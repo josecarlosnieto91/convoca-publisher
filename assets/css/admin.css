@@ -677,3 +677,9 @@
 .cp-log__retry {
 	margin-left: auto;
 }
+
+/* Plantillas multilínea: el mensaje de una red casi nunca cabe en una línea. */
+textarea.cp-input {
+	min-height: 4.5em;
+	resize: vertical;
+}

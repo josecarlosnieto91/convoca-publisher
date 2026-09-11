@@ -320,6 +320,29 @@ class Publisher
     }
 
     /**
+     * Plantilla de fábrica de cada red: lo que se usa cuando no hay nada escrito.
+     *
+     * Vive aquí y no en la pantalla para que la pantalla pueda enseñarla y el publicador
+     * usarla con el mismo texto. Cada red tiene su forma: X va corta y sin hashtags (no
+     * caben), Instagram vive en el canal de Facebook y sí los lleva, y Google My Business
+     * prefiere el extracto.
+     *
+     * @return array<string, string> network_id => plantilla
+     */
+    public static function factory_templates(): array
+    {
+        return [
+            'facebook'         => '{title} — {url} {hashtags}',
+            'linkedin'         => '{title} — {url} {hashtags}',
+            'twitter'          => '{title} {url}',
+            'tiktok'           => '{title}',
+            'googlemybusiness' => '{excerpt} — {url}',
+            'telegram'         => '{title} — {url} {hashtags}',
+            'mastodon'         => '{title} — {url} {hashtags}',
+        ];
+    }
+
+    /**
      * Construir mensaje específico para un canal usando su plantilla.
      */
     private function build_channel_message(\WP_Post $post, object $channel, string $url, string $hashtags, string $override = ''): string
@@ -327,17 +350,7 @@ class Publisher
         // Con cuentas (perfiles), el id del canal es el de la cuenta: la red va aparte.
         $network_id   = $this->network_of($channel);
         $template_key = 'convoca_publisher_' . $network_id . '_template';
-        $default_templates = [
-            'facebook'        => '{title} — {url} {hashtags}',
-            'linkedin'        => '{title} — {url} {hashtags}',
-            'twitter'         => '{title} {url} {hashtags}',
-            'tiktok'          => '{title}',
-            'googlemybusiness' => '{excerpt} — {url}',
-            'telegram'        => '{title} — {url} {hashtags}',
-            'mastodon'        => '{title} — {url} {hashtags}',
-        ];
-
-        $default = $default_templates[$network_id] ?? '{title} — {url}';
+        $default = self::factory_templates()[$network_id] ?? '{title} — {url}';
 
         // De lo más concreto a lo más general: lo que se escribe para este envío, lo que se
         // escribe para esta entrada, la plantilla de la cuenta, la de la red y la global.
