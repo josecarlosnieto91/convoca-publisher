@@ -42,7 +42,7 @@ class Notifications
         if (str_contains($screen->id, 'convoca-publisher') && !get_option('convoca_publisher_privacy_acknowledged', false)) {
             echo '<div class="notice notice-warning is-dismissible cp-notice" data-key="privacy">';
             echo '<p><strong>🔐 ' . esc_html__('Convoca Publisher — Aviso de privacidad', 'convoca-publisher') . '</strong></p>';
-            echo '<p>' . esc_html__('Este plugin envía datos a APIs de terceros. Por favor, lee y acepta el aviso de privacidad en los ajustes.', 'convoca-publisher') . '</p>';
+            echo '<p>' . esc_html__('Este plugin envía datos a APIs de terceros. Por favor, lee y acepta el aviso de privacidad en Configuración.', 'convoca-publisher') . '</p>';
             echo '</div>';
         }
 
@@ -63,7 +63,7 @@ class Notifications
                 __('Canales sin configurar: %s', 'convoca-publisher'),
                 implode(', ', $unconfigured)
             ));
-            echo ' <a href="' . esc_url(admin_url('admin.php?page=convoca-publisher')) . '">' . esc_html__('Ir a ajustes', 'convoca-publisher') . '</a></p>';
+            echo ' <a href="' . esc_url(admin_url('admin.php?page=convoca-publisher')) . '">' . esc_html__('Ir a Configuración', 'convoca-publisher') . '</a></p>';
             echo '</div>';
         }
 

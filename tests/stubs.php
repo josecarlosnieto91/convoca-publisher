@@ -324,7 +324,19 @@ function plugin_dir_url(string $file): string
 // --- Admin ---
 function get_current_screen(): ?object
 {
-    return null;
+    // Doble configurable: los avisos solo salen en su pantalla, así que hay que poder decir cuál es.
+    if (empty($GLOBALS['_cp_test_screen_id'])) {
+        return null;
+    }
+
+    return new class {
+        public string $id = '';
+
+        public function __construct()
+        {
+            $this->id = (string) $GLOBALS['_cp_test_screen_id'];
+        }
+    };
 }
 function get_current_user_id(): int
 {

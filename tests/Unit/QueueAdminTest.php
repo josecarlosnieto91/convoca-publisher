@@ -188,6 +188,21 @@ namespace ConvocaPublisher\Tests {
             );
         }
 
+
+        public function testLosAvisosNoMandanAAjustes(): void
+        {
+            $GLOBALS['_cp_test_options']['convoca_publisher_privacy_acknowledged'] = false;
+            $GLOBALS['_cp_test_screen_id'] = 'toplevel_page_convoca-publisher';
+
+            ob_start();
+            \ConvocaPublisher\Notifications::show_alerts();
+
+            $aviso = (string) ob_get_clean();
+
+            $this->assertStringContainsString('Configuración', $aviso, 'El aviso manda a la pestaña que existe, que se llama Configuración.');
+            $this->assertStringNotContainsString('ajustes', strtolower($aviso), 'No se puede mandar a una pestaña que no se llama así.');
+        }
+
         // ── Qué día y qué hora (lo que rompe las fechas) ────────────────────
 
         public function testUnDiaDelCalendarioSeConvierteEnSuMananaDelSitio(): void
