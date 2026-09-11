@@ -20,7 +20,7 @@ class PublisherImageTest extends TestCase
         $method->setAccessible(true);
 
         // Create a post
-        $post = new \WP_Post();
+        $post = new \WP_Post((object) []);
         $post->ID = 99;
 
         // We can't easily mock the WP functions from here since they're global functions
@@ -39,7 +39,7 @@ class PublisherImageTest extends TestCase
         $method = $reflection->getMethod('get_featured_image');
         $method->setAccessible(true);
 
-        $post = new \WP_Post();
+        $post = new \WP_Post((object) []);
         $post->ID = 0;
 
         // With default stubs (get_post_thumbnail_id returns false), should return ''

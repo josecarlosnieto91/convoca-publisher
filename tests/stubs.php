@@ -149,8 +149,7 @@ function get_post(int|\WP_Post $post = null, ?string $output = null, string $fil
     if ($post === null || $post === 0) {
         return null;
     }
-    $p = new \WP_Post();
-    $p->ID = $post;
+    $p = new \WP_Post((object) ['ID' => $post]);
 
     // El título que haya fijado la prueba (los canales lo usan para armar el mensaje).
     if (isset($GLOBALS['_cp_test_titles'][$post])) {
@@ -633,14 +632,28 @@ function wp_specialchars_decode(string $text, int $quote_style = ENT_NOQUOTES): 
 // --- WP_Post ---
 class WP_Post
 {
-    public int $ID = 0;
-    public int $post_author = 1;
-    public string $post_title = 'Test Post';
-    public string $post_content = 'Test content for the post.';
-    public string $post_excerpt = 'Test excerpt.';
-    public string $post_status = 'publish';
-    public string $post_type = 'post';
-    public string $post_date = '2026-06-13 08:00:00';
+    // Propiedades SIN tipar, como en WordPress, y constructor que EXIGE el objeto con los
+    // datos. Tenerlo sin argumentos y con tipos dejaba montar una entrada de una forma que en
+    // WordPress revienta con un fatal (`new WP_Post()` sin argumentos): una prueba podía pasar
+    // aquí y no en producción, que es exactamente lo que un doble no debe permitir.
+    public $ID = 0;
+    public $post_author = 1;
+    public $post_title = 'Test Post';
+    public $post_content = 'Test content for the post.';
+    public $post_excerpt = 'Test excerpt.';
+    public $post_status = 'publish';
+    public $post_type = 'post';
+    public $post_date = '2026-06-13 08:00:00';
+
+    /** @param object|array<string, mixed> $post Datos de la entrada, como en WordPress. */
+    public function __construct(object|array $post)
+    {
+        foreach ((array) $post as $campo => $valor) {
+            if (property_exists($this, (string) $campo)) {
+                $this->{$campo} = $valor;
+            }
+        }
+    }
 }
 
 // --- Dobles que necesitan las pantallas del panel ---

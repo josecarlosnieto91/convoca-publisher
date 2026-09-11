@@ -34,7 +34,7 @@ final class TemplateVariablesTest extends TestCase
 
     private function entrada(string $contenido = 'Texto de la entrada.'): \WP_Post
     {
-        $post               = new \WP_Post();
+        $post               = new \WP_Post((object) []);
         $post->ID           = 7;
         $post->post_title   = 'Taller de huerto';
         $post->post_content = $contenido;

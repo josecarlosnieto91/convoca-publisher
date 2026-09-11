@@ -85,7 +85,7 @@ namespace ConvocaPublisher\Tests {
             $GLOBALS['_cp_test_titles'][$id]   = 'Asamblea de socios';
             $GLOBALS['_cp_test_postmeta'][$id] = $meta;
 
-            $post             = new \WP_Post();
+            $post             = new \WP_Post((object) []);
             $post->ID         = $id;
             $post->post_type  = 'post';
             $post->post_title = 'Asamblea de socios';
@@ -202,7 +202,7 @@ namespace ConvocaPublisher\Tests {
 
         private function caja(int $post_id = 77): string
         {
-            $post             = new \WP_Post();
+            $post             = new \WP_Post((object) []);
             $post->ID         = $post_id;
             $post->post_type  = 'post';
             $post->post_title = 'Asamblea de socios';
@@ -281,7 +281,7 @@ namespace ConvocaPublisher\Tests {
         {
             $this->cuentas();
 
-            $post             = new \WP_Post();
+            $post             = new \WP_Post((object) []);
             $post->ID         = 77;
             $post->post_type  = 'post';
 
@@ -294,7 +294,7 @@ namespace ConvocaPublisher\Tests {
 
         public function testSinCuentasElListadoNoOfreceCompartir(): void
         {
-            $post             = new \WP_Post();
+            $post             = new \WP_Post((object) []);
             $post->ID         = 77;
             $post->post_type  = 'post';
 
