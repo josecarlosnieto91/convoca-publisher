@@ -25,3 +25,8 @@ composer.lock
 .env
 .php-cs-fixer.cache
 /phpstan-stubs/
+
+# Las traducciones al inglés sí viajan: el plugin está escrito en español, así que sin su
+# .mo la interfaz en inglés no existe (y wp.org sirve la ficha en inglés). Solo esta.
+!languages/*-en_US.po
+!languages/*-en_US.mo
