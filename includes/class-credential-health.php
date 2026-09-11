@@ -30,8 +30,14 @@ class Credential_Health
      * Días que dura la credencial de cada red **tal y como la pide este plugin**: un token que
      * se pega a mano, sin refresco automático. 0 = no caduca por su cuenta.
      *
-     * - **Facebook** (60): el token de página de larga duración.
-     * - **LinkedIn** (60): el access token.
+     * - **Facebook** (0): el plugin pide un **token de Página**, y un token de página de larga
+     *   duración **no caduca** (los 60 días son de los tokens de *usuario*). Lo dice Meta en su
+     *   documentación de long-lived tokens, consultada el 2026-09-11. Avisar aquí sería la falsa
+     *   alarma que esta clase quiere evitar. Si alguien pega un token de usuario, el aviso no
+     *   saldrá: por eso el campo pide expresamente el token de página.
+     * - **LinkedIn** (60): el access token. Su refresco (365 días) solo lo tienen las apps
+     *   aprobadas como partner del Marketing Developer Platform, así que aquí se cuenta con que
+     *   caduca y hay que volver a pegarlo.
      * - **TikTok** (1): el access token dura unas 24 h; el de refresco dura un año, pero aquí
      *   se pega el de acceso, así que al día siguiente ya no vale.
      * - **Google My Business** (1): el access token de Google dura una hora; con un día de
@@ -43,7 +49,7 @@ class Credential_Health
      * que renovar a mano cada poco, y es mejor saberlo por un aviso que por un envío perdido.
      */
     private const LIFETIME = [
-        'facebook'         => 60,
+        'facebook'         => 0,
         'linkedin'         => 60,
         'tiktok'           => 1,
         'googlemybusiness' => 1,

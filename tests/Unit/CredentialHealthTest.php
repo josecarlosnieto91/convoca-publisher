@@ -38,23 +38,23 @@ namespace ConvocaPublisher\Tests {
 
         public function testRecienVerificadaEstaBien(): void
         {
-            $this->assertSame('ok', Credential_Health::state('facebook', $this->hace(3)));
+            $this->assertSame('ok', Credential_Health::state('linkedin', $this->hace(3)));
         }
 
         public function testAunqueSeaUnaRedQueCaducaNoSeAvisaElPrimerDia(): void
         {
-            $this->assertFalse(Credential_Health::needs_attention('facebook', $this->hace(1)));
+            $this->assertFalse(Credential_Health::needs_attention('linkedin', $this->hace(1)));
         }
 
         public function testAPuntoDeCaducarAvisa(): void
         {
-            $this->assertSame('caduca-pronto', Credential_Health::state('facebook', $this->hace(46)));
-            $this->assertTrue(Credential_Health::needs_attention('facebook', $this->hace(46)));
+            $this->assertSame('caduca-pronto', Credential_Health::state('linkedin', $this->hace(46)));
+            $this->assertTrue(Credential_Health::needs_attention('linkedin', $this->hace(46)));
         }
 
         public function testPasadoElPlazoLoDice(): void
         {
-            $this->assertSame('caducada', Credential_Health::state('facebook', $this->hace(61)));
+            $this->assertSame('caducada', Credential_Health::state('tiktok', $this->hace(61)));
             $this->assertSame('caducada', Credential_Health::state('linkedin', $this->hace(75)));
         }
 
@@ -62,6 +62,13 @@ namespace ConvocaPublisher\Tests {
         {
             $this->assertSame('sin-caducidad', Credential_Health::state('telegram', $this->hace(400)));
             $this->assertFalse(Credential_Health::needs_attention('telegram', $this->hace(400)));
+
+            // Meta: un token de PÁGINA de larga duración no caduca (los 60 días son de los de
+            // usuario). Avisar aquí sería avisar en falso cada 45 días hasta ignorarlo.
+            $this->assertSame('sin-caducidad', Credential_Health::state('facebook', $this->hace(400)));
+            $this->assertFalse(Credential_Health::needs_attention('facebook', $this->hace(400)));
+            // Su mensaje («no caduca», comprobada hace N días) no es un aviso: la pantalla
+            // solo lo enseña cuando hay algo que atender, y aquí no lo hay.
         }
 
         public function testSinHaberlaComprobadoNuncaNoSeInventaUnaFecha(): void
@@ -72,7 +79,7 @@ namespace ConvocaPublisher\Tests {
 
         public function testCadaRedTieneSuPlazo(): void
         {
-            $this->assertSame(60, Credential_Health::lifetime('facebook'));
+            $this->assertSame(0, Credential_Health::lifetime('facebook'), 'El token de Página no caduca; los 60 días son de los de usuario.');
             $this->assertSame(60, Credential_Health::lifetime('linkedin'));
             $this->assertSame(0, Credential_Health::lifetime('telegram'));
             $this->assertSame(0, Credential_Health::lifetime('una-red-que-no-existe'));
@@ -102,7 +109,7 @@ namespace ConvocaPublisher\Tests {
 
         public function testElMensajeDiceDesdeCuandoYCuantoDura(): void
         {
-            $mensaje = Credential_Health::message('facebook', $this->hace(61));
+            $mensaje = Credential_Health::message('linkedin', $this->hace(61));
 
             $this->assertStringContainsString('61', $mensaje, 'Desde cuándo no se comprueba.');
             $this->assertStringContainsString('60', $mensaje, 'Y cuánto dura el token.');
@@ -110,16 +117,16 @@ namespace ConvocaPublisher\Tests {
 
         public function testLoQueVaLBienNoDiceNada(): void
         {
-            $this->assertSame('', Credential_Health::message('facebook', $this->hace(2)), 'Sin avisos que no hacen falta.');
+            $this->assertSame('', Credential_Health::message('linkedin', $this->hace(2)), 'Sin avisos que no hacen falta.');
         }
 
         // ── En la tarjeta del canal ─────────────────────────────────────────
 
         private function tarjeta(int $diasDesdeLaVerificacion): array
         {
-            $perfil = Profile_Store::create('facebook', 'Facebook — Página', [
-                'convoca_publisher_facebook_token'   => 'TOKEN',
-                'convoca_publisher_facebook_page_id' => '123',
+            $perfil = Profile_Store::create('linkedin', 'LinkedIn — Perfil', [
+                'convoca_publisher_linkedin_token' => 'TOKEN',
+                'convoca_publisher_linkedin_urn'   => 'urn:li:person:123',
             ]);
 
             $this->assertIsArray($perfil);
@@ -161,9 +168,9 @@ namespace ConvocaPublisher\Tests {
         {
             $GLOBALS['_cp_test_timezone'] = 'Europe/Madrid';
 
-            $perfil = Profile_Store::create('facebook', 'Facebook — Página', [
-                'convoca_publisher_facebook_token'   => 'TOKEN',
-                'convoca_publisher_facebook_page_id' => '123',
+            $perfil = Profile_Store::create('linkedin', 'LinkedIn — Perfil', [
+                'convoca_publisher_linkedin_token' => 'TOKEN',
+                'convoca_publisher_linkedin_urn'   => 'urn:li:person:123',
             ]);
 
             $this->assertIsArray($perfil);
@@ -197,9 +204,9 @@ namespace ConvocaPublisher\Tests {
 
         public function testLaPantallaDeCanalesLoEnseniaDondeSeMiranLasCuentas(): void
         {
-            $perfil = Profile_Store::create('facebook', 'Facebook — Página', [
-                'convoca_publisher_facebook_token'   => 'TOKEN',
-                'convoca_publisher_facebook_page_id' => '123',
+            $perfil = Profile_Store::create('linkedin', 'LinkedIn — Perfil', [
+                'convoca_publisher_linkedin_token' => 'TOKEN',
+                'convoca_publisher_linkedin_urn'   => 'urn:li:person:123',
             ]);
 
             $this->assertIsArray($perfil);

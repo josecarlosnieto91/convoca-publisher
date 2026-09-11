@@ -472,7 +472,8 @@ class Admin
                     <?php endforeach; ?>
                 </div>
 
-                <?php if (isset($fields[$template_key])) : ?>
+                <?php /* Solo en la pantalla de una cuenta: en la del canal no hay plantilla propia que enseñar (la de la red se edita en la pestaña Plantillas) y salía un campo vacío que parecía no hacer nada. */ ?>
+                <?php if (isset($fields[$template_key]) && $account) : ?>
                     <div class="cp-section">
                         <h2><?php echo esc_html__('Plantilla de esta cuenta', 'convoca-publisher'); ?></h2>
                         <div class="cp-field">
@@ -483,7 +484,7 @@ class Admin
                                 rows="3"
                                 class="cp-input cp-input--wide"
                                 placeholder="<?php echo esc_attr__('Usar la plantilla de la red', 'convoca-publisher'); ?>"
-                            ><?php echo esc_textarea($account ? $account->get_template() : ''); ?></textarea>
+                            ><?php echo esc_textarea($account->get_template()); ?></textarea>
                             <p class="description">
                                 <?php echo esc_html__('Déjalo vacío para usar la plantilla de la red (pestaña Plantillas). Variables: {title}, {excerpt}, {url}, {hashtags}, {date}, {author}.', 'convoca-publisher'); ?>
                             </p>
