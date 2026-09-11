@@ -131,6 +131,37 @@ namespace ConvocaPublisher\Tests {
             $this->assertSame('Caduca pronto', $estado['label']);
         }
 
+        public function testLaPantallaDeCanalesLoEnseniaDondeSeMiranLasCuentas(): void
+        {
+            $perfil = Profile_Store::create('facebook', 'Facebook — Página', [
+                'convoca_publisher_facebook_token'   => 'TOKEN',
+                'convoca_publisher_facebook_page_id' => '123',
+            ]);
+
+            $this->assertIsArray($perfil);
+
+            $cuenta = \ConvocaPublisher\Plugin::accounts()[(string) $perfil['id']];
+
+            $GLOBALS['_cp_test_options']['convoca_publisher_verify_status'][$perfil['id']] = [
+                'success'     => true,
+                'message'     => 'Conexión correcta',
+                'time'        => wp_date('Y-m-d H:i:s', $this->hace(61)),
+                'fingerprint' => Admin::channel_fingerprint($cuenta),
+            ];
+
+            $_GET = ['page' => 'convoca-publisher', 'tab' => 'channels'];
+
+            ob_start();
+            Admin::render_page();
+            $html = (string) ob_get_clean();
+
+            $this->assertStringContainsString(
+                'Puede haber caducado',
+                $html,
+                'Si la credencial puede haber caducado, tiene que verse en la lista de cuentas.'
+            );
+        }
+
         public function testUnaCredencialRecienteSaleConfigurada(): void
         {
             $estado = $this->tarjeta(2);
