@@ -494,9 +494,10 @@ class Publisher
             '{featured_image}' => $this->get_featured_image($post),
         ];
 
-        // De la variable más larga a la más corta: `{categorias}` es prefijo de
-        // `{categorias_hashtags}`, y en el otro orden la corta se comería el prefijo y
-        // dejaría un `_hashtags}` suelto en el mensaje.
+        // De la variable más larga a la más corta. Con las que hay hoy no hace falta (cada
+        // una lleva su llave de cierre, así que ninguna es prefijo de otra: comprobado con
+        // `str_ireplace` a pelo), pero cuesta una línea y deja el motor a salvo de un nombre
+        // corto que algún día sí lo sea.
         uksort($replacements, static fn(string $a, string $b): int => strlen($b) <=> strlen($a));
 
         // Sin distinguir mayúsculas: quien escribe `{Title}` espera el título, no el literal.

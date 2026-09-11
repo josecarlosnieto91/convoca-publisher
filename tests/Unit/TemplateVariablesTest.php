@@ -11,8 +11,10 @@
  *   `%HCATS%`): aquí solo estaban las etiquetas.
  * - Tienen la **entradilla** (`%ANNOUNCE%`): el texto anterior a `<!--more-->`.
  *
- * La trampa: `{categorias}` es el prefijo de `{categorias_hashtags}`, así que si se sustituye
- * antes la corta, el mensaje sale con un `_hashtags}` suelto.
+ * Aquí no hay ninguna trampa, y eso también se comprueba: `{categorias}` lleva la llave de
+ * cierre, así que NO es prefijo de `{categorias_hashtags}`. La prueba fija que las dos
+ * conviven sin comerse nada y que el motor va de la variable más larga a la más corta, para
+ * que siga siendo verdad si algún día se añade un nombre corto que sí sea prefijo.
  */
 
 namespace ConvocaPublisher\Tests;
@@ -65,8 +67,8 @@ final class TemplateVariablesTest extends TestCase
         $conNombres  = $this->sustituir('{categorias}');
 
         $this->assertStringContainsString('#tallerdehuerto', $conHashtags, 'La categoría sale como hashtag, en minúsculas como el resto.');
-        $this->assertStringNotContainsString('_hashtags}', $conHashtags, 'Sin restos: la variable corta no puede sustituirse antes.');
-        $this->assertStringContainsString('#huertourbano', $conHashtags, 'Y la segunda igual: una sola palabra, sin espacios.');
+        $this->assertStringNotContainsString('_hashtags}', $conHashtags, 'Sin restos: nada se come el prefijo de la otra.');
+        $this->assertStringContainsString('#huertourbano', $conHashtags, 'Y la segunda igual: una sola palabra.');
         $this->assertStringContainsString('Taller de huerto', $conNombres, 'Y los nombres siguen saliendo como nombres.');
     }
 
