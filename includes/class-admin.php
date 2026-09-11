@@ -733,6 +733,32 @@ class Admin
             ];
         }
 
+        // Verificada, sí, pero ¿cuándo? Las redes con token que caduca solo (Facebook y
+        // LinkedIn, 60 días) fallan un día sin que nadie haya tocado nada: con la fecha de la
+        // última comprobación se avisa antes, en vez de enterarse por un envío perdido.
+        $verificado_en = 0;
+
+        if (isset($estado['time']) && is_string($estado['time']) && '' !== $estado['time']) {
+            $fecha         = new \DateTimeImmutable($estado['time'], wp_timezone());
+            $verificado_en = $fecha->getTimestamp();
+        }
+
+        $red = $channel instanceof Channel_Profile ? $channel->get_channel_id() : $channel->get_id();
+
+        if (Credential_Health::needs_attention($red, $verificado_en)) {
+            $caducada = 'caducada' === Credential_Health::state($red, $verificado_en);
+
+            return [
+                'key'    => $caducada ? 'reconnect' : 'expiring',
+                'class'  => 'cp-status--warn',
+                'icon'   => $caducada ? '🔑' : '⏳',
+                'label'  => $caducada
+                    ? __('Puede haber caducado', 'convoca-publisher')
+                    : __('Caduca pronto', 'convoca-publisher'),
+                'detail' => Credential_Health::message($red, $verificado_en),
+            ];
+        }
+
         return [
             'key'   => 'ok',
             'class' => 'cp-status--ok',

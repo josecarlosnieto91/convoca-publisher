@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.9.1
+Stable tag: 1.9.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,11 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.9.2 =
+* Aviso de credencial a punto de caducar: Facebook y LinkedIn caducan a los 60 días y el envío empezaba a fallar sin que nadie hubiera tocado nada. El canal lo dice **antes** («caduca pronto», «puede haber caducado»), con la fecha de la última comprobación y lo que dura el token de esa red.
+* Las redes cuyo token no caduca por su cuenta (Telegram, Mastodon…) no generan avisos falsos, y una credencial que nunca se ha comprobado lo dice tal cual en vez de inventarse una fecha.
+
 
 = 1.9.1 =
 * Un programado que falla ya no se pierde: antes se borraba su marca aunque el envío no hubiera salido, así que no se reintentaba nunca. Ahora se le dan varias vueltas y, agotadas, se deja a la vista en la cola para darle salida a mano.
