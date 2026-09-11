@@ -123,6 +123,16 @@ function wp_generate_password(int $length = 12, bool $special_chars = true, bool
 {
     return str_repeat('x', $length);
 }
+function wp_strip_all_tags(string $text, bool $remove_breaks = false): string
+{
+    // Como el de verdad: además de las etiquetas, fuera el contenido de los scripts y estilos
+    // y los comentarios (eso es lo que lo distingue de un strip_tags pelado).
+    $text = (string) preg_replace('@<(script|style)[^>]*?>.*?</\\1>@is', '', $text);
+    $text = (string) preg_replace('@<![^>]*?>@', '', $text);
+
+    return trim(strip_tags($text));
+}
+
 function wp_trim_words(string $text, int $num_words = 55, string $more = '…'): string
 {
     $words = preg_split('/\s+/', $text);

@@ -368,12 +368,14 @@ class Publisher
         return [
             '{title}'          => __('Título de la entrada', 'convoca-publisher'),
             '{excerpt}'        => __('Extracto de la entrada', 'convoca-publisher'),
+            '{entradilla}'     => __('Texto anterior al «seguir leyendo», o el extracto si no lo lleva', 'convoca-publisher'),
             '{url}'            => __('Enlace permanente de la entrada', 'convoca-publisher'),
             '{hashtags}'       => __('Primeras 5 etiquetas como hashtags', 'convoca-publisher'),
             '{date}'           => __('Fecha de publicación', 'convoca-publisher'),
             '{author}'         => __('Nombre del autor', 'convoca-publisher'),
             '{featured_image}' => __('URL de la imagen destacada', 'convoca-publisher'),
             '{categorias}'     => __('Nombres de las categorías, separados por comas', 'convoca-publisher'),
+            '{categorias_hashtags}' => __('Primeras 5 categorías como hashtags', 'convoca-publisher'),
             '{etiquetas}'      => __('Nombres de las etiquetas, separados por comas (sin almohadilla)', 'convoca-publisher'),
             '{sitio}'          => __('Nombre del sitio', 'convoca-publisher'),
             '{autor_url}'      => __('Enlace a la lista de entradas del autor', 'convoca-publisher'),
@@ -467,9 +469,19 @@ class Publisher
             [(string) get_cat_name((int) get_option('default_category'))]
         ));
 
+        // La entradilla: lo que va antes del «seguir leyendo» (`<!--more-->`), que es lo que
+        // se enseña en un mensaje corto. Si la entrada no lo lleva, vale el extracto.
+        $entradilla = '';
+        $partes     = explode('<!--more-->', (string) $post->post_content, 2);
+        if (count($partes) > 1) {
+            $entradilla = trim(wp_strip_all_tags($partes[0]));
+        }
+
         $replacements = [
             '{title}'      => $post->post_title,
+            '{entradilla}' => '' !== $entradilla ? $entradilla : wp_trim_words($excerpt, 25, '…'),
             '{categorias}' => implode(', ', $categorias),
+            '{categorias_hashtags}' => $this->names_to_hashtags($categorias),
             '{etiquetas}'  => implode(', ', (array) wp_get_post_tags($post->ID, ['fields' => 'names'])),
             '{sitio}'      => (string) get_bloginfo('name'),
             '{autor_url}'  => (string) get_author_posts_url((int) $post->post_author),
@@ -482,7 +494,13 @@ class Publisher
             '{featured_image}' => $this->get_featured_image($post),
         ];
 
-        return str_replace(array_keys($replacements), array_values($replacements), $template);
+        // De la variable más larga a la más corta: `{categorias}` es prefijo de
+        // `{categorias_hashtags}`, y en el otro orden la corta se comería el prefijo y
+        // dejaría un `_hashtags}` suelto en el mensaje.
+        uksort($replacements, static fn(string $a, string $b): int => strlen($b) <=> strlen($a));
+
+        // Sin distinguir mayúsculas: quien escribe `{Title}` espera el título, no el literal.
+        return str_ireplace(array_keys($replacements), array_values($replacements), $template);
     }
 
     /**
@@ -523,17 +541,28 @@ class Publisher
      */
     private function get_post_hashtags(\WP_Post $post): string
     {
-        $tags = wp_get_post_tags($post->ID, ['fields' => 'names']);
-        if (empty($tags)) {
+        return $this->names_to_hashtags((array) wp_get_post_tags($post->ID, ['fields' => 'names']));
+    }
+
+    /**
+     * Convierte una lista de nombres (etiquetas o categorías) en hashtags.
+     *
+     * `sanitize_title` quita acentos y símbolos y deja guiones; los guiones se quitan después
+     * para que quede una sola palabra: `Taller de huerto` da `#Tallerdehuerto`. El tope es el
+     * mismo para las dos, y por eso está aquí y no duplicado.
+     *
+     * @param array<int, string> $names Nombres tal y como están escritos.
+     * @param int                $limit Cuántos como mucho.
+     */
+    private function names_to_hashtags(array $names, int $limit = 5): string
+    {
+        if (empty($names)) {
             return '';
         }
 
-        $tags = array_slice($tags, 0, 5);
-        $hashtags = array_map(function (string $tag): string {
-            $tag = sanitize_title($tag);
-            $tag = str_replace(['-', '_', ' '], '', $tag);
-            return '#' . $tag;
-        }, $tags);
+        $hashtags = array_map(static function (string $name): string {
+            return '#' . str_replace(['-', '_', ' '], '', sanitize_title($name));
+        }, array_slice($names, 0, $limit));
 
         return implode(' ', $hashtags);
     }
