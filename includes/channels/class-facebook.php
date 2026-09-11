@@ -99,7 +99,7 @@ class Facebook implements ChannelInterface
             'convoca_publisher_instagram_business_id' => [
                 'title'       => __('ID de Instagram Business (opcional)', 'convoca-publisher'),
                 'type'        => 'text',
-                'description' => __('Si tu Instagram está vinculado a la página de Facebook, se publicará también allí.', 'convoca-publisher'),
+                'description' => __('ID de la cuenta profesional de Instagram vinculada a la Página. Con esto se comprueba el permiso y la cuota, y Meta lleva lo que se publique en la Página a Instagram con su cross-post; la publicación directa por API todavía no está implementada.', 'convoca-publisher'),
             ],
             // Plantilla de mensaje específica para este canal
             'convoca_publisher_facebook_template' => [
@@ -137,6 +137,50 @@ class Facebook implements ChannelInterface
         return !empty(get_option('convoca_publisher_instagram_business_id', ''));
     }
 
+    /**
+     * ¿Se puede publicar en esa cuenta de Instagram? Se le pregunta a Meta por la cuota de
+     * publicación, que es el endpoint que confirma las tres cosas a la vez: que el ID existe,
+     * que el token lleva `instagram_content_publish` y cuánto queda del límite de 24 h.
+     *
+     * @return string Una frase para la pantalla, ya traducida.
+     */
+    private function instagram_state(): string
+    {
+        $ig_id = (string) get_option('convoca_publisher_instagram_business_id', '');
+
+        $resp = wp_remote_get(
+            "https://graph.facebook.com/v22.0/{$ig_id}/content_publishing_limit?access_token=" . rawurlencode($this->get_token()),
+            ['timeout' => 15]
+        );
+
+        if (is_wp_error($resp)) {
+            return sprintf(
+                /* translators: %s: error message */
+                __('❌ Instagram: no se pudo preguntar a Meta (%s)', 'convoca-publisher'),
+                $resp->get_error_message()
+            );
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($resp), true);
+        $code = wp_remote_retrieve_response_code($resp);
+
+        if ($code < 200 || $code >= 300) {
+            return sprintf(
+                /* translators: %s: error message from Meta */
+                __('❌ Instagram: ese ID no responde con este token (%s)', 'convoca-publisher'),
+                $body['error']['message'] ?? $code
+            );
+        }
+
+        $cuota = (int) ($body['data'][0]['quota_usage'] ?? 0);
+
+        return sprintf(
+            /* translators: %d: publicaciones hechas en las últimas 24 horas */
+            __('✅ Instagram responde (publicadas en 24 h: %d de 100). La publicación directa por API aún no está implementada: hoy lo que llega a Instagram lo lleva el cross-post de la Página.', 'convoca-publisher'),
+            $cuota
+        );
+    }
+
     public function verify_connection(): array
     {
         $token = $this->get_token();
@@ -164,8 +208,12 @@ class Facebook implements ChannelInterface
                 $body['name']
             );
             if ($this->instagram_linked()) {
-                $msg .= ' | ' . __('Instagram vinculado', 'convoca-publisher');
+                // No basta con que el campo tenga algo: se le pregunta a Meta. Si el ID no
+                // responde o el token no trae `instagram_content_publish`, hay que saberlo AQUÍ
+                // y no descubrirlo con una publicación perdida.
+                $msg .= ' | ' . $this->instagram_state();
             }
+
             return ['success' => true, 'message' => $msg];
         }
 
