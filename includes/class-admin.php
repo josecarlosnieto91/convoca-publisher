@@ -1233,6 +1233,12 @@ class Admin
             'networks' => $redes,
         ]);
 
+        // Se pagina de 25 en 25: el historial guarda hasta 200 filas y volcarlas todas de una vez
+        // deja una pantalla larga de leer.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- solo se lee para paginar.
+        $pagina   = isset($_GET['cp-pagina']) ? max(1, (int) $_GET['cp-pagina']) : 1;
+        $paginado = Admin\Log_View::page($vista, $pagina, 25);
+
         $aviso = get_transient('convoca_publisher_queue_notice_' . get_current_user_id());
         ?>
         <div class="wrap">
@@ -1280,10 +1286,13 @@ class Admin
                 <p class="cp-filters__count">
                     <?php
                     printf(
-                        /* translators: 1: cuántas filas se ven, 2: cuántas hay en total. */
-                        esc_html__('Mostrando %1$d de %2$d.', 'convoca-publisher'),
-                        count($vista),
-                        (int) $datos['total']
+                        /* translators: 1: primera fila que se ve, 2: última, 3: total, 4: página, 5: páginas. */
+                        esc_html__('Mostrando %1$d-%2$d de %3$d (página %4$d de %5$d).', 'convoca-publisher'),
+                        count($paginado['entries']) > 0 ? (($paginado['page'] - 1) * 25) + 1 : 0,
+                        (($paginado['page'] - 1) * 25) + count($paginado['entries']),
+                        (int) $datos['total'],
+                        (int) $paginado['page'],
+                        (int) $paginado['pages']
                     );
         ?>
                     <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin.php?action=convoca_publisher_delete_log'), 'convoca_publisher_delete_log')); ?>" class="button" onclick="return confirm('<?php echo esc_js(__('¿Borrar todo el historial?', 'convoca-publisher')); ?>');">
@@ -1295,7 +1304,7 @@ class Admin
                     <p><?php echo esc_html__('Con esos filtros no hay nada.', 'convoca-publisher'); ?></p>
                 <?php else: ?>
                     <div class="cp-log__scroll">
-                        <?php foreach (array_reverse($vista) as $log): ?>
+                        <?php foreach ($paginado['entries'] as $log): ?>
                             <div class="cp-log__row">
                                 <span class="cp-status <?php echo !empty($log['success']) ? 'ok' : 'fail'; ?>">
                                     <?php echo !empty($log['success']) ? 'OK' : 'FAIL'; ?>
@@ -1303,6 +1312,9 @@ class Admin
                                 <span class="cp-log__time"><?php echo isset($log['time']) ? esc_html((string) $log['time']) : ''; ?></span>
                                 <span class="cp-log__channel"><?php echo esc_html(Admin\Log_View::label((string) ($log['channel'] ?? ''), $redes, $nombres)); ?></span>
                                 <span class="cp-log__title"><?php echo isset($log['title']) ? esc_html((string) $log['title']) : ''; ?></span>
+                                <?php if (!empty($log['test'])): ?>
+                                    <span class="cp-log__test"><?php echo esc_html__('prueba', 'convoca-publisher'); ?></span>
+                                <?php endif; ?>
                                 <span class="cp-log__id"><?php echo esc_html__('Entrada', 'convoca-publisher') . ' #' . (int) ($log['post_id'] ?? 0); ?></span>
                                 <?php if (Admin\Log_View::retryable($log)): ?>
                                     <a class="cp-log__retry button-link" href="<?php
@@ -1315,6 +1327,43 @@ class Admin
                             </div>
                         <?php endforeach; ?>
                     </div>
+
+                    <?php if ($paginado['pages'] > 1): ?>
+                        <p class="cp-paginacion">
+                            <?php
+                            // Los filtros se conservan al cambiar de página: perderlos al paginar es
+                            // de las cosas que más molesta.
+                            $enlace = static function (int $destino) use ($red, $cuenta, $estado): string {
+                                return add_query_arg(
+                                    array_filter([
+                                        'page'      => 'convoca-publisher-log',
+                                        'cp-red'    => $red,
+                                        'cp-cuenta' => $cuenta,
+                                        'cp-estado' => $estado,
+                                        'cp-pagina' => $destino,
+                                    ]),
+                                    admin_url('admin.php')
+                                );
+                            };
+                        ?>
+                            <?php if ($paginado['page'] > 1): ?>
+                                <a class="button" href="<?php echo esc_url($enlace($paginado['page'] - 1)); ?>">&laquo; <?php echo esc_html__('Anterior', 'convoca-publisher'); ?></a>
+                            <?php endif; ?>
+                            <span class="cp-paginacion__actual">
+                                <?php
+                            printf(
+                                /* translators: 1: página actual, 2: total de páginas. */
+                                esc_html__('Página %1$d de %2$d', 'convoca-publisher'),
+                                (int) $paginado['page'],
+                                (int) $paginado['pages']
+                            );
+                        ?>
+                            </span>
+                            <?php if ($paginado['page'] < $paginado['pages']): ?>
+                                <a class="button" href="<?php echo esc_url($enlace($paginado['page'] + 1)); ?>"><?php echo esc_html__('Siguiente', 'convoca-publisher'); ?> &raquo;</a>
+                            <?php endif; ?>
+                        </p>
+                    <?php endif; ?>
                 <?php endif; ?>
             <?php endif; ?>
 

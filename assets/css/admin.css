@@ -737,3 +737,25 @@ textarea.cp-input {
 h1.wp-heading-inline .cp-red-svg {
 	vertical-align: -0.12em;
 }
+
+/* ── Paginación del historial ──────────────────────────────── */
+.cp-paginacion {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-top: 12px;
+}
+
+.cp-paginacion__actual {
+	color: #50575e;
+}
+
+/* Una prueba de publicación no es una publicación de la entrada: se marca. */
+.cp-log__test {
+	background: #f0f0f1;
+	border-radius: 3px;
+	color: #50575e;
+	font-size: 11px;
+	padding: 1px 6px;
+	text-transform: uppercase;
+}

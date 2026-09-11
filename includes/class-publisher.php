@@ -222,7 +222,7 @@ class Publisher
                 $this->log_publish([
                     'post_id'  => $post_id,
                     'title'    => $post->post_title,
-                    'channel'  => $channel->get_name(),
+                    'channel'  => $channel_id,
                     'success'  => false,
                     'time'     => current_time('mysql'),
                     'response' => __('Pendiente de revisión.', 'convoca-publisher'),
@@ -237,7 +237,7 @@ class Publisher
             $this->log_publish([
                 'post_id'  => $post_id,
                 'title'    => $post->post_title,
-                'channel'  => $channel->get_name(),
+                'channel'  => $channel_id,
                 'success'  => $result['success'],
                 'time'     => current_time('mysql'),
                 // Un envío puede salir bien en una red y mal en otra (el muro se publica y
@@ -296,12 +296,29 @@ class Publisher
             return ['success' => false, 'error' => __('Ese canal no está configurado.', 'convoca-publisher')];
         }
 
-        return $canal->publish(
+        $resultado = $canal->publish(
             $post_id,
             $this->preview_message($post_id, $channel_id),
             (string) get_permalink($post),
             $this->get_featured_image($post)
         );
+
+        // Una prueba manda un mensaje de verdad, así que tiene que dejar rastro: si no, «¿salió?»
+        // no se puede responder mirando el historial, y eso fue justo lo que pasó. Va marcada como
+        // prueba para no confundirla con una publicación de la entrada.
+        $this->log_publish([
+            'post_id'  => $post_id,
+            'title'    => $post->post_title,
+            'channel'  => $channel_id,
+            'success'  => !empty($resultado['success']),
+            'time'     => current_time('mysql'),
+            'response' => !empty($resultado['success'])
+                ? __('Prueba de publicación: salió.', 'convoca-publisher')
+                : (string) ($resultado['error'] ?? __('Prueba de publicación: falló.', 'convoca-publisher')),
+            'test'     => true,
+        ]);
+
+        return $resultado;
     }
 
     /**

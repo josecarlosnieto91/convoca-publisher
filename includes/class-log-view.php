@@ -78,6 +78,31 @@ class Log_View
      *
      * @param array<string, mixed> $entry Fila del historial.
      */
+    /**
+     * Una página del historial.
+     *
+     * El historial se guarda del más viejo al más nuevo y la pantalla enseña lo último primero, así
+     * que la vuelta se da aquí: quien pide la página 1 recibe las últimas filas.
+     *
+     * @param array<int, array<string, mixed>> $entries  Filas ya filtradas.
+     * @param int                              $page      Página pedida (1..n).
+     * @param int                              $per_page  Filas por página.
+     * @return array{entries: array<int, array<string, mixed>>, page: int, pages: int, total: int}
+     */
+    public static function page(array $entries, int $page = 1, int $per_page = 25): array
+    {
+        $total  = count($entries);
+        $paginas = max(1, (int) ceil($total / max(1, $per_page)));
+        $pagina  = max(1, min($page, $paginas));
+
+        return [
+            'entries' => array_slice(array_reverse($entries), ($pagina - 1) * $per_page, $per_page),
+            'page'    => $pagina,
+            'pages'   => $paginas,
+            'total'   => $total,
+        ];
+    }
+
     public static function is_entry(array $entry): bool
     {
         $channel = (string) ($entry['channel'] ?? '');
