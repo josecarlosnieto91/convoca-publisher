@@ -16,10 +16,13 @@
         "ext-mbstring": "*"
     },
     "require-dev": {
-        "phpstan/phpstan": "^2.0",
-        "php-stubs/wordpress-stubs": "^6.0",
+        "dealerdirect/phpcodesniffer-composer-installer": "*",
         "friendsofphp/php-cs-fixer": "^3.0",
+        "php-stubs/wordpress-stubs": "^6.0",
+        "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^10.0",
+        "squizlabs/php_codesniffer": "*",
+        "wp-coding-standards/wpcs": "^3.4",
         "yoast/phpunit-polyfills": "*"
     },
     "autoload": {
@@ -35,12 +38,15 @@
         "test": [
             "@test:cs",
             "@test:stan",
+            "@test:security",
             "@test:unit"
-        ]
+        ],
+        "test:security": "vendor/bin/phpcs --standard=WordPress --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput,WordPress.Security.SafeRedirect,WordPress.Security.PluginMenuSlug,WordPress.WP.GlobalVariablesOverride,WordPress.WP.DiscouragedFunctions --error-severity=1 --warning-severity=0 --report=summary includes/ convoca-publisher.php"
     },
     "config": {
         "allow-plugins": {
-            "composer/installers": true
+            "composer/installers": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         },
         "sort-packages": true
     },

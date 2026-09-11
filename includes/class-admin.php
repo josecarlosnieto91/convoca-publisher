@@ -819,7 +819,7 @@ class Admin
                             printf(
                                 /* translators: %d: número de cuentas de esa red */
                                 esc_html(_n('%d cuenta', '%d cuentas', count($own), 'convoca-publisher')),
-                                count($own)
+                                (int) count($own)
                             );
                         ?>
                         </span>
@@ -871,7 +871,7 @@ class Admin
                         printf(
                             /* translators: %d: límite de cuentas por red */
                             esc_html__('Límite alcanzado: %d cuentas por red. Borra una para añadir otra.', 'convoca-publisher'),
-                            Profile_Store::LIMIT_PER_NETWORK
+                            (int) Profile_Store::LIMIT_PER_NETWORK
                         );
                     ?>
                     </p>
