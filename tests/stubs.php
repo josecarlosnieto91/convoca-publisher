@@ -194,8 +194,57 @@ function delete_post_meta(int $post_id, string $meta_key, mixed $meta_value = ''
 }
 function get_posts(array $args = []): array
 {
-    // El harness no tiene base de datos: devuelve lo que la prueba haya dejado puesto.
-    return $GLOBALS['_cp_test_posts'];
+    // El harness no tiene base de datos, pero sí tiene que **mirar los argumentos**: si
+    // devuelve todo lo que la prueba dejó puesto, una consulta con rango de fechas o con
+    // meta_query pasa por buena y las pruebas miden cosas que en producción no saldrían.
+    $ids  = array_map('intval', $GLOBALS['_cp_test_posts']);
+    $meta = $GLOBALS['_cp_test_postmeta'];
+
+    $cumple = static function (int $id) use ($args, $meta): bool {
+        if (isset($args['meta_key'])) {
+            $tiene    = null !== ($meta[$id][$args['meta_key']] ?? null);
+            $comparar = strtoupper((string) ($args['meta_compare'] ?? '='));
+
+            if ('EXISTS' === $comparar && !$tiene) {
+                return false;
+            }
+
+            if ('NOT EXISTS' === $comparar && $tiene) {
+                return false;
+            }
+        }
+
+        foreach ((array) ($args['meta_query'] ?? []) as $clausula) {
+            $clausula = (array) $clausula;
+            $valor    = $meta[$id][$clausula['key'] ?? ''] ?? null;
+
+            if (null === $valor) {
+                return false;
+            }
+
+            if ('BETWEEN' === strtoupper((string) ($clausula['compare'] ?? '='))) {
+                [$min, $max] = array_values((array) $clausula['value']);
+
+                if ((int) $valor < (int) $min || (int) $valor > (int) $max) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    };
+
+    $encontrados = array_values(array_filter($ids, $cumple));
+    $estados     = (array) ($args['post_status'] ?? 'publish');
+
+    // Las entradas del arnés son todas «publicadas»: si se piden otros estados, no hay.
+    if (!in_array('publish', $estados, true) && !in_array('any', $estados, true)) {
+        $encontrados = [];
+    }
+
+    $limite = (int) ($args['posts_per_page'] ?? -1);
+
+    return $limite > 0 ? array_slice($encontrados, 0, $limite) : $encontrados;
 }
 function get_the_title(int|WP_Post $post = 0): string
 {
@@ -276,8 +325,13 @@ function apply_filters(string $hook_name, mixed $value, mixed ...$args): mixed
     return $value;
 }
 function do_action(string $hook_name, mixed ...$args): void {}
-function current_user_can(string $capability): bool
+function current_user_can(string $capability, mixed ...$args): bool
 {
+    // Configurable: hay rutas que solo deben existir para quien administra el sitio.
+    if (isset($GLOBALS['_cp_test_can_manage'])) {
+        return (bool) $GLOBALS['_cp_test_can_manage'];
+    }
+
     return true;
 }
 function wp_die(string|WP_Error $message = '', string $title = '', array $args = []): void
@@ -442,6 +496,8 @@ function cp_test_reset(): void
     $GLOBALS['_cp_test_envios']    = [];
     $GLOBALS['_cp_test_mail']      = [];
     $GLOBALS['_cp_test_timezone']  = 'UTC';
+    $GLOBALS['_cp_test_widgets']   = [];
+    unset($GLOBALS['_cp_test_can_manage']);
     $GLOBALS['wpdb']               = new wpdb();
     $_GET                          = [];
     $_POST                         = [];
@@ -508,6 +564,11 @@ class wpdb
     }
 }
 
+function wp_add_dashboard_widget(string $id, string $name, callable $callback, callable $control = null): void
+{
+    // Se apunta: una prueba que dice «sale en el escritorio» tiene que poder comprobarlo.
+    $GLOBALS['_cp_test_widgets'][$id] = $name;
+}
 function wp_mail(string|array $to, string $subject, string $message, string|array $headers = '', string|array $attachments = []): bool
 {
     // Se apunta: una prueba que dice «se avisó por correo» tiene que poder comprobarlo.

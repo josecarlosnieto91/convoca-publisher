@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.9.3
+Stable tag: 1.10.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,10 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.10.0 =
+* Widget en el escritorio: lo siguiente que va a salir, lo que se ha quedado parado (con un enlace para ver qué pasó y reintentar) y lo último que salió con su resultado. Es lo que se ve sin entrar a buscar nada.
+
 
 = 1.9.3 =
 * Los plazos de caducidad miran la credencial que este plugin pide de verdad, que es un token pegado a mano y sin refresco: Facebook y LinkedIn 60 días, **TikTok 1 día** (su access token dura unas 24 h) y **Google My Business 1 día** (el de Google dura una hora). Antes esas dos últimas decían «no caduca», que era mentira.

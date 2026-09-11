@@ -35,6 +35,7 @@ class Plugin
         Retry::init();
         Metabox::init();
         Notifications::init();
+        Dashboard::init();
         Rest::init();
 
         // Cifrado automático de tokens (hooks cp_*)
