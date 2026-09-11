@@ -47,7 +47,10 @@ class Mastodon implements ChannelInterface
         }
 
         $text = html_entity_decode($message);
-        $text .= "\n\n" . $url;
+        $falta = \ConvocaPublisher\Platform_Rules::url_if_missing($message, $url);
+        if ('' !== $falta) {
+            $text .= "\n\n" . $falta;
+        }
 
         $body = [
             'status'     => mb_substr($text, 0, 500),

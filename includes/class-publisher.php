@@ -367,6 +367,7 @@ class Publisher
     {
         return [
             '{title}'          => __('Título de la entrada', 'convoca-publisher'),
+            '{titulo_negrita}' => __('Título en negrita, en las redes que admiten formato (Telegram y Mastodon)', 'convoca-publisher'),
             '{excerpt}'        => __('Extracto de la entrada', 'convoca-publisher'),
             '{entradilla}'     => __('Texto anterior al «seguir leyendo», o el extracto si no lo lleva', 'convoca-publisher'),
             '{url}'            => __('Enlace permanente de la entrada', 'convoca-publisher'),
@@ -431,7 +432,7 @@ class Publisher
         // El primero que haya manda: lo de este envío, lo de la entrada, la cuenta, la red, lo global.
         $template = [] === $candidatas ? $default : (string) array_values($candidatas)[0];
 
-        return $this->render_template($post, $template, $url, $hashtags);
+        return $this->render_template($post, $template, $url, $hashtags, $network_id);
     }
 
     /**
@@ -446,7 +447,7 @@ class Publisher
      * @param string   $url      Enlace a usar (vacío = el permanente de la entrada).
      * @param string   $hashtags Hashtags ya preparados (vacío = los de las etiquetas).
      */
-    public function render_template(\WP_Post $post, string $template, string $url = '', string $hashtags = ''): string
+    public function render_template(\WP_Post $post, string $template, string $url = '', string $hashtags = '', string $network = ''): string
     {
         if ('' === $url) {
             $url = (string) get_permalink($post);
@@ -477,8 +478,15 @@ class Publisher
             $entradilla = trim(wp_strip_all_tags($partes[0]));
         }
 
+        // El título en negrita, solo donde la red acepta formato. Donde no, sale el título tal
+        // cual: la misma plantilla vale para todas las redes y ninguna enseña etiquetas raras.
+        $titulo_negrita = 'html' === Platform_Rules::bold_format($network)
+            ? '<b>' . esc_html((string) $post->post_title) . '</b>'
+            : (string) $post->post_title;
+
         $replacements = [
             '{title}'      => $post->post_title,
+            '{titulo_negrita}' => $titulo_negrita,
             '{entradilla}' => '' !== $entradilla ? $entradilla : wp_trim_words($excerpt, 25, '…'),
             '{categorias}' => implode(', ', $categorias),
             '{categorias_hashtags}' => $this->names_to_hashtags($categorias),
@@ -522,7 +530,7 @@ class Publisher
             return ['error' => __('Esa entrada no existe.', 'convoca-publisher')];
         }
 
-        $mensaje = $this->render_template($post, $template);
+        $mensaje = $this->render_template($post, $template, '', '', $network_id);
         $limite  = Platform_Rules::limit($network_id);
         $cuenta  = Platform_Rules::count($network_id, $mensaje);
         $cabe    = $cuenta <= $limite;

@@ -46,10 +46,17 @@ class Twitter implements ChannelInterface
         }
 
         $tweet_text = html_entity_decode(wp_trim_words($message, 25));
-        if (mb_strlen($tweet_text . ' ' . $url) > 280) {
-            $tweet_text = mb_substr($tweet_text, 0, 260 - mb_strlen($url)) . '…';
+
+        // Si el mensaje ya trae el enlace, no se pega otra vez; y el recorte se calcula sobre lo
+        // que de verdad se va a mandar, no sobre un enlace que ya estaba dentro.
+        $falta = \ConvocaPublisher\Platform_Rules::url_if_missing($tweet_text, $url);
+        $cola  = '' === $falta ? '' : ' ' . $falta;
+
+        if (mb_strlen($tweet_text . $cola) > 280) {
+            $tweet_text = mb_substr($tweet_text, 0, 260 - mb_strlen($cola)) . '…';
         }
-        $tweet = $tweet_text . ' ' . $url;
+
+        $tweet = $tweet_text . $cola;
 
         $body = ['text' => mb_substr($tweet, 0, 280)];
 

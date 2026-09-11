@@ -33,10 +33,10 @@ class Platform_Rules
      */
     private const RULES = [
         'twitter' => ['chars' => 280, 'url_weight' => 23, 'hashtags' => 3, 'urls' => 1],
-        'mastodon' => ['chars' => 500, 'url_weight' => 0, 'hashtags' => 5, 'urls' => 0],
+        'mastodon' => ['chars' => 500, 'url_weight' => 0, 'hashtags' => 5, 'urls' => 0, 'bold' => 'html'],
         'linkedin' => ['chars' => 3000, 'url_weight' => 0, 'hashtags' => 3, 'urls' => 0],
         'facebook' => ['chars' => 63206, 'url_weight' => 0, 'hashtags' => 0, 'urls' => 0],
-        'telegram' => ['chars' => 4096, 'url_weight' => 0, 'hashtags' => 0, 'urls' => 0],
+        'telegram' => ['chars' => 4096, 'url_weight' => 0, 'hashtags' => 0, 'urls' => 0, 'bold' => 'html'],
         'tiktok' => ['chars' => 2200, 'url_weight' => 0, 'hashtags' => 0, 'urls' => 0],
         'googlemybusiness' => ['chars' => 1500, 'url_weight' => 0, 'hashtags' => 0, 'urls' => 1],
     ];
@@ -44,7 +44,7 @@ class Platform_Rules
     /**
      * Red desconocida (un canal nuevo): un tope prudente y ninguna regla recomendada.
      */
-    private const FALLBACK = ['chars' => 2000, 'url_weight' => 0, 'hashtags' => 0, 'urls' => 0];
+    private const FALLBACK = ['chars' => 2000, 'url_weight' => 0, 'hashtags' => 0, 'urls' => 0, 'bold' => ''];
 
     /**
      * @return array{chars: int, url_weight: int, hashtags: int, urls: int}
@@ -72,6 +72,34 @@ class Platform_Rules
     /**
      * Cuánto ocupa un mensaje para esa red, con el peso de sus enlaces.
      */
+    /**
+     * Si la red acepta negrita, y cómo.
+     *
+     * Telegram (en modo HTML) y Mastodon admiten etiquetas HTML sencillas. En las demás el texto
+     * se publica tal cual, así que la variable del título en negrita se degrada a texto normal:
+     * mejor eso que un `<b>` a la vista en el mensaje.
+     */
+    public static function bold_format(string $network): string
+    {
+        return (string) (self::rules($network)['bold'] ?? '');
+    }
+
+    /**
+     * El enlace, solo si el mensaje no lo lleva ya.
+     *
+     * Telegram y Mastodon lo pegaban siempre al final: con una plantilla que ya trae `{url}` —o
+     * con el enlace dentro del extracto— el mismo enlace salía dos veces. Visto en producción,
+     * con el último post de Lugg.
+     */
+    public static function url_if_missing(string $message, string $url): string
+    {
+        if ('' === $url || str_contains($message, $url)) {
+            return '';
+        }
+
+        return $url;
+    }
+
     public static function count(string $network, string $message): int
     {
         $peso = self::rules($network)['url_weight'];

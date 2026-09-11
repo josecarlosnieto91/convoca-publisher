@@ -45,9 +45,9 @@ final class TemplateVariablesTest extends TestCase
         return $post;
     }
 
-    private function sustituir(string $plantilla, string $contenido = 'Texto de la entrada.'): string
+    private function sustituir(string $plantilla, string $contenido = 'Texto de la entrada.', string $red = ''): string
     {
-        return Publisher::instance()->render_template($this->entrada($contenido), $plantilla);
+        return Publisher::instance()->render_template($this->entrada($contenido), $plantilla, '', '', $red);
     }
 
     public function testElTituloSeSustituyeAunqueSeEscribaEnMayusculas(): void
@@ -70,6 +70,15 @@ final class TemplateVariablesTest extends TestCase
         $this->assertStringNotContainsString('_hashtags}', $conHashtags, 'Sin restos: nada se come el prefijo de la otra.');
         $this->assertStringContainsString('#huertourbano', $conHashtags, 'Y la segunda igual: una sola palabra.');
         $this->assertStringContainsString('Taller de huerto', $conNombres, 'Y los nombres siguen saliendo como nombres.');
+    }
+
+    public function testElTituloEnNegritaSoloDondeLaRedAceptaFormato(): void
+    {
+        $conFormato  = $this->sustituir('{titulo_negrita}', 'Texto.', 'telegram');
+        $sinFormato  = $this->sustituir('{titulo_negrita}', 'Texto.', 'twitter');
+
+        $this->assertStringContainsString('<b>Taller de huerto</b>', $conFormato, 'Donde se acepta formato, sale en negrita.');
+        $this->assertSame('Taller de huerto', $sinFormato, 'Y donde no, el título tal cual: nada de etiquetas a la vista.');
     }
 
     public function testLosHashtagsRepetidosSalenUnaSolaVez(): void
@@ -106,6 +115,6 @@ final class TemplateVariablesTest extends TestCase
 
         $this->assertArrayHasKey('{categorias_hashtags}', $variables, 'Las categorías como hashtags.');
         $this->assertArrayHasKey('{entradilla}', $variables, 'La entradilla.');
-        $this->assertCount(13, $variables, 'Y la pantalla las enseña todas: las de siempre más estas dos.');
+        $this->assertCount(14, $variables, 'Y la pantalla las enseña todas: las de siempre más estas dos.');
     }
 }

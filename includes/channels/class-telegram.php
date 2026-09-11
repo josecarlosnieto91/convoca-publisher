@@ -46,7 +46,10 @@ class Telegram implements ChannelInterface
         }
 
         $text = html_entity_decode($message);
-        $text .= "\n\n" . $url;
+        $falta = \ConvocaPublisher\Platform_Rules::url_if_missing($message, $url);
+        if ('' !== $falta) {
+            $text .= "\n\n" . $falta;
+        }
 
         $parse_mode = get_option('convoca_publisher_telegram_parse_mode', 'HTML');
         $body = [

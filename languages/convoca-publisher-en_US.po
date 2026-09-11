@@ -1961,3 +1961,6 @@ msgstr "Every 15 minutes"
 
 msgid "No se publica solo: usa «Compartir ahora» cuando quieras publicarlo."
 msgstr "It does not publish by itself: use “Share now” when you want to publish it."
+
+msgid "Título en negrita, en las redes que admiten formato (Telegram y Mastodon)"
+msgstr "Bold title, on the networks that accept formatting (Telegram and Mastodon)"
