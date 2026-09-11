@@ -41,7 +41,7 @@
             "@test:security",
             "@test:unit"
         ],
-        "test:security": "vendor/bin/phpcs --standard=WordPress --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput,WordPress.Security.SafeRedirect,WordPress.Security.PluginMenuSlug,WordPress.WP.GlobalVariablesOverride,WordPress.WP.DiscouragedFunctions --error-severity=1 --warning-severity=0 --report=summary includes/ convoca-publisher.php"
+        "test:security": "vendor/bin/phpcs --standard=WordPress --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput,WordPress.Security.SafeRedirect,WordPress.Security.PluginMenuSlug,WordPress.WP.GlobalVariablesOverride,WordPress.WP.DiscouragedFunctions --error-severity=1 -n --report=summary includes/ convoca-publisher.php"
     },
     "config": {
         "allow-plugins": {
