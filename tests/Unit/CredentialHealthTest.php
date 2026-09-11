@@ -153,6 +153,48 @@ namespace ConvocaPublisher\Tests {
             $this->assertSame('Caduca pronto', $estado['label']);
         }
 
+        /**
+         * Lo mismo, pero en un sitio que no viva en UTC: la fecha guardada es hora del sitio
+         * (`current_time`), y convertirla mal desplaza el cálculo un día entero.
+         */
+        public function testElCalculoNoSeDesplazaPorLaZonaDelSitio(): void
+        {
+            $GLOBALS['_cp_test_timezone'] = 'Europe/Madrid';
+
+            $perfil = Profile_Store::create('facebook', 'Facebook — Página', [
+                'convoca_publisher_facebook_token'   => 'TOKEN',
+                'convoca_publisher_facebook_page_id' => '123',
+            ]);
+
+            $this->assertIsArray($perfil);
+
+            $cuenta = \ConvocaPublisher\Plugin::accounts()[(string) $perfil['id']];
+
+            // El caso que muerde: justo pasados los 60 días. Si la fecha se convirtiera mal,
+            // el desfase de la zona la dejaría por debajo del plazo y diría «caduca pronto».
+            $casos = [
+                ['segundos' => 2 * DAY_IN_SECONDS, 'clave' => 'ok'],
+                ['segundos' => 61 * DAY_IN_SECONDS, 'clave' => 'reconnect'],
+                ['segundos' => 60 * DAY_IN_SECONDS + 3600, 'clave' => 'reconnect'],
+            ];
+
+            foreach ($casos as ['segundos' => $segundos, 'clave' => $clave]) {
+                $GLOBALS['_cp_test_options']['convoca_publisher_verify_status'][$perfil['id']] = [
+                    'success'     => true,
+                    'message'     => 'Conexión correcta',
+                    // La hora que guardaría WordPress en ese sitio (no UTC).
+                    'time'        => (new \DateTimeImmutable('@' . (time() - $segundos)))->setTimezone(new \DateTimeZone('Europe/Madrid'))->format('Y-m-d H:i:s'),
+                    'fingerprint' => Admin::channel_fingerprint($cuenta),
+                ];
+
+                $this->assertSame(
+                    $clave,
+                    Admin::channel_status($cuenta)['key'],
+                    sprintf('Con la credencial de hace %d s, en hora de Madrid.', $segundos)
+                );
+            }
+        }
+
         public function testLaPantallaDeCanalesLoEnseniaDondeSeMiranLasCuentas(): void
         {
             $perfil = Profile_Store::create('facebook', 'Facebook — Página', [

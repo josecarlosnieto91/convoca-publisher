@@ -441,6 +441,7 @@ function cp_test_reset(): void
     $GLOBALS['_cp_test_http']      = [];
     $GLOBALS['_cp_test_envios']    = [];
     $GLOBALS['_cp_test_mail']      = [];
+    $GLOBALS['_cp_test_timezone']  = 'UTC';
     $GLOBALS['wpdb']               = new wpdb();
     $_GET                          = [];
     $_POST                         = [];
@@ -579,7 +580,9 @@ function sanitize_text_field(string $str): string
 // --- Dobles del calendario ---
 function wp_timezone(): DateTimeZone
 {
-    return new DateTimeZone('UTC');
+    // Configurable: la aritmética de fechas depende de la zona del sitio, y hay que poder
+    // probar una que no sea UTC (que es lo que corre en producción).
+    return new DateTimeZone($GLOBALS['_cp_test_timezone'] ?? 'UTC');
 }
 function wp_date(string $format, ?int $timestamp = null, ?DateTimeZone $timezone = null): string
 {
