@@ -67,8 +67,13 @@ function get_option(string $option, mixed $default = false): mixed
 
     return $GLOBALS['_cp_test_options'][$option] ?? $default;
 }
+$GLOBALS['_cp_test_option_writes'] = [];
+
 function update_option(string $option, mixed $value, bool $autoload = false): bool
 {
+    // Se anota lo que se escribe: sin esto, un saneador que ESCRIBE su propia opción era
+    // invisible para las pruebas (y en producción eso es una recursión sin fin).
+    $GLOBALS['_cp_test_option_writes'][] = $option;
     $GLOBALS['_cp_test_options'][$option] = $value;
     return true;
 }

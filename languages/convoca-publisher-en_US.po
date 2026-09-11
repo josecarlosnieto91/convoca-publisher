@@ -1958,3 +1958,6 @@ msgstr "Every 15 minutes"
 
 #~ msgid "Plantilla específica para "
 #~ msgstr "Specific template for "
+
+msgid "No se publica solo: usa «Compartir ahora» cuando quieras publicarlo."
+msgstr "It does not publish by itself: use “Share now” when you want to publish it."

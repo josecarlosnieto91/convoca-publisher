@@ -164,7 +164,14 @@ class Admin
      */
     public static function sanitize_queue_interval($value): int
     {
-        return Queue::save_interval((int) $value);
+        // OJO: un saneador NO escribe la opción que está saneando.
+        //
+        // Antes esto llamaba a `Queue::save_interval()`, que guarda con `update_option()`. Al
+        // guardar, WordPress pasa otra vez por `sanitize_option` y vuelve a llamar a este
+        // método: el saneador se llamaba a sí mismo sin fin hasta reventar la pila, y el
+        // guardado terminaba en un 500. Pasaba guardando una plantilla porque el grupo de
+        // ajustes se guarda entero desde esa pestaña, aunque el intervalo no se toque.
+        return Queue::clamp_interval((int) $value);
     }
 
     public static function sanitize_moderation_mode($value): string

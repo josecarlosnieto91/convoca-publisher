@@ -86,7 +86,7 @@ class Metabox
     {
         add_meta_box(
             'convoca-publisher',
-            esc_html__('Convoca Publisher', 'convoca-publisher'),
+            esc_html__('Publicar en RRSS', 'convoca-publisher'),
             [self::class, 'render'],
             'post',
             'side',
@@ -128,8 +128,10 @@ class Metabox
             }
             echo '<p><button type="button" class="button button-small cp-republish" data-post-id="' . esc_attr((string) $post->ID) . '">'
                 . esc_html__('↻ Republicar', 'convoca-publisher') . '</button></p>';
-        } else {
+        } elseif (get_option('convoca_publisher_auto_publish', true)) {
             echo '<p>' . esc_html__('Se publicará automáticamente al guardar.', 'convoca-publisher') . '</p>';
+        } else {
+            echo '<p>' . esc_html__('No se publica solo: usa «Compartir ahora» cuando quieras publicarlo.', 'convoca-publisher') . '</p>';
         }
 
         if (!empty($channels)) {

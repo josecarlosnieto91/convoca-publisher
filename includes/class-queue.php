@@ -68,10 +68,21 @@ final class Queue
      */
     public static function save_interval(int $seconds): int
     {
-        $seconds = max(0, min(DAY_IN_SECONDS, $seconds));
+        $seconds = self::clamp_interval($seconds);
         update_option(self::INTERVAL_OPTION, $seconds, false);
 
         return $seconds;
+    }
+
+    /**
+     * El intervalo, dentro de lo razonable (de 0 a un día).
+     *
+     * Vive aquí y no en el saneador para que el recorte sea el mismo se escriba desde donde se
+     * escriba: el saneador de la pantalla y una escritura programática tienen que coincidir.
+     */
+    public static function clamp_interval(int $seconds): int
+    {
+        return max(0, min(DAY_IN_SECONDS, $seconds));
     }
 
     /**
