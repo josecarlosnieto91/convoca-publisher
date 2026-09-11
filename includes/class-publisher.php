@@ -240,7 +240,12 @@ class Publisher
                 'channel'  => $channel->get_name(),
                 'success'  => $result['success'],
                 'time'     => current_time('mysql'),
-                'response' => $result['post_id'] ?? $result['error'] ?? '',
+                // Un envío puede salir bien en una red y mal en otra (el muro se publica y
+                // Instagram falla): el aviso va con la respuesta para que el historial lo cuente.
+                'response' => trim(
+                    (string) ($result['post_id'] ?? $result['error'] ?? '')
+                    . ('' !== (string) ($result['notice'] ?? '') ? ' — ' . $result['notice'] : '')
+                ),
             ]);
 
             // D14 — Si la red falla, encolar reintento con backoff.

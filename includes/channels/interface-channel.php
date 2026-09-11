@@ -30,7 +30,11 @@ interface ChannelInterface
      * @param string $message
      * @param string $url
      * @param string $image_url
-     * @return array{success: bool, post_id?: string, error?: string, networks?: string}
+     * `notice` es para los envíos que salen bien a medias: el muro de Facebook se publica y
+     * Instagram falla, por ejemplo. No es un fallo (reintentar duplicaría lo ya publicado),
+     * pero hay que contarlo.
+     *
+     * @return array{success: bool, post_id?: string, error?: string, networks?: string, notice?: string}
      */
     public function publish(int $post_id, string $message, string $url, string $image_url = ''): array;
 

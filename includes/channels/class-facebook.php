@@ -71,16 +71,121 @@ class Facebook implements ChannelInterface
         $body = json_decode(wp_remote_retrieve_body($response), true);
         $http_code = wp_remote_retrieve_response_code($response);
 
-        if ($http_code >= 200 && $http_code < 300 && isset($body['id'])) {
+        if ($http_code < 200 || $http_code >= 300 || !isset($body['id'])) {
+            $error_msg = $body['error']['message'] ?? __('Error desconocido de Meta API.', 'convoca-publisher');
+            return ['success' => false, 'error' => $error_msg];
+        }
+
+        // El muro ya está publicado. Instagram va DESPUÉS y por su cuenta: si falla, esto
+        // sigue siendo un envío correcto —reintentarlo duplicaría la publicación en
+        // Facebook— y lo que se hace es contarlo.
+        $redes  = 'facebook';
+        $aviso  = '';
+
+        if ($this->instagram_linked()) {
+            $instagram = $this->publish_instagram($message, $image_url);
+
+            if (!empty($instagram['success'])) {
+                $redes .= '+instagram';
+            } else {
+                $aviso = sprintf(
+                    /* translators: %s: motivo por el que no se pudo publicar en Instagram */
+                    __('Instagram: %s', 'convoca-publisher'),
+                    (string) ($instagram['error'] ?? '')
+                );
+            }
+        }
+
+        return [
+            'success'  => true,
+            'post_id'  => $body['id'],
+            'networks' => $redes,
+            'notice'   => $aviso,
+        ];
+    }
+
+    /**
+     * Publica en Instagram: primero el contenedor de medios, después la publicación.
+     *
+     * Instagram exige imagen en toda publicación, así que sin imagen destacada no se
+     * intenta: se dice por qué en vez de mandar una petición que Meta va a rechazar.
+     *
+     * Los pies de foto se recortan al valor de reserva del plugin (2000) porque el límite
+     * exacto de Meta no aparece en la documentación consultada (2026-09-11) y prefiero
+     * quedarme corto que perder la publicación.
+     *
+     * @param string $message   Texto ya montado.
+     * @param string $image_url Imagen destacada (vacío = no hay).
+     * @return array{success: bool, error?: string}
+     */
+    private function publish_instagram(string $message, string $image_url): array
+    {
+        $ig_id = (string) get_option('convoca_publisher_instagram_business_id', '');
+        $token = $this->get_token();
+
+        if ('' === $ig_id) {
+            return ['success' => false, 'error' => __('falta el ID de la cuenta', 'convoca-publisher')];
+        }
+
+        if ('' === $image_url) {
             return [
-                'success'  => true,
-                'post_id'  => $body['id'],
-                'networks' => 'facebook' . ($this->instagram_linked() ? '+instagram' : ''),
+                'success' => false,
+                'error'   => __('la entrada no tiene imagen destacada, y Instagram no admite publicaciones sin imagen', 'convoca-publisher'),
             ];
         }
 
-        $error_msg = $body['error']['message'] ?? __('Error desconocido de Meta API.', 'convoca-publisher');
-        return ['success' => false, 'error' => $error_msg];
+        $limite    = \ConvocaPublisher\Platform_Rules::limit('instagram');
+        $pie       = mb_substr($message, 0, $limite);
+        $contenedor = wp_remote_post(
+            "https://graph.facebook.com/v22.0/{$ig_id}/media",
+            [
+                'timeout' => 30,
+                'body'    => [
+                    'image_url'    => $image_url,
+                    'caption'      => $pie,
+                    'access_token' => $token,
+                ],
+            ]
+        );
+
+        if (is_wp_error($contenedor)) {
+            return ['success' => false, 'error' => $contenedor->get_error_message()];
+        }
+
+        $cuerpo = json_decode(wp_remote_retrieve_body($contenedor), true);
+        $codigo = wp_remote_retrieve_response_code($contenedor);
+        $id     = (string) ($cuerpo['id'] ?? '');
+
+        if ($codigo < 200 || $codigo >= 300 || '' === $id) {
+            return ['success' => false, 'error' => (string) ($cuerpo['error']['message'] ?? $codigo)];
+        }
+
+        $publicacion = wp_remote_post(
+            "https://graph.facebook.com/v22.0/{$ig_id}/media_publish",
+            [
+                'timeout' => 30,
+                'body'    => [
+                    'creation_id'  => $id,
+                    'access_token' => $token,
+                ],
+            ]
+        );
+
+        if (is_wp_error($publicacion)) {
+            return ['success' => false, 'error' => $publicacion->get_error_message()];
+        }
+
+        $respuesta = json_decode(wp_remote_retrieve_body($publicacion), true);
+        $estado    = wp_remote_retrieve_response_code($publicacion);
+
+        if ($estado < 200 || $estado >= 300 || empty($respuesta['id'])) {
+            return [
+                'success' => false,
+                'error'   => (string) ($respuesta['error']['message'] ?? __('Meta no confirmó la publicación', 'convoca-publisher')),
+            ];
+        }
+
+        return ['success' => true];
     }
 
     public function get_settings_fields(): array
@@ -99,7 +204,7 @@ class Facebook implements ChannelInterface
             'convoca_publisher_instagram_business_id' => [
                 'title'       => __('ID de Instagram Business (opcional)', 'convoca-publisher'),
                 'type'        => 'text',
-                'description' => __('ID de la cuenta profesional de Instagram vinculada a la Página. Con esto se comprueba el permiso y la cuota, y Meta lleva lo que se publique en la Página a Instagram con su cross-post; la publicación directa por API todavía no está implementada.', 'convoca-publisher'),
+                'description' => __('ID de la cuenta profesional de Instagram vinculada a la Página. Con esto se comprueba el permiso y la cuota, Se publica en ella con la API (contenedor y publicación) además del muro de la Página. Instagram exige imagen: sin imagen destacada, esa publicación se salta y se dice en el historial.', 'convoca-publisher'),
             ],
             // Plantilla de mensaje específica para este canal
             'convoca_publisher_facebook_template' => [

@@ -43,6 +43,7 @@ function esc_html(string $text): string
 }
 
 $GLOBALS['_cp_test_http'] = [];
+$GLOBALS['_cp_test_http_queue'] = [];
 
 // --- Options ---
 $GLOBALS['_cp_test_options'] = [];
@@ -88,20 +89,23 @@ function wp_remote_post(string $url, array $args = []): array|WP_Error
     // Se apunta la llamada: hay pruebas que necesitan comprobar QUÉ se envió y con qué
     // credencial (por ejemplo, que cada cuenta use su propio token).
     $GLOBALS['_cp_test_http'][] = ['method' => 'POST', 'url' => $url, 'args' => $args];
-    return [];
+
+    // Sin respuestas encoladas se devuelve vacío, como siempre: una prueba que quiera
+    // simular una respuesta de Meta la encola (así ninguna que ya existía cambia).
+    return $GLOBALS['_cp_test_http_queue'] ? array_shift($GLOBALS['_cp_test_http_queue']) : [];
 }
 function wp_remote_get(string $url, array $args = []): array|WP_Error
 {
     $GLOBALS['_cp_test_http'][] = ['method' => 'GET', 'url' => $url, 'args' => $args];
-    return [];
+    return $GLOBALS['_cp_test_http_queue'] ? array_shift($GLOBALS['_cp_test_http_queue']) : [];
 }
 function wp_remote_retrieve_body(array|WP_Error $response): string
 {
-    return '';
+    return (string) ($response['body'] ?? '');
 }
 function wp_remote_retrieve_response_code(array|WP_Error $response): int
 {
-    return 200;
+    return (int) ($response['response']['code'] ?? 200);
 }
 function is_wp_error(mixed $thing): bool
 {
@@ -519,7 +523,8 @@ function cp_test_reset(): void
     $GLOBALS['_cp_test_titles']    = [];
     $GLOBALS['_cp_test_db']        = ['rows' => [], 'inserts' => [], 'results' => []];
     $GLOBALS['_cp_test_screen_id'] = '';
-    $GLOBALS['_cp_test_http']      = [];
+    $GLOBALS['_cp_test_http']       = [];
+    $GLOBALS['_cp_test_http_queue'] = [];
     $GLOBALS['_cp_test_envios']    = [];
     $GLOBALS['_cp_test_mail']      = [];
     $GLOBALS['_cp_test_timezone']  = 'UTC';
