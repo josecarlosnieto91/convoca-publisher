@@ -143,7 +143,6 @@ class Publisher
             return [];
         }
 
-        $disabled_channels = get_post_meta($post_id, '_convoca_publisher_disabled_channels', true) ?: [];
         $url = get_permalink($post);
         $image_url = $this->get_featured_image($post);
         $hashtags = $this->get_post_hashtags($post);
@@ -161,14 +160,9 @@ class Publisher
         $sent_any = false;
         $pending_review = false;
 
-        foreach ($this->channels as $channel_id => $channel) {
-            if (!$channel->is_available()) {
-                continue;
-            }
-            if (in_array($channel_id, $disabled_channels, true)) {
-                continue;
-            }
-
+        // A qué cuentas va: la regla vive en Queue (desmarcada en el editor o sin
+        // credenciales, no recibe la entrada).
+        foreach (Queue::accounts_for_post($post->ID, $this->channels) as $channel_id => $channel) {
             $message = $this->build_channel_message($post, $channel, $url, $hashtags);
 
             // D15 — Moderación previa: encolar pendiente de revisión en vez de enviar.

@@ -12,9 +12,9 @@
 
 namespace ConvocaPublisher\Tests {
 
-    use ConvocaPublisher\AdminChannelsUiTest;
     use ConvocaPublisher\Plugin;
     use ConvocaPublisher\Profile_Store;
+    use ConvocaPublisher\Publisher;
     use ConvocaPublisher\Queue;
     use PHPUnit\Framework\TestCase;
 
@@ -304,6 +304,72 @@ namespace ConvocaPublisher\Tests {
         {
             $this->assertTrue(Queue::reschedule_retry(9, time() + 600));
             $this->assertTrue(Queue::cancel_retry(9));
+        }
+
+        /**
+         * La regla de a quién va la entrada la aplica también el publicador: sin esta
+         * prueba, volver a decidirlo por su cuenta (y mandar a una cuenta desmarcada) no
+         * rompía nada.
+         */
+        public function testElPublicadorSoloMandaALasCuentasQueTocan(): void
+        {
+            $ids = $this->dosCuentas();
+            $GLOBALS['_cp_test_postmeta'][77]['_convoca_publisher_disabled_channels'] = [$ids[1]];
+            $GLOBALS['_cp_test_envios'] = [];
+
+            $canales = [];
+
+            foreach (Plugin::accounts() as $id => $cuenta) {
+                $canales[$id] = new class ($id) implements \ConvocaPublisher\Channels\ChannelInterface {
+                    private string $id;
+
+                    public function __construct(string $id)
+                    {
+                        $this->id = $id;
+                    }
+
+                    public function get_id(): string
+                    {
+                        return $this->id;
+                    }
+
+                    public function get_name(): string
+                    {
+                        return $this->id;
+                    }
+
+                    public function is_available(): bool
+                    {
+                        return true;
+                    }
+
+                    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
+                    {
+                        $GLOBALS['_cp_test_envios'][] = $this->id;
+
+                        return ['success' => true, 'post_id' => 'x'];
+                    }
+
+                    public function get_settings_fields(): array
+                    {
+                        return [];
+                    }
+
+                    public function validate_settings(array $settings): array
+                    {
+                        return [];
+                    }
+
+                    public function verify_connection(): array
+                    {
+                        return ['success' => true];
+                    }
+                };
+            }
+
+            (new Publisher($canales))->publish_post(77, true, true);
+
+            $this->assertSame([$ids[0]], $GLOBALS['_cp_test_envios'], 'Solo la cuenta que sigue marcada recibe la entrada.');
         }
     }
 }

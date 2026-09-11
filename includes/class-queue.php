@@ -115,29 +115,27 @@ final class Queue
     }
 
     /**
-     * Cuentas que van a publicar un post (las configuradas, menos las que el editor
-     * haya desmarcado para esa entrada).
+     * Cuentas que van a publicar una entrada.
      *
-     * @return array<int, Channels\ChannelInterface>
+     * Lo usan la cola (para saber qué va a salir) y el publicador (para saber a quién
+     * enviar): es la misma regla, en un solo sitio.
+     *
+     * @param array<string, Channels\ChannelInterface>|null $accounts Cuentas a filtrar.
+     *                                                               Por defecto, las del sitio.
+     *
+     * @return array<string, Channels\ChannelInterface>
      */
-    public static function accounts_for_post(int $post_id): array
+    public static function accounts_for_post(int $post_id, ?array $accounts = null): array
     {
         $desactivadas = (array) get_post_meta($post_id, '_convoca_publisher_disabled_channels', true);
-        $cuentas      = [];
 
-        foreach (convoca_publisher()->get_channels() as $account) {
-            if (in_array($account->get_id(), $desactivadas, true)) {
-                continue;
-            }
-
-            if (!$account->is_available()) {
-                continue; // Una cuenta sin credenciales no va a enviar nada: no se pinta.
-            }
-
-            $cuentas[] = $account;
-        }
-
-        return $cuentas;
+        // La misma regla para la cola y para el publicador: desmarcada en el editor o sin
+        // credenciales, esa cuenta no recibe la entrada.
+        return array_filter(
+            $accounts ?? convoca_publisher()->get_channels(),
+            static fn(object $account): bool => !in_array($account->get_id(), $desactivadas, true)
+                && $account->is_available()
+        );
     }
 
     /**
