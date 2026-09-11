@@ -45,6 +45,15 @@ final class Queue
     private const LIMIT = 200;
 
     /**
+     * Intentos que se le dan a un programado antes de dejar de insistir y pedir una mano.
+     */
+    public const ATTEMPTS_META = '_convoca_publisher_schedule_attempts';
+
+    public const HELP_META = '_convoca_publisher_needs_help';
+
+    public const MAX_ATTEMPTS = 5;
+
+    /**
      * Intervalo mínimo entre envíos, en segundos (0 = sin espaciado).
      */
     public static function interval(): int
@@ -112,6 +121,100 @@ final class Queue
         }
 
         return $entries;
+    }
+
+    /**
+     * Programados que ya deberían haber salido y no han salido.
+     *
+     * Es el hueco que no cubre el reintento normal: el cron no llegó a intentarlo (WordPress
+     * lo dispara el tráfico y en un sitio tranquilo puede tardar), el sitio estuvo caído o el
+     * espaciado los dejó atrás. Un programado que ya pasó de hora y sigue sin publicarse
+     * aparece aquí, que es donde alguien puede verlo.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function overdue(int $limit = 20, ?int $now = null): array
+    {
+        $now ??= time();
+        $tarde = self::scheduled_entries(0, max(0, $now - MINUTE_IN_SECONDS));
+        $vistos = [];
+
+        foreach ($tarde as $entrada) {
+            $post_id = (int) $entrada['post_id'];
+
+            // Una fila por entrada (no por cuenta): la decisión de «esto se quedó atrás» es de
+            // la entrada, y desde aquí se le da salida a todas sus cuentas de una vez.
+            if (isset($vistos[$post_id]) || (int) $entrada['time'] > $now - MINUTE_IN_SECONDS) {
+                continue;
+            }
+
+            if (get_post_meta($post_id, '_convoca_publisher_published', true)) {
+                continue;
+            }
+
+            $vistos[$post_id]   = true;
+            $entrada['attempts'] = self::attempts($post_id);
+            $atrasados[]         = $entrada;
+        }
+
+        return array_slice($atrasados ?? [], 0, $limit);
+    }
+
+    /**
+     * Los que ya agotaron los intentos: no se insiste más, y se pide una mano.
+     *
+     * @return int[]
+     */
+    public static function needs_help(): array
+    {
+        $ids = get_posts([
+            'post_type'      => 'post',
+            'post_status'    => 'publish',
+            'posts_per_page' => 50,
+            'fields'         => 'ids',
+        ]);
+
+        // Se comprueba aquí y no en la consulta: la marca es lo que decide, y así no depende
+        // de cómo la interprete la consulta que se monte en cada sitio.
+        return array_values(array_filter(
+            array_map('intval', $ids),
+            static fn(int $post_id): bool => '' !== (string) get_post_meta($post_id, self::HELP_META, true)
+        ));
+    }
+
+    public static function attempts(int $post_id): int
+    {
+        return (int) get_post_meta($post_id, self::ATTEMPTS_META, true);
+    }
+
+    /**
+     * Un intento más. Devuelve los que lleva.
+     */
+    public static function count_attempt(int $post_id): int
+    {
+        $intentos = self::attempts($post_id) + 1;
+        update_post_meta($post_id, self::ATTEMPTS_META, $intentos);
+
+        return $intentos;
+    }
+
+    /**
+     * Dejar de insistir: se quita la marca (para que el cron no vuelva cada cuarto de hora)
+     * pero queda anotado para que la cola lo enseñe.
+     */
+    public static function give_up(int $post_id): void
+    {
+        delete_post_meta($post_id, self::SCHEDULE_META);
+        update_post_meta($post_id, self::HELP_META, time());
+    }
+
+    /**
+     * Vuelta a la normalidad: sin intentos acumulados y sin marca de auxilio.
+     */
+    public static function forget_attempts(int $post_id): void
+    {
+        delete_post_meta($post_id, self::ATTEMPTS_META);
+        delete_post_meta($post_id, self::HELP_META);
     }
 
     /**

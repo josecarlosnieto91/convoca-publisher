@@ -440,11 +440,19 @@ function cp_test_reset(): void
     $GLOBALS['_cp_test_screen_id'] = '';
     $GLOBALS['_cp_test_http']      = [];
     $GLOBALS['_cp_test_envios']    = [];
+    $GLOBALS['_cp_test_mail']      = [];
     $GLOBALS['wpdb']               = new wpdb();
     $_GET                          = [];
     $_POST                         = [];
 
     unset($GLOBALS['_cp_test_publisher_stub']);
+
+    // El publicador es un singleton y `init()` solo crea la instancia si no la hay: sin
+    // soltarla, la prueba siguiente publica con los canales de la anterior y el resultado
+    // (¿salió o no?) sale del test equivocado. Se suelta por reflexión, que la instancia
+    // es privada, en vez de abrir una puerta en el plugin solo para las pruebas.
+    $instancia = new \ReflectionProperty(\ConvocaPublisher\Publisher::class, 'instance');
+    $instancia->setValue(null, null);
 }
 
 class wpdb
@@ -501,7 +509,14 @@ class wpdb
 
 function wp_mail(string|array $to, string $subject, string $message, string|array $headers = '', string|array $attachments = []): bool
 {
+    // Se apunta: una prueba que dice «se avisó por correo» tiene que poder comprobarlo.
+    $GLOBALS['_cp_test_mail'][] = compact('to', 'subject', 'message');
+
     return true;
+}
+function wp_specialchars_decode(string $text, int $quote_style = ENT_NOQUOTES): string
+{
+    return html_entity_decode($text, $quote_style, 'UTF-8');
 }
 
 // --- WP_Post ---

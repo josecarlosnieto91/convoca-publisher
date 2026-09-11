@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.9.0
+Stable tag: 1.9.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,13 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.9.1 =
+* Un programado que falla ya no se pierde: antes se borraba su marca aunque el envío no hubiera salido, así que no se reintentaba nunca. Ahora se le dan varias vueltas y, agotadas, se deja a la vista en la cola para darle salida a mano.
+* La cola enseña lo que **se quedó atrás** (programados cuya hora pasó y no salieron: el cron de WordPress lo dispara el tráfico, y en un sitio tranquilo puede no llegar) con un botón para recuperarlos.
+* Aviso por correo a quien administra el sitio cuando un envío no sale tras varios intentos, con la entrada, el motivo de cada red y dónde reintentarlo. Se puede apagar en Configuración.
+* El cron de recuperación ya no abandona a los que fallaron más de una vez (que son justo los que necesitan otra vuelta).
+
 
 = 1.9.0 =
 * Compartir a mano en **una** cuenta concreta desde el editor, con un botón por cuenta, y «Compartir ahora» desde el listado de entradas.

@@ -108,12 +108,63 @@ class Scheduler
 
         $publisher = Publisher::instance();
 
-        if ($publisher) {
-            $publisher->publish_post($elegido['post_id'], true);
-            Queue::mark_published();
+        if (!$publisher) {
+            return;
         }
 
-        delete_post_meta($elegido['post_id'], Queue::SCHEDULE_META);
+        $resultado  = $publisher->publish_post($elegido['post_id'], true);
+        $hubo_exito = false;
+
+        foreach ($resultado as $cuenta => $envio) {
+            if ('_' !== $cuenta[0] && !empty($envio['success'])) {
+                $hubo_exito = true;
+            }
+        }
+
+        if ($hubo_exito) {
+            Queue::mark_published();
+            Queue::forget_attempts($elegido['post_id']);
+            delete_post_meta($elegido['post_id'], Queue::SCHEDULE_META);
+
+            return;
+        }
+
+        // No salió en ninguna cuenta. Antes se borraba la marca igual y el envío se perdía
+        // en silencio; ahora se le dan unas vueltas más y, agotadas, se pide una mano.
+        $intentos = Queue::count_attempt($elegido['post_id']);
+
+        if ($intentos >= Queue::MAX_ATTEMPTS) {
+            Queue::give_up($elegido['post_id']);
+            Notifications::ask_for_help($elegido['post_id'], $intentos);
+
+            return;
+        }
+
+        Queue::reschedule_schedule($elegido['post_id'], time() + Queue::interval());
+    }
+
+    /**
+     * Cuentas de esta entrada cuyo último envío falló (por su id, no por su nombre).
+     *
+     * @return string[]
+     */
+    private static function failed_accounts(int $post_id): array
+    {
+        $resultados = get_post_meta($post_id, '_convoca_publisher_publish_results', true);
+
+        if (!is_array($resultados)) {
+            return [];
+        }
+
+        $fallidas = [];
+
+        foreach ($resultados as $cuenta => $envio) {
+            if ('_' !== $cuenta[0] && empty($envio['success'])) {
+                $fallidas[] = (string) $cuenta;
+            }
+        }
+
+        return $fallidas;
     }
 
     public static function retry_failed(): void
@@ -128,15 +179,26 @@ class Scheduler
         }
 
         foreach ($failed_posts as $post_id => $count) {
-            if ($count > 1) {
+            // Antes se abandonaba a quien hubiera fallado más de una vez, que es justo el que
+            // necesita otra vuelta. Ahora se reintenta, pero sólo en las cuentas que fallaron.
+            $post = get_post($post_id);
+            if (!$post || 'publish' !== $post->post_status) {
                 continue;
             }
-            $post = get_post($post_id);
-            if ($post && $post->post_status === 'publish') {
-                $publisher = Publisher::instance();
-                if ($publisher) {
-                    $publisher->publish_post($post_id, true);
-                }
+
+            $publisher = Publisher::instance();
+
+            if (!$publisher) {
+                continue;
+            }
+
+            $fallidas = self::failed_accounts((int) $post_id);
+
+            // Sin saber qué cuenta falló, se reintenta en todas menos en las que ya salió.
+            $publisher->publish_to_accounts((int) $post_id, $fallidas, true);
+
+            if (Queue::attempts((int) $post_id) >= Queue::MAX_ATTEMPTS) {
+                Notifications::ask_for_help((int) $post_id, Queue::MAX_ATTEMPTS);
             }
         }
     }

@@ -33,6 +33,7 @@ class Admin
         add_action('admin_post_cp_queue_reschedule', [self::class, 'handle_queue_reschedule']);
         add_action('admin_post_cp_queue_cancel', [self::class, 'handle_queue_cancel']);
         add_action('admin_post_cp_queue_spacing', [self::class, 'handle_queue_spacing']);
+        add_action('admin_post_cp_queue_send_stuck', [self::class, 'handle_queue_send_stuck']);
         add_action('admin_post_cp_share_now', [self::class, 'handle_share_now']);
         add_filter('post_row_actions', [self::class, 'row_action'], 10, 2);
         add_action('admin_notices', [self::class, 'shared_notice']);
@@ -94,6 +95,12 @@ class Admin
             }
         }
 
+        register_setting('convoca_publisher_settings', 'convoca_publisher_email_alerts', [
+            'type'              => 'string',
+            'sanitize_callback' => [self::class, 'sanitize_checkbox'],
+            'show_in_rest'      => false,
+            'default'           => '1',
+        ]);
         register_setting('convoca_publisher_settings', 'convoca_publisher_queue_interval', [
             'type'              => 'integer',
             'sanitize_callback' => [self::class, 'sanitize_queue_interval'],
@@ -133,6 +140,14 @@ class Admin
      *
      * @param mixed $value
      */
+    /**
+     * Casilla de ajustes: '1' o '' según venga marcada.
+     */
+    public static function sanitize_checkbox($value): string
+    {
+        return empty($value) ? '' : '1';
+    }
+
     /**
      * Ajuste: cada cuánto como mínimo entre envíos (en segundos; 0 = sin espaciado).
      */
@@ -539,6 +554,16 @@ class Admin
                                 <input type="checkbox" name="convoca_publisher_auto_publish" value="1" <?php checked(get_option('convoca_publisher_auto_publish', true)); ?> />
                                 <?php echo esc_html__('Publicar automáticamente al publicar una entrada', 'convoca-publisher'); ?>
                             </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php echo esc_html__('Avisos por correo', 'convoca-publisher'); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="convoca_publisher_email_alerts" value="1" <?php checked(get_option('convoca_publisher_email_alerts', '1'), '1'); ?> />
+                                <?php echo esc_html__('Escribir a quien administra el sitio cuando un envío no salga tras varios intentos', 'convoca-publisher'); ?>
+                            </label>
+                            <p class="description"><?php echo esc_html__('En pantalla el aviso solo lo ve quien entra a mirar; el correo llega aunque nadie entre.', 'convoca-publisher'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -1472,6 +1497,7 @@ class Admin
             self::render_queue_month($anio, $mes);
         }
 
+        self::render_queue_stuck();
         self::render_queue_list();
     }
 
@@ -1674,6 +1700,147 @@ class Admin
     /**
      * La lista de la cola: lo que espera turno, lo que falló y lo último que salió.
      */
+    /**
+     * Lo que se quedó atrás: ni salió ni está esperando turno. Aquí es donde se ve lo que el
+     * cron no llegó a intentar, y donde se le puede dar salida a mano.
+     */
+    private static function render_queue_stuck(): void
+    {
+        $atrasados = Queue::overdue();
+        $ayuda     = Queue::needs_help();
+
+        if ([] === $atrasados && [] === $ayuda) {
+            return;
+        }
+        ?>
+        <h2><?php echo esc_html__('Se quedó atrás', 'convoca-publisher'); ?></h2>
+        <p class="description">
+            <?php echo esc_html__('Programados cuya hora ya pasó y no han salido: el cron puede no haber llegado a intentarlo. Se les puede dar salida ahora.', 'convoca-publisher'); ?>
+        </p>
+        <?php if ([] !== $atrasados) : ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-acciones">
+                <input type="hidden" name="action" value="cp_queue_send_stuck" />
+                <input type="hidden" name="cp_todos" value="1" />
+                <?php wp_nonce_field('convoca_publisher_queue_send_stuck'); ?>
+                <button type="submit" class="button button-primary"><?php echo esc_html__('Enviar todo lo atrasado', 'convoca-publisher'); ?></button>
+            </form>
+        <?php endif; ?>
+        <?php
+        self::render_stuck_table($atrasados, (string) __('Atrasado', 'convoca-publisher'));
+
+        if ([] !== $ayuda) {
+            $filas = [];
+
+            foreach ($ayuda as $post_id) {
+                $filas[] = [
+                    'post_id'      => $post_id,
+                    'time'         => (int) get_post_meta($post_id, Queue::HELP_META, true),
+                    'title'        => get_the_title($post_id),
+                    'account_name' => '',
+                    'attempts'     => Queue::attempts($post_id),
+                ];
+            }
+
+            echo '<h2>' . esc_html__('Ya no se insiste solo', 'convoca-publisher') . '</h2>';
+            echo '<p class="description">' . esc_html__('Se intentó varias veces sin éxito. Se avisó por correo; desde aquí se puede reintentar cuando esté resuelto.', 'convoca-publisher') . '</p>';
+            self::render_stuck_table($filas, (string) __('Se dejó de insistir', 'convoca-publisher'));
+        }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $filas
+     */
+    private static function render_stuck_table(array $filas, string $estado): void
+    {
+        ?>
+        <table class="wp-list-table widefat striped">
+            <thead>
+                <tr>
+                    <th scope="col"><?php echo esc_html__('Cuándo', 'convoca-publisher'); ?></th>
+                    <th scope="col"><?php echo esc_html__('Entrada', 'convoca-publisher'); ?></th>
+                    <th scope="col"><?php echo esc_html__('Intentos', 'convoca-publisher'); ?></th>
+                    <th scope="col"><?php echo esc_html__('Qué hacer', 'convoca-publisher'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($filas as $fila) : ?>
+                    <tr>
+                        <td><?php echo esc_html(wp_date('d/m/Y H:i', (int) $fila['time'])); ?></td>
+                        <td><?php echo esc_html((string) $fila['title']); ?></td>
+                        <td><?php echo esc_html(sprintf('%d / %d', (int) ($fila['attempts'] ?? 0), Queue::MAX_ATTEMPTS)); ?></td>
+                        <td>
+                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-acciones">
+                                <input type="hidden" name="action" value="cp_queue_send_stuck" />
+                                <input type="hidden" name="cp_post" value="<?php echo esc_attr((string) $fila['post_id']); ?>" />
+                                <?php wp_nonce_field('convoca_publisher_queue_send_stuck'); ?>
+                                <button type="submit" class="button"><?php echo esc_html__('Enviar ahora', 'convoca-publisher'); ?></button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php
+    }
+
+    /**
+     * Dar salida a mano a lo atrasado (una entrada o todas).
+     */
+    public static function handle_queue_send_stuck(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+
+        check_admin_referer('convoca_publisher_queue_send_stuck');
+
+        $todos   = !empty($_POST['cp_todos']);
+        $post_id = isset($_POST['cp_post']) ? (int) $_POST['cp_post'] : 0;
+        $ids     = $todos ? array_map(static fn(array $fila): int => (int) $fila['post_id'], array_merge(Queue::overdue(), array_map(static fn(int $id): array => ['post_id' => $id], Queue::needs_help()))) : [$post_id];
+        $hechos  = 0;
+
+        foreach (array_filter($ids) as $id) {
+            $publicador = Publisher::instance();
+
+            if (!$publicador) {
+                continue;
+            }
+
+            $resultado = $publicador->publish_to_accounts((int) $id, [], true, true);
+            $salio     = false;
+
+            foreach ($resultado as $cuenta => $envio) {
+                if ('_' !== $cuenta[0] && !empty($envio['success'])) {
+                    $salio = true;
+                }
+            }
+
+            if ($salio) {
+                Queue::forget_attempts((int) $id);
+                delete_post_meta((int) $id, Queue::SCHEDULE_META);
+                ++$hechos;
+                continue;
+            }
+
+            if (Queue::count_attempt((int) $id) >= Queue::MAX_ATTEMPTS) {
+                Queue::give_up((int) $id);
+                Notifications::ask_for_help((int) $id, Queue::MAX_ATTEMPTS);
+            }
+        }
+
+        set_transient(
+            'convoca_publisher_queue_notice_' . get_current_user_id(),
+            sprintf(
+                /* translators: %d: envíos que han salido */
+                _n('%d envío recuperado.', '%d envíos recuperados.', $hechos, 'convoca-publisher'),
+                $hechos
+            ),
+            30
+        );
+        wp_safe_redirect(self::tab_url('queue'));
+        exit;
+    }
+
     private static function render_queue_list(): void
     {
         $ahora = time();

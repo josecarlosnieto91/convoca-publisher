@@ -27,6 +27,82 @@ class Notifications
         add_action('wp_ajax_cp_dismiss_notice', [self::class, 'dismiss']);
     }
 
+    /**
+     * Pedir una mano por correo cuando un envío no sale y ya se ha insistido bastante.
+     *
+     * En pantalla el aviso solo lo ve quien entra; el correo llega aunque nadie mire, que es
+     * justo el caso en el que un envío se queda perdido.
+     */
+    public static function ask_for_help(int $post_id, int $attempts): void
+    {
+        $post = get_post($post_id);
+
+        if (!$post) {
+            return;
+        }
+
+        update_option(
+            'convoca_publisher_needs_help',
+            // Con `+` y no con `array_merge`: la clave es el id de la entrada (numerica), y
+            // array_merge reindexa las claves numericas — el aviso se quedaba sin saber de qué
+            // entrada hablaba. Y `true` en el slice por lo mismo.
+            array_slice(
+                [(string) $post_id => ['title' => $post->post_title, 'tries' => $attempts, 'time' => current_time('mysql')]]
+                + (array) get_option('convoca_publisher_needs_help', []),
+                0,
+                20,
+                true
+            )
+        );
+
+        if (!get_option('convoca_publisher_email_alerts', '1')) {
+            return;
+        }
+
+        $resultados = get_post_meta($post_id, '_convoca_publisher_publish_results', true);
+        $motivos    = [];
+
+        if (is_array($resultados)) {
+            foreach ($resultados as $cuenta => $envio) {
+                if ('_' === $cuenta[0] || !empty($envio['success'])) {
+                    continue;
+                }
+
+                $motivos[] = $cuenta . ': ' . (string) ($envio['error'] ?? __('sin detalle', 'convoca-publisher'));
+            }
+        }
+
+        self::email_admins(
+            sprintf(
+                /* translators: %s: título de la entrada */
+                __('[%s] Un envío no ha salido', 'convoca-publisher'),
+                wp_specialchars_decode((string) get_option('blogname'), ENT_QUOTES)
+            ),
+            sprintf(
+                /* translators: 1: título, 2: número de intentos, 3: URL de la entrada, 4: detalle */
+                __("La entrada «%1\$s» no ha salido después de %2\$d intentos.\n\nEntrada: %3\$s\n\nQué dijo cada red:\n%4\$s\n\nSe puede reintentar a mano desde la cola del plugin.", 'convoca-publisher'),
+                $post->post_title,
+                $attempts,
+                (string) get_permalink($post),
+                [] === $motivos ? __('(sin detalle)', 'convoca-publisher') : implode("\n", $motivos)
+            )
+        );
+    }
+
+    /**
+     * Mandar un correo a quien administra el sitio.
+     */
+    public static function email_admins(string $subject, string $body): bool
+    {
+        $destino = (string) get_option('admin_email');
+
+        if ('' === $destino) {
+            return false;
+        }
+
+        return (bool) wp_mail($destino, $subject, $body);
+    }
+
     public static function show_alerts(): void
     {
         if (!current_user_can('manage_options')) {
