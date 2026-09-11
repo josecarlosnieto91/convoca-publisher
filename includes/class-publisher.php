@@ -338,6 +338,10 @@ class Publisher
             '{date}'           => __('Fecha de publicación', 'convoca-publisher'),
             '{author}'         => __('Nombre del autor', 'convoca-publisher'),
             '{featured_image}' => __('URL de la imagen destacada', 'convoca-publisher'),
+            '{categorias}'     => __('Nombres de las categorías, separados por comas', 'convoca-publisher'),
+            '{etiquetas}'      => __('Nombres de las etiquetas, separados por comas (sin almohadilla)', 'convoca-publisher'),
+            '{sitio}'          => __('Nombre del sitio', 'convoca-publisher'),
+            '{autor_url}'      => __('Enlace a la lista de entradas del autor', 'convoca-publisher'),
         ];
     }
 
@@ -420,8 +424,20 @@ class Publisher
             $excerpt = wp_trim_words($post->post_content, 30, '…');
         }
 
+        // La categoría por defecto del sitio no aporta nada al mensaje: si un blog no ha
+        // tocado las categorías, TODAS las entradas están ahí y el mensaje saldría diciendo
+        // «Uncategorized» en cada publicación. Se trata como si no hubiera categorías.
+        $categorias = array_values(array_diff(
+            (array) wp_get_post_categories($post->ID, ['fields' => 'names']),
+            [(string) get_cat_name((int) get_option('default_category'))]
+        ));
+
         $replacements = [
             '{title}'      => $post->post_title,
+            '{categorias}' => implode(', ', $categorias),
+            '{etiquetas}'  => implode(', ', (array) wp_get_post_tags($post->ID, ['fields' => 'names'])),
+            '{sitio}'      => (string) get_bloginfo('name'),
+            '{autor_url}'  => (string) get_author_posts_url((int) $post->post_author),
             '{excerpt}'    => wp_trim_words($excerpt, 25, '…'),
             '{url}'        => $url,
             '{hashtags}'   => $hashtags,

@@ -88,7 +88,7 @@ namespace ConvocaPublisher\Tests {
             // ayuda acabaría prometiendo una variable que ya no existe.
             $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'templates']);
 
-            $this->assertCount(7, Publisher::variables(), 'Las siete variables del encargo.');
+            $this->assertCount(11, Publisher::variables(), 'Las siete de siempre más las cuatro del encargo.');
             foreach (array_keys(Publisher::variables()) as $variable) {
                 $this->assertStringContainsString(
                     'data-cp-insert="' . $variable . '"',

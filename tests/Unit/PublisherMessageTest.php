@@ -60,6 +60,45 @@ class PublisherMessageTest extends TestCase
      * envío: si sustituyera por su cuenta, enseñaría un mensaje que no es el que se manda.
      * Y el recorte tiene que ser el de la red (en X no cabe un texto de 900 caracteres).
      */
+    /**
+     * Las cuatro variables nuevas del encargo: categorías, etiquetas, sitio y enlace del
+     * autor. `{etiquetas}` son NOMBRES (para hashtags ya está `{hashtags}`): si hicieran lo
+     * mismo, tener las dos sería una trampa.
+     */
+    public function testLasVariablesNuevasSeSustituyen(): void
+    {
+        $GLOBALS['_cp_test_titles'][77]     = 'Taller de huerto';
+        $GLOBALS['_cp_test_categories'][77] = ['Huerto', 'Formación'];
+        $GLOBALS['_cp_test_tags'][77]       = ['huerto urbano', 'compost'];
+        Publisher::init([$this->mockChannel]);
+
+        $publicador = Publisher::instance();
+        $this->assertNotNull($publicador);
+
+        $vista = $publicador->preview_for_network(77, 'telegram', '{categorias} · {etiquetas} · {sitio} · {autor_url}');
+
+        $this->assertStringContainsString('Huerto, Formación', $vista['message'], 'Las categorías salen por su nombre.');
+        $this->assertStringContainsString('huerto urbano, compost', $vista['message'], 'Y las etiquetas.');
+        $this->assertStringNotContainsString('#', $vista['message'], '{etiquetas} son nombres, no hashtags.');
+        $this->assertStringContainsString('Sitio de pruebas', $vista['message'], 'El nombre del sitio.');
+        $this->assertStringContainsString('author', $vista['message'], 'Y el enlace del autor.');
+    }
+
+    /**
+     * En un blog que no ha tocado las categorías, TODAS las entradas están en la categoría
+     * por defecto. Si eso se sustituyera, cada mensaje publicado diría «Uncategorized».
+     */
+    public function testLaCategoriaPorDefectoNoEnsucianElMensaje(): void
+    {
+        $GLOBALS['_cp_test_titles'][77]     = 'Taller de huerto';
+        $GLOBALS['_cp_test_categories'][77] = [(string) get_cat_name((int) get_option('default_category'))];
+        Publisher::init([$this->mockChannel]);
+
+        $vista = Publisher::instance()->preview_for_network(77, 'telegram', 'Categorías: {categorias}');
+
+        $this->assertSame('Categorías:', trim($vista['message']), 'Si lo único que hay es la de por defecto, no se escribe nada.');
+    }
+
     public function testLaVistaPreviaUsaElMismoMotorYCuentaComoLaRed(): void
     {
         $GLOBALS['_cp_test_titles'][77] = 'Taller de huerto';

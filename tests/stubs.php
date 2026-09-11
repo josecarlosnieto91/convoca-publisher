@@ -171,6 +171,8 @@ function wp_get_attachment_image_src(int $attachment_id, string|array $size = 't
 }
 $GLOBALS['_cp_test_postmeta'] = [];
 $GLOBALS['_cp_test_posts']    = [];
+$GLOBALS['_cp_test_categories'] = [];
+$GLOBALS['_cp_test_tags']       = [];
 $GLOBALS['_cp_test_titles']   = [];
 
 function get_post_meta(int $post_id, string $key = '', bool $single = false): mixed
@@ -264,9 +266,25 @@ function wp_next_scheduled(string $hook, array $args = []): int|false
 {
     return false;
 }
+function get_author_posts_url(int $author_id, string $author_nicename = ''): string
+{
+    return 'https://example.com/author/autor/';
+}
+function get_cat_name(int $cat_id): string
+{
+    return $GLOBALS['_cp_test_cat_names'][$cat_id] ?? 'Uncategorized';
+}
+function get_bloginfo(string $show = '', string $filter = 'raw'): string
+{
+    return 'Sitio de pruebas';
+}
+function wp_get_post_categories(int $post_id = 0, array $args = []): array
+{
+    return $GLOBALS['_cp_test_categories'][$post_id] ?? [];
+}
 function wp_get_post_tags(int $post_id, array $args = []): array
 {
-    return [];
+    return $GLOBALS['_cp_test_tags'][$post_id] ?? [];
 }
 function sanitize_title(string $title): string
 {
