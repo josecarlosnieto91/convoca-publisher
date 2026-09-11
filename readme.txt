@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.10.0
+Stable tag: 1.10.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,11 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.10.1 =
+* El widget no repite un envío que además tiene un reintento vivo (es el mismo envío, no dos).
+* Las filas de validación («no hay imagen destacada» y demás avisos del propio plugin) ya no se listan como si fueran envíos: en «lo último que salió» se leían como un fallo de la red, y no lo eran.
+
 
 = 1.10.0 =
 * Widget en el escritorio: lo siguiente que va a salir, lo que se ha quedado parado (con un enlace para ver qué pasó y reintentar) y lo último que salió con su resultado. Es lo que se ve sin entrar a buscar nada.

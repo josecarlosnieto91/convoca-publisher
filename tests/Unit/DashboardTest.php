@@ -82,6 +82,25 @@ namespace ConvocaPublisher\Tests {
             $this->assertSame([], Dashboard::next_up());
         }
 
+        public function testUnEnvioConReintentoNoSaleDosVeces(): void
+        {
+            $this->cuenta();
+            $this->programar(11, time() + HOUR_IN_SECONDS, 'Con reintento');
+
+            // El mismo envío, además con un reintento vivo (la red falló y se reintenta).
+            $GLOBALS['_cp_test_db']['results'] = [
+                (object) [
+                    'id' => 3, 'post_id' => 11, 'channel' => array_key_first(\ConvocaPublisher\Plugin::accounts()),
+                    'payload' => '', 'error_text' => 'la red dijo que no', 'attempts' => 1,
+                    'status' => 'pending', 'last_attempt' => wp_date('Y-m-d H:i:s'),
+                    'next_attempt' => wp_date('Y-m-d H:i:s', time() + HOUR_IN_SECONDS),
+                    'created_at' => wp_date('Y-m-d H:i:s'),
+                ],
+            ];
+
+            $this->assertCount(1, Dashboard::next_up(), 'Es el mismo envío: no puede aparecer dos veces.');
+        }
+
         // ── Lo atascado ─────────────────────────────────────────────────────
 
         public function testLoAtrasadoYSinInsistirSaleJunto(): void
@@ -123,6 +142,24 @@ namespace ConvocaPublisher\Tests {
             $this->assertStringContainsString('Asamblea de socios', $html);
             $this->assertStringContainsString('Ver qué pasó y reintentar', $html);
             $this->assertStringContainsString('tab=queue', $html, 'Y lleva a la cola, que es donde se arregla.');
+        }
+
+        public function testUnAvisoDelPropioPluginNoSeLeeComoUnFallo(): void
+        {
+            $this->cuenta();
+
+            update_option('convoca_publisher_publish_log', [
+                [
+                    'title'    => 'Entrada sin imagen destacada',
+                    'channel'  => 'VALIDACIÓN',
+                    'success'  => false,
+                    'time'     => wp_date('Y-m-d H:i:s'),
+                    'response' => 'No hay imagen destacada.',
+                ],
+            ]);
+
+            $this->assertSame([], Queue::sent_entries(), 'Las filas de validación no son envíos.');
+            $this->assertStringNotContainsString('❌', $this->pintar(), 'Y no se pintan como fallo de la red.');
         }
 
         public function testSinNadaProgramadoLoDiceEnUnaLinea(): void

@@ -300,6 +300,13 @@ final class Queue
                 break;
             }
 
+            // Las filas de validación no son envíos: son avisos del propio plugin («no hay
+            // imagen destacada»). En una lista de «lo último que salió» se leerían como un
+            // fallo de la red, y no lo son.
+            if ('VALIDACIÓN' === (string) ($entry['channel'] ?? '')) {
+                continue;
+            }
+
             $entries[] = [
                 'title'   => (string) ($entry['title'] ?? ''),
                 'account' => (string) ($entry['channel'] ?? ''),

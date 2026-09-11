@@ -60,7 +60,23 @@ class Dashboard
 
         usort($futuros, static fn(array $a, array $b): int => ($a['time'] ?? 0) <=> ($b['time'] ?? 0));
 
-        return array_slice($futuros, 0, $limit);
+        // Un mismo envío puede estar programado y además tener un reintento vivo (la red falló
+        // y el reintento sigue pendiente): es el mismo envío y no puede salir dos veces.
+        $vistos = [];
+        $unicos = [];
+
+        foreach ($futuros as $entrada) {
+            $clave = ($entrada['post_id'] ?? 0) . '|' . ($entrada['account'] ?? '');
+
+            if (isset($vistos[$clave])) {
+                continue;
+            }
+
+            $vistos[$clave] = true;
+            $unicos[]       = $entrada;
+        }
+
+        return array_slice($unicos, 0, $limit);
     }
 
     /**
