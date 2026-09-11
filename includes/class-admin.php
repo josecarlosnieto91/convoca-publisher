@@ -140,6 +140,7 @@ class Admin
      */
     public static function sanitize_privacy_ack($value): bool
     {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Función de saneado del API de ajustes: el nonce de la pantalla lo comprueba options.php antes de llamarla.
         if (!isset($_POST['convoca_publisher_privacy_acknowledged'])) {
             return (bool) get_option('convoca_publisher_privacy_acknowledged', false);
         }
@@ -483,6 +484,7 @@ class Admin
 
     private static function render_settings_tab(): void
     {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Solo se usa para decidir si se muestra el aviso de «guardado»; el nonce ya lo comprobó options.php.
         if (isset($_POST['submit'])) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Cambios guardados.', 'convoca-publisher') . '</p></div>';
         }
@@ -901,6 +903,7 @@ class Admin
                                 'name'              => 'convoca_publisher_test_post_id',
                                 'show_option_none'  => esc_html__('Seleccionar entrada...', 'convoca-publisher'),
                                 'option_none_value' => '',
+                                // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Solo para recordar la entrada elegida en el desplegable de la pestaña Probar.
                                 'selected'          => isset($_POST['convoca_publisher_test_post_id']) ? intval($_POST['convoca_publisher_test_post_id']) : 0,
                             ]);
         ?>
