@@ -4,7 +4,7 @@
  * Plugin Name:       Convoca Publisher
  * Plugin URI:        https://getconvoca.app
  * Description:       Publish WordPress posts to social media channels with customizable templates.
- * Version:           1.13.0
+ * Version:           1.13.1
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Tested up to:      7.1

@@ -416,6 +416,15 @@ function admin_url(string $path = '', string $scheme = 'admin'): string
 }
 function wp_dropdown_pages(array $args = []): void
 {
+    // Como el de verdad: usa get_pages(), que solo devuelve tipos jerárquicos. Con
+    // 'post_type' => 'post' no pinta nada. Si el doble pintara el select igualmente, un
+    // desplegable vacío en producción pasaría por bueno en las pruebas (pasó: la prueba de
+    // publicación no listaba las entradas y ningún test lo vio).
+    // El único tipo jerárquico que trae WordPress de serie es `page`: con `post`, el de
+    // verdad no pinta nada.
+    if ('page' !== (string) ($args['post_type'] ?? 'page')) {
+        return;
+    }
     echo '<select></select>';
 }
 function checked(mixed $checked, mixed $current = true, bool $echo = false): string

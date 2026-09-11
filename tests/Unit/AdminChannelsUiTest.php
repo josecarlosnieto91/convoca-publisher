@@ -43,6 +43,29 @@ namespace ConvocaPublisher\Tests {
             unset($GLOBALS['_cp_publisher_stub']);
         }
 
+        public function testLaPruebaDePublicacionListaLasEntradas(): void
+        {
+            // El desplegable salía VACÍO en producción: usaba `wp_dropdown_pages()`, que trabaja
+            // con páginas (con `post_type => 'post'` no pinta nada). Sin entradas no hay forma
+            // de probar la integración, que es justo lo que ofrece esta pestaña.
+            $GLOBALS['_cp_test_posts']  = [1125, 306];
+            $GLOBALS['_cp_test_titles'] = [1125 => 'Taller de huerto', 306 => 'Vegan Cooking Workshop'];
+
+            $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'test']);
+
+            $this->assertStringContainsString('name="convoca_publisher_test_post_id"', $html, 'Hay desplegable de entradas.');
+            $this->assertStringContainsString('value="1125"', $html, 'Aparece la primera entrada.');
+            $this->assertStringContainsString('Taller de huerto', $html, 'Con su título.');
+            $this->assertStringNotContainsString('No hay entradas publicadas', $html, 'Y no sale el aviso de que no hay nada que probar.');
+        }
+
+        public function testSiNoHayEntradasPublicadasSeDiceEnVezDeDejarElDesplegableMudo(): void
+        {
+            $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'test']);
+
+            $this->assertStringContainsString('No hay entradas publicadas', $html, 'Se explica, en vez de dejar un desplegable vacío sin decir por qué.');
+        }
+
         private function canal(string $channel_id): object
         {
             $channels = Plugin::discover_channels();

@@ -972,6 +972,45 @@ class Admin
         <?php
     }
 
+    /**
+     * Entradas recientes que se pueden usar en la prueba de publicación.
+     *
+     * Devuelve el id y la etiqueta ya formateada (título y fecha) para que la pantalla no
+     * consulte nada y esta regla se pueda probar aislada.
+     *
+     * Ojo: aquí NO vale `wp_dropdown_pages()`. Esa función trabaja con `get_pages()`, que
+     * solo devuelve tipos jerárquicos: con `post_type => 'post'` devuelve `false` y no pinta
+     * nada, así que el desplegable salía vacío y parecía que el plugin no tenía nada que probar.
+     *
+     * @param int $limit Cuántas entradas traer.
+     * @return array<int, array{id: int, label: string}>
+     */
+    public static function test_candidates(int $limit = 30): array
+    {
+        $ids = get_posts([
+            'post_type'      => 'post',
+            'post_status'    => 'publish',
+            'posts_per_page' => $limit,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+            'fields'         => 'ids',
+            'no_found_rows'  => true,
+        ]);
+
+        $candidatas = [];
+
+        foreach ($ids as $id) {
+            $id = (int) $id;
+
+            $candidatas[] = [
+                'id'    => $id,
+                'label' => sprintf('%s — %s', get_the_title($id), get_the_date('d/m/Y', $id)),
+            ];
+        }
+
+        return $candidatas;
+    }
+
     private static function render_test_tab(): void
     {
         $channels = convoca_publisher()->get_channels();
@@ -987,15 +1026,22 @@ class Admin
                         <th scope="row"><?php echo esc_html__('Entrada', 'convoca-publisher'); ?></th>
                         <td>
                             <?php
-                            wp_dropdown_pages([
-                                'post_type'         => 'post',
-                                'name'              => 'convoca_publisher_test_post_id',
-                                'show_option_none'  => esc_html__('Seleccionar entrada...', 'convoca-publisher'),
-                                'option_none_value' => '',
-                                // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Solo para recordar la entrada elegida en el desplegable de la pestaña Probar.
-                                'selected'          => isset($_POST['convoca_publisher_test_post_id']) ? intval($_POST['convoca_publisher_test_post_id']) : 0,
-                            ]);
+                            $candidatas = self::test_candidates();
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Solo para recordar la entrada elegida en el desplegable de la pestaña Probar.
+        $elegida = isset($_POST['convoca_publisher_test_post_id']) ? intval($_POST['convoca_publisher_test_post_id']) : 0;
         ?>
+                            <select name="convoca_publisher_test_post_id" id="convoca_publisher_test_post_id">
+                                <option value=""><?php echo esc_html__('Seleccionar entrada...', 'convoca-publisher'); ?></option>
+                                <?php foreach ($candidatas as $candidata) : ?>
+                                    <option value="<?php echo esc_attr((string) $candidata['id']); ?>" <?php selected($elegida, $candidata['id']); ?>>
+                                        <?php echo esc_html($candidata['label']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?php if (!$candidatas) : ?>
+                                <p class="description"><?php echo esc_html__('No hay entradas publicadas que probar todavía: publica una y vuelve a esta pestaña.', 'convoca-publisher'); ?></p>
+                            <?php endif; ?>
+                        </td>
                         </td>
                     </tr>
                 </table>
