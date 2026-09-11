@@ -16,6 +16,9 @@ class RetryAndModerationTest extends TestCase
     {
         $GLOBALS['_cp_test_options'] = [];
         $GLOBALS['_cp_test_db'] = ['rows' => [], 'inserts' => []];
+        // El wpdb falso de una prueba no puede filtrarse a las siguientes: sin esto, la
+        // suite solo pasa en el orden en que está escrita.
+        $GLOBALS['wpdb'] = new \wpdb();
         $GLOBALS['wpdb']->insert_id = 0;
     }
 
