@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.12.1
+Stable tag: 1.12.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,10 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.12.2 =
+* Aseo interno: el criterio de «esto es un envío» vive en un solo sitio y el filtro por red recibe el mapa de cuentas directamente. Sin cambios de comportamiento.
+
 
 = 1.12.1 =
 * Los avisos (título vacío, sin imagen destacada, mensaje recortado) dejan de escribirse en el historial como si fueran envíos fallidos. Una entrada sin imagen destacada aparecía en rojo aunque se hubiera publicado bien.

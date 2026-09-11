@@ -60,7 +60,7 @@ class Log_View
                 continue;
             }
 
-            if ('' !== $network && self::network_of((string) ($entry['channel'] ?? ''), $filters) !== $network) {
+            if ('' !== $network && self::network_of((string) ($entry['channel'] ?? ''), (array) ($filters['networks'] ?? [])) !== $network) {
                 continue;
             }
 
@@ -110,14 +110,12 @@ class Log_View
      * conoce el catálogo de cuentas del sitio. Si no aparece, se usa el propio id: una cuenta
      * borrada sigue teniendo historial, y ese historial no debe desaparecer de la vista.
      *
-     * @param string               $channel Id de la cuenta.
-     * @param array<string, mixed> $filters Filtros (puede traer 'networks').
+     * @param string                $channel Id de la cuenta.
+     * @param array<string, string> $networks id de cuenta => id de red.
      */
-    public static function network_of(string $channel, array $filters): string
+    public static function network_of(string $channel, array $networks): string
     {
-        $map = (array) ($filters['networks'] ?? []);
-
-        return isset($map[$channel]) ? (string) $map[$channel] : $channel;
+        return isset($networks[$channel]) ? (string) $networks[$channel] : $channel;
     }
 
     /**
@@ -151,7 +149,7 @@ class Log_View
             }
 
             $accounts[$channel] = self::label($channel, $networks);
-            $nets[self::network_of($channel, ['networks' => $networks])] = true;
+            $nets[self::network_of($channel, $networks)] = true;
         }
 
         ksort($nets);
@@ -174,14 +172,8 @@ class Log_View
      */
     public static function retryable(array $entry): bool
     {
-        if (empty($entry['success']) === false) {
-            return false; // Ya salió.
-        }
-
-        $channel = (string) ($entry['channel'] ?? '');
-
-        if ('' === $channel || in_array($channel, self::NOT_A_CHANNEL, true)) {
-            return false;
+        if (empty($entry['success']) === false || !self::is_entry($entry)) {
+            return false; // Ya salió, o no es un envío.
         }
 
         return ((int) ($entry['post_id'] ?? 0)) > 0;
