@@ -18,6 +18,7 @@ namespace ConvocaPublisher\Tests {
     use ConvocaPublisher\Admin;
     use ConvocaPublisher\Profile_Store;
     use ConvocaPublisher\Plugin;
+    use ConvocaPublisher\Publisher;
     use PHPUnit\Framework\TestCase;
 
     if (!defined('CONVOCA_PUBLISHER_PLUGIN_URL')) {
@@ -79,6 +80,24 @@ namespace ConvocaPublisher\Tests {
                 'El campo global ya no es de una línea.'
             );
             $this->assertStringContainsString('la de fábrica para esta red', $html, 'Cada red dice con qué se queda si no escribes nada.');
+        }
+
+        public function testLasVariablesSalenDeUnaSolaListaYSePuedenInsertar(): void
+        {
+            // La ayuda y los botones salen de Publisher::variables(): si fueran dos listas, la
+            // ayuda acabaría prometiendo una variable que ya no existe.
+            $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'templates']);
+
+            $this->assertCount(7, Publisher::variables(), 'Las siete variables del encargo.');
+            foreach (array_keys(Publisher::variables()) as $variable) {
+                $this->assertStringContainsString(
+                    'data-cp-insert="' . $variable . '"',
+                    $html,
+                    'Hay botón para insertar ' . $variable . '.'
+                );
+            }
+            $this->assertStringContainsString('data-cp-preview', $html, 'Cada red tiene su panel de vista previa.');
+            $this->assertStringContainsString('data-cp-reset', $html, 'Y su botón de volver a la de fábrica.');
         }
 
         private function canal(string $channel_id): object

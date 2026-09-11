@@ -612,6 +612,14 @@ function esc_html_e(string $text, string $domain = 'default'): void
 {
     echo $text;
 }
+function wp_localize_script(string $handle, string $object_name, array $l10n = []): bool
+{
+    // Se anota lo localizado: así una prueba puede comprobar que el JS recibe con qué
+    // llamar (sin esto, un fallo de encolado solo se veía en el navegador).
+    $GLOBALS['_cp_test_localized'][$handle][$object_name] = $l10n;
+
+    return true;
+}
 function selected(mixed $selected, mixed $current = true, bool $echo = true): string
 {
     return $echo ? (string) $selected === (string) $current ? 'selected' : '' : '';

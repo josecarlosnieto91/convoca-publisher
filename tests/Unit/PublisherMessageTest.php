@@ -55,6 +55,35 @@ class PublisherMessageTest extends TestCase
      * así que tiene que respetar lo que cada red admite (X no cabe con hashtags, Google My
      * Business prefiere el extracto) y tiene que ser la misma que enseña la pantalla.
      */
+    /**
+     * La vista previa de la pantalla de plantillas tiene que usar el MISMO motor que el
+     * envío: si sustituyera por su cuenta, enseñaría un mensaje que no es el que se manda.
+     * Y el recorte tiene que ser el de la red (en X no cabe un texto de 900 caracteres).
+     */
+    public function testLaVistaPreviaUsaElMismoMotorYCuentaComoLaRed(): void
+    {
+        $GLOBALS['_cp_test_titles'][77] = 'Taller de huerto';
+        Publisher::init([$this->mockChannel]);
+
+        $publicador = Publisher::instance();
+        $this->assertNotNull($publicador, 'Hay publicador.');
+
+        $corta = $publicador->preview_for_network(77, 'facebook', "{title}\n{url}");
+        $this->assertSame("Taller de huerto\nhttps://example.com/?p=77", $corta['message'], 'Sustituye las variables y respeta los saltos de línea.');
+        $this->assertFalse($corta['recortado'], 'Un mensaje corto cabe.');
+        $this->assertGreaterThan(0, $corta['restante'], 'Y dice cuánto sobra.');
+
+        $larga = $publicador->preview_for_network(77, 'twitter', str_repeat('x', 900));
+        $this->assertTrue($larga['recortado'], '900 caracteres no caben en X.');
+        $this->assertSame(\ConvocaPublisher\Platform_Rules::limit('twitter'), $larga['limit'], 'El límite es el de esa red.');
+        $this->assertGreaterThan($larga['limit'], $larga['count'], 'El contador usa las reglas de la red.');
+        $this->assertLessThanOrEqual(
+            $larga['limit'],
+            \ConvocaPublisher\Platform_Rules::count('twitter', $larga['message']),
+            'Lo que se enseña como «se mandará» cabe de verdad.'
+        );
+    }
+
     public function testLaFabricaDeCadaRedRespetaLoQueAdmiteLaRed(): void
     {
         $f = Publisher::factory_templates();

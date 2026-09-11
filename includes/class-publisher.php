@@ -39,6 +39,7 @@ class Publisher
         add_action('convoca_publisher_async_publish', [self::$instance, 'on_async_publish'], 10, 1);
         add_action('wp_ajax_cp_test_publish', [self::$instance, 'ajax_test_publish']);
         add_action('wp_ajax_cp_clear_log', [self::$instance, 'ajax_clear_log']);
+        add_action('wp_ajax_cp_preview_template', [self::$instance, 'ajax_preview_template']);
     }
 
     public static function instance(): ?Publisher
@@ -320,6 +321,27 @@ class Publisher
     }
 
     /**
+     * Variables que se pueden usar en una plantilla.
+     *
+     * Una sola lista: la usan la ayuda de la pantalla y los botones que las insertan. Si
+     * estuvieran en dos sitios, la ayuda acabaría prometiendo algo que ya no existe.
+     *
+     * @return array<string, string> variable => para qué sirve
+     */
+    public static function variables(): array
+    {
+        return [
+            '{title}'          => __('Título de la entrada', 'convoca-publisher'),
+            '{excerpt}'        => __('Extracto de la entrada', 'convoca-publisher'),
+            '{url}'            => __('Enlace permanente de la entrada', 'convoca-publisher'),
+            '{hashtags}'       => __('Primeras 5 etiquetas como hashtags', 'convoca-publisher'),
+            '{date}'           => __('Fecha de publicación', 'convoca-publisher'),
+            '{author}'         => __('Nombre del autor', 'convoca-publisher'),
+            '{featured_image}' => __('URL de la imagen destacada', 'convoca-publisher'),
+        ];
+    }
+
+    /**
      * Plantilla de fábrica de cada red: lo que se usa cuando no hay nada escrito.
      *
      * Vive aquí y no en la pantalla para que la pantalla pueda enseñarla y el publicador
@@ -368,6 +390,31 @@ class Publisher
         // El primero que haya manda: lo de este envío, lo de la entrada, la cuenta, la red, lo global.
         $template = [] === $candidatas ? $default : (string) array_values($candidatas)[0];
 
+        return $this->render_template($post, $template, $url, $hashtags);
+    }
+
+    /**
+     * Sustituye las variables de una plantilla con los datos de una entrada.
+     *
+     * Es el ÚNICO sitio donde se sustituyen: lo usan tanto la publicación real como la
+     * vista previa de la pantalla de plantillas, para que lo que se ve sea exactamente lo
+     * que se manda. Si hubiera dos listas de variables, la vista previa mentiría.
+     *
+     * @param \WP_Post $post     Entrada.
+     * @param string   $template Plantilla con las variables sin sustituir.
+     * @param string   $url      Enlace a usar (vacío = el permanente de la entrada).
+     * @param string   $hashtags Hashtags ya preparados (vacío = los de las etiquetas).
+     */
+    public function render_template(\WP_Post $post, string $template, string $url = '', string $hashtags = ''): string
+    {
+        if ('' === $url) {
+            $url = (string) get_permalink($post);
+        }
+
+        if ('' === $hashtags) {
+            $hashtags = $this->get_post_hashtags($post);
+        }
+
         $excerpt = get_the_excerpt($post);
         if (empty($excerpt)) {
             $excerpt = wp_trim_words($post->post_content, 30, '…');
@@ -385,6 +432,39 @@ class Publisher
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $template);
+    }
+
+    /**
+     * Cómo quedaría el mensaje en una red: el texto ya sustituido, cuánto ocupa según las
+     * reglas de esa red (que cuentan los enlaces con su peso real, no como caracteres
+     * normales) y qué se mandaría si no cabe.
+     *
+     * @param int    $post_id    Entrada con la que se prueba.
+     * @param string $network_id Red, para aplicar sus límites.
+     * @param string $template   Plantilla tal y como está escrita en pantalla, sin guardar.
+     * @return array<string, mixed>
+     */
+    public function preview_for_network(int $post_id, string $network_id, string $template): array
+    {
+        $post = get_post($post_id);
+
+        if (!$post instanceof \WP_Post) {
+            return ['error' => __('Esa entrada no existe.', 'convoca-publisher')];
+        }
+
+        $mensaje = $this->render_template($post, $template);
+        $limite  = Platform_Rules::limit($network_id);
+        $cuenta  = Platform_Rules::count($network_id, $mensaje);
+        $cabe    = $cuenta <= $limite;
+
+        return [
+            'message'   => $cabe ? $mensaje : Platform_Rules::trim($network_id, $mensaje),
+            'recortado' => !$cabe,
+            'count'     => $cuenta,
+            'limit'     => $limite,
+            'restante'  => max(0, $limite - $cuenta),
+            'entry'     => ['id' => $post->ID, 'title' => get_the_title($post)],
+        ];
     }
 
     /**
@@ -425,6 +505,25 @@ class Publisher
             $logs = array_slice($logs, -200);
         }
         update_option('convoca_publisher_publish_log', $logs, false);
+    }
+
+    /**
+     * Vista previa de una plantilla sin guardarla: lo que se está escribiendo ahora mismo.
+     */
+    public function ajax_preview_template(): void
+    {
+        check_ajax_referer('convoca_publisher_preview', '_wpnonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die('-1');
+        }
+
+        $post_id    = intval($_POST['post_id'] ?? 0);
+        $network_id = sanitize_key(wp_unslash((string) ($_POST['network'] ?? '')));
+        // La plantilla llega sin guardar y sin sustituir: sale del área de texto.
+        $template = wp_kses_post(wp_unslash((string) ($_POST['template'] ?? '')));
+
+        wp_send_json($this->preview_message($post_id, $network_id, $template));
     }
 
     public function ajax_test_publish(): void

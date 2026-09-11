@@ -169,11 +169,126 @@
 		} );
 	}
 
+	/**
+	 * Plantillas: insertar variables donde esté el cursor, volver a la de fábrica y ver la
+	 * vista previa con el contador de la red.
+	 *
+	 * El contador y el recorte los calcula el servidor con las reglas de cada red (los
+	 * enlaces no ocupan lo mismo que el texto). Hacerlo aquí con un `length` sería tener dos
+	 * verdades: la pantalla diría que cabe y el envío lo recortaría.
+	 */
+	function prepararPlantillas() {
+		var entrada = document.getElementById( 'cp-plantilla-entrada' );
+		var i18n    = ( window.convocaPublisher && window.convocaPublisher.i18n ) || {};
+		var temporizador = null;
+
+		function pintar( panel ) {
+			var campo = document.querySelector( panel.getAttribute( 'data-cp-into' ) );
+
+			if ( ! campo || ! window.convocaPublisher ) {
+				return;
+			}
+
+			var datos = new window.FormData();
+			datos.append( 'action', 'cp_preview_template' );
+			datos.append( '_wpnonce', window.convocaPublisher.nonce );
+			datos.append( 'post_id', entrada ? entrada.value : '0' );
+			datos.append( 'network', panel.getAttribute( 'data-cp-network' ) );
+			datos.append( 'template', campo.value );
+
+			window.fetch( window.convocaPublisher.ajaxUrl, {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: datos
+			} )
+				.then( function ( respuesta ) { return respuesta.json(); } )
+				.then( function ( datos ) {
+					if ( ! datos || datos.error ) {
+						panel.textContent = i18n.error || '';
+						return;
+					}
+
+					var aviso = datos.recortado
+						? ( i18n.pasado || '%s' ).replace( '%s', String( datos.count - datos.limit ) )
+						: ( i18n.quedan || '%s' ).replace( '%s', String( datos.restante ) );
+
+					panel.classList.toggle( 'cp-preview--pasado', !! datos.recortado );
+					panel.textContent = '';
+
+					var texto = document.createElement( 'p' );
+					texto.className = 'cp-preview-mensaje';
+					texto.textContent = datos.message;
+
+					var cuenta = document.createElement( 'p' );
+					cuenta.className = 'cp-preview-cuenta';
+					cuenta.textContent = aviso;
+
+					panel.appendChild( texto );
+					panel.appendChild( cuenta );
+				} )
+				.catch( function () {
+					panel.textContent = i18n.error || '';
+				} );
+		}
+
+		function pintarTodo() {
+			document.querySelectorAll( '[data-cp-preview]' ).forEach( pintar );
+		}
+
+		document.addEventListener( 'click', function ( evento ) {
+			var insertar = evento.target.closest( '[data-cp-insert]' );
+
+			if ( insertar ) {
+				evento.preventDefault();
+				var destino = document.querySelector( insertar.getAttribute( 'data-cp-into' ) );
+				var variable = insertar.getAttribute( 'data-cp-insert' );
+
+				if ( destino ) {
+					var desde = destino.selectionStart;
+					var hasta = destino.selectionEnd;
+					destino.value = destino.value.slice( 0, desde ) + variable + destino.value.slice( hasta );
+					destino.selectionStart = destino.selectionEnd = desde + variable.length;
+					destino.focus();
+				}
+
+				return;
+			}
+
+			var volver = evento.target.closest( '[data-cp-reset]' );
+
+			if ( volver ) {
+				evento.preventDefault();
+				var campo = document.querySelector( volver.getAttribute( 'data-cp-reset' ) );
+
+				if ( campo ) {
+					campo.value = volver.getAttribute( 'data-cp-factory' );
+					campo.focus();
+				}
+			}
+		} );
+
+		document.addEventListener( 'input', function ( evento ) {
+			if ( ! evento.target.closest( '.cp-input' ) ) {
+				return;
+			}
+
+			window.clearTimeout( temporizador );
+			temporizador = window.setTimeout( pintarTodo, 400 );
+		} );
+
+		if ( entrada ) {
+			entrada.addEventListener( 'change', pintarTodo );
+		}
+
+		pintarTodo();
+	}
+
 	document.addEventListener( 'DOMContentLoaded', function () {
 		prepararConfirmaciones();
 		prepararCalendario();
 		prepararMostrarTokens();
 		prepararCopiar();
 		prepararModeracionPorCanal();
+		prepararPlantillas();
 	} );
 }() );

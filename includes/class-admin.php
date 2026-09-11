@@ -242,6 +242,18 @@ class Admin
             CONVOCA_PUBLISHER_VERSION,
             true
         );
+
+        // El JS necesita saber a dónde llamar para la vista previa. Los manejadores AJAX
+        // existían pero nunca se usaron desde la pantalla (el botón usaba un POST normal).
+        wp_localize_script('convoca-publisher-admin', 'convocaPublisher', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('convoca_publisher_preview'),
+            'i18n'    => [
+                'quedan'    => __('Quedan %s caracteres', 'convoca-publisher'),
+                'pasado'    => __('Te pasas por %s caracteres: se recortará antes de enviar. Esto es lo que se mandaría:', 'convoca-publisher'),
+                'error'     => __('No se pudo generar la vista previa.', 'convoca-publisher'),
+            ],
+        ]);
     }
 
     public static function render_page(): void
@@ -636,6 +648,41 @@ class Admin
         <?php
     }
 
+    /**
+     * Botones de variables, vuelta a la de fábrica y panel de vista previa de un campo.
+     *
+     * @param string $campo   Selector del área de texto a la que afectan.
+     * @param string $red     Red de la que se comprueban los límites ('' = sin contador).
+     * @param string $fabrica Plantilla de fábrica a la que vuelve el botón.
+     */
+    private static function render_template_tools(string $campo, string $red, string $fabrica = ''): void
+    {
+        ?>
+        <p class="cp-plantilla-botones">
+            <?php foreach (Publisher::variables() as $variable => $para_que) : ?>
+                <button
+                    type="button"
+                    class="button button-small"
+                    data-cp-insert="<?php echo esc_attr($variable); ?>"
+                    data-cp-into="<?php echo esc_attr($campo); ?>"
+                    title="<?php echo esc_attr($para_que); ?>"
+                ><?php echo esc_html($variable); ?></button>
+            <?php endforeach; ?>
+            <?php if ('' !== $fabrica) : ?>
+                <button
+                    type="button"
+                    class="button button-small cp-plantilla-fabrica"
+                    data-cp-reset="<?php echo esc_attr($campo); ?>"
+                    data-cp-factory="<?php echo esc_attr($fabrica); ?>"
+                ><?php echo esc_html__('Volver a la de fábrica', 'convoca-publisher'); ?></button>
+            <?php endif; ?>
+        </p>
+        <?php if ('' !== $red) : ?>
+            <div class="cp-preview" data-cp-preview data-cp-network="<?php echo esc_attr($red); ?>" data-cp-into="<?php echo esc_attr($campo); ?>"></div>
+        <?php endif; ?>
+        <?php
+    }
+
     private static function render_templates_tab(): void
     {
         // Plantillas por RED (es lo que lee el publicador cuando la cuenta no tiene la
@@ -648,14 +695,24 @@ class Admin
             <div class="cp-help">
                 <p><strong><?php echo esc_html__('Variables disponibles:', 'convoca-publisher'); ?></strong></p>
                 <p>
-                    <code>{title}</code> — <?php echo esc_html__('Título de la entrada', 'convoca-publisher'); ?><br>
-                    <code>{excerpt}</code> — <?php echo esc_html__('Extracto de la entrada', 'convoca-publisher'); ?><br>
-                    <code>{url}</code> — <?php echo esc_html__('Enlace permanente de la entrada', 'convoca-publisher'); ?><br>
-                    <code>{hashtags}</code> — <?php echo esc_html__('Primeras 5 etiquetas como hashtags', 'convoca-publisher'); ?><br>
-                    <code>{date}</code> — <?php echo esc_html__('Fecha de publicación', 'convoca-publisher'); ?><br>
-                    <code>{author}</code> — <?php echo esc_html__('Nombre del autor', 'convoca-publisher'); ?><br>
-                    <code>{featured_image}</code> — <?php echo esc_html__('URL de la imagen destacada', 'convoca-publisher'); ?>
+                    <?php foreach (Publisher::variables() as $variable => $para_que) : ?>
+                        <code><?php echo esc_html($variable); ?></code> — <?php echo esc_html($para_que); ?><br>
+                    <?php endforeach; ?>
                 </p>
+
+                <?php $candidatas = self::test_candidates(); ?>
+                <?php if ($candidatas) : ?>
+                    <p class="cp-field">
+                        <label for="cp-plantilla-entrada"><?php echo esc_html__('Ver con la entrada', 'convoca-publisher'); ?></label>
+                        <select id="cp-plantilla-entrada">
+                            <?php foreach ($candidatas as $candidata) : ?>
+                                <option value="<?php echo esc_attr((string) $candidata['id']); ?>"><?php echo esc_html($candidata['label']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <span class="description"><?php echo esc_html__('La vista previa y el contador de cada plantilla usan esta entrada.', 'convoca-publisher'); ?></span>
+                    </p>
+                <?php endif; ?>
+                <p><?php echo esc_html__('Pulsa una variable para insertarla donde tengas el cursor. La vista previa se actualiza sola y te dice si el mensaje cabe en esa red o si se recortará.', 'convoca-publisher'); ?></p>
                 <p><?php echo esc_html__('Se usa la primera que esté puesta, de lo más concreto a lo más general: lo que se escribe para un envío concreto, lo de esa entrada, la plantilla de la cuenta (en su pantalla), la de su red y la global. Si no hay ninguna, la de fábrica de cada red, que se ve bajo cada campo.', 'convoca-publisher'); ?></p>
             </div>
             
@@ -667,7 +724,8 @@ class Admin
                     <tr>
                         <th scope="row"><?php echo esc_html__('Mensaje por defecto', 'convoca-publisher'); ?></th>
                         <td>
-                            <textarea name="convoca_publisher_message_template" rows="3" class="cp-input cp-input--wide"><?php echo esc_textarea((string) get_option('convoca_publisher_message_template', '{title} — {url} {hashtags}')); ?></textarea>
+                            <textarea id="cp-plantilla-global" name="convoca_publisher_message_template" rows="3" class="cp-input cp-input--wide"><?php echo esc_textarea((string) get_option('convoca_publisher_message_template', '{title} — {url} {hashtags}')); ?></textarea>
+                            <?php self::render_template_tools('#cp-plantilla-global', ''); ?>
                             <p class="description"><?php echo esc_html__('Se usa cuando un canal no tiene su propia plantilla.', 'convoca-publisher'); ?></p>
                         </td>
                     </tr>
@@ -682,7 +740,14 @@ class Admin
                     ?>
                 <div class="cp-channel-template">
                     <h4><?php echo esc_html($channel->get_name()); ?></h4>
-                    <textarea name="<?php echo esc_attr($tkey); ?>" rows="3" class="cp-input cp-input--wide" placeholder="<?php echo esc_attr__('Usar plantilla global', 'convoca-publisher'); ?>"><?php echo esc_textarea((string) $tval); ?></textarea>
+                    <textarea id="cp-plantilla-<?php echo esc_attr($channel->get_id()); ?>" name="<?php echo esc_attr($tkey); ?>" rows="3" class="cp-input cp-input--wide" placeholder="<?php echo esc_attr__('Usar plantilla global', 'convoca-publisher'); ?>"><?php echo esc_textarea((string) $tval); ?></textarea>
+                    <?php
+                    self::render_template_tools(
+                        '#cp-plantilla-' . $channel->get_id(),
+                        (string) $channel->get_id(),
+                        Publisher::factory_templates()[$channel->get_id()] ?? '{title} — {url}'
+                    );
+                    ?>
                     <p class="description">
                         <?php if ('' === trim((string) $tval)) : ?>
                             <?php echo esc_html__('Ahora mismo se usa la de fábrica para esta red:', 'convoca-publisher'); ?>
