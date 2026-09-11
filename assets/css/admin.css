@@ -725,3 +725,15 @@ textarea.cp-input {
 	color: #d63638;
 	font-weight: 600;
 }
+
+/* ── Iconos de red ────────────────────────────────────────────
+   SVG propio que hereda el color del texto (currentColor), así que
+   sirve igual en modo claro y en oscuro sin reglas aparte. */
+.cp-red-svg {
+	vertical-align: -0.18em;
+	margin-right: 0.45em;
+}
+
+h1.wp-heading-inline .cp-red-svg {
+	vertical-align: -0.12em;
+}

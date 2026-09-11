@@ -384,7 +384,7 @@ class Admin
             );
         ?>
         <div class="wrap">
-            <h1 class="wp-heading-inline"><?php echo esc_html($nombre); ?></h1>
+            <h1 class="wp-heading-inline"><?php echo Icons::svg((string) $network_id, 24); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SVG propio.?><?php echo esc_html($nombre); ?></h1>
             <?php if ($account) : ?>
                 <?php echo self::status_badge(self::channel_status($account)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
             <?php endif; ?>
@@ -983,7 +983,7 @@ class Admin
             ?>
             <div class="cp-section">
                 <div class="cp-card__head">
-                    <h2><?php echo esc_html($network->get_name()); ?></h2>
+                    <h2><?php echo Icons::svg((string) $network_id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SVG propio.?><?php echo esc_html($network->get_name()); ?></h2>
                     <?php if (empty($own)) : ?>
                         <?php echo self::status_badge(['key' => 'missing', 'class' => 'cp-status--off', 'icon' => '❌', 'label' => __('Falta token', 'convoca-publisher')]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
                     <?php else : ?>

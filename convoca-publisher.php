@@ -4,7 +4,7 @@
  * Plugin Name:       Convoca Publisher
  * Plugin URI:        https://getconvoca.app
  * Description:       Publish WordPress posts to social media channels with customizable templates.
- * Version:           1.19.0
+ * Version:           1.20.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Tested up to:      7.1
@@ -27,6 +27,21 @@ if (! defined('ABSPATH')) {
 $composer_autoload = __DIR__ . '/vendor/autoload.php';
 if (file_exists($composer_autoload)) {
     require_once $composer_autoload;
+}
+
+/*
+ * Y además, las clases propias se cargan por su nombre de fichero.
+ *
+ * El autoload de Composer usa un mapa de clases que se genera con `composer dump-autoload`, y en
+ * los servidores ese mapa es el que se subió: el despliegue no lleva `vendor/`. Consecuencia: una
+ * clase nueva funcionaba en local y no existía en producción (pasó con `Icons`), con un error de
+ * «clase no encontrada» en la pantalla y sin relación aparente con el cambio que se hizo.
+ *
+ * Cargarlas por glob cuesta 17 `require_once` de ficheros pequeños y quita el problema de raíz:
+ * lo que hay en `includes/` queda cargado sin depender de ningún paso de construcción.
+ */
+foreach (glob(__DIR__ . '/includes/class-*.php') ?: [] as $convoca_publisher_class_file) {
+    require_once $convoca_publisher_class_file;
 }
 
 // Load translations.
