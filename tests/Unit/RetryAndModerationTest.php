@@ -22,6 +22,8 @@ class RetryAndModerationTest extends TestCase
 
     protected function setUp(): void
     {
+        \cp_test_reset();
+
         $GLOBALS['_cp_test_postmeta'] = [];
         $GLOBALS['_cp_test_options'] = [];
         $GLOBALS['_cp_test_db'] = ['rows' => [], 'inserts' => []];

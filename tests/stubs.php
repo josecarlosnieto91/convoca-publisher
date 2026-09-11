@@ -133,6 +133,12 @@ function get_post(int|\WP_Post $post = null, ?string $output = null, string $fil
     }
     $p = new \WP_Post();
     $p->ID = $post;
+
+    // El título que haya fijado la prueba (los canales lo usan para armar el mensaje).
+    if (isset($GLOBALS['_cp_test_titles'][$post])) {
+        $p->post_title = (string) $GLOBALS['_cp_test_titles'][$post];
+    }
+
     return $p;
 }
 function get_permalink(\WP_Post|int $post): string
@@ -417,6 +423,30 @@ class WP_Error
 }
 
 // --- wpdb (mínimo para probar la cola de reintentos/moderación) ---
+/**
+ * Deja el arnés como recién arrancado.
+ *
+ * Cada prueba empieza por aquí: lo que una deje puesto —un `$wpdb` falso, una opción, la
+ * pantalla actual, un plugin de mentira— no puede llegar a la siguiente. Sin esto, la suite
+ * pasa en su orden y falla en aleatorio.
+ */
+function cp_test_reset(): void
+{
+    $GLOBALS['_cp_test_options']   = [];
+    $GLOBALS['_cp_test_postmeta']  = [];
+    $GLOBALS['_cp_test_posts']     = [];
+    $GLOBALS['_cp_test_titles']    = [];
+    $GLOBALS['_cp_test_db']        = ['rows' => [], 'inserts' => [], 'results' => []];
+    $GLOBALS['_cp_test_screen_id'] = '';
+    $GLOBALS['_cp_test_http']      = [];
+    $GLOBALS['_cp_test_envios']    = [];
+    $GLOBALS['wpdb']               = new wpdb();
+    $_GET                          = [];
+    $_POST                         = [];
+
+    unset($GLOBALS['_cp_test_publisher_stub']);
+}
+
 class wpdb
 {
     public string $prefix = 'wp_';
@@ -568,4 +598,14 @@ function convoca_publisher(): object
             return $accounts[$channel_id] ?? ConvocaPublisher\Plugin::networks()[$channel_id] ?? null;
         }
     };
+}
+
+function esc_textarea(string $text): string
+{
+    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+}
+function sanitize_textarea_field(string $text): string
+{
+    // Como el del core: quita etiquetas, conserva los saltos de línea y recorta.
+    return trim(strip_tags(str_replace("\0", '', $text)));
 }

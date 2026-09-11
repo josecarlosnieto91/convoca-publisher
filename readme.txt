@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.8.1
+Stable tag: 1.9.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,13 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.9.0 =
+* Compartir a mano en **una** cuenta concreta desde el editor, con un botón por cuenta, y «Compartir ahora» desde el listado de entradas.
+* Mensaje propio de cada entrada (con las mismas variables), que manda sobre la plantilla de la cuenta y se guarda con la entrada.
+* Vista previa real y contador de caracteres por red, con el peso que cada red da a los enlaces (X cuenta cualquiera como 23).
+* Reglas por red antes de enviar en lugar de fallar al enviar: si no cabe se recorta conservando el enlace y queda avisado.
+
 
 = 1.8.0 =
 * Pantalla de la cola: calendario de mes y semana con los envíos de cada día (una entrada puede salir en varias cuentas: cada una es un envío), más la lista de lo que espera turno, lo que se ha atascado y lo último que salió.

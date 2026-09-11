@@ -24,6 +24,11 @@ class Publisher
     private static ?Publisher $instance = null;
     private array $channels = [];
 
+    /**
+     * El mensaje propio de esta entrada (meta), por delante de la plantilla de la cuenta.
+     */
+    public const MESSAGE_META = '_convoca_publisher_message';
+
     public static function init(array $channels): void
     {
         if (null === self::$instance) {
@@ -134,6 +139,20 @@ class Publisher
      */
     public function publish_post(int $post_id, bool $force = false, bool $approved = false): array
     {
+        return $this->publish_to_accounts($post_id, [], $force, $approved);
+    }
+
+    /**
+     * Publicar en unas cuentas concretas, o en las que le toquen a la entrada si no se dice
+     * ninguna.
+     *
+     * Un solo camino para todo: compartir a mano en una cuenta no puede ser una copia del
+     * envío normal, o se queda sin el registro, sin el reintento y sin el recorte por red.
+     *
+     * @param string[] $account_ids Cuentas destino (ids de cuenta); vacío = las de la entrada.
+     */
+    public function publish_to_accounts(int $post_id, array $account_ids = [], bool $force = false, bool $approved = false, string $message_override = ''): array
+    {
         $post = get_post($post_id);
         if (!$post || $post->post_type !== 'post') {
             return [];
@@ -162,8 +181,36 @@ class Publisher
 
         // A qué cuentas va: la regla vive en Queue (desmarcada en el editor o sin
         // credenciales, no recibe la entrada).
-        foreach (Queue::accounts_for_post($post->ID, $this->channels) as $channel_id => $channel) {
-            $message = $this->build_channel_message($post, $channel, $url, $hashtags);
+        $cuentas = Queue::accounts_for_post($post->ID, $this->channels);
+
+        if ([] !== $account_ids) {
+            $cuentas = array_intersect_key($cuentas, array_flip($account_ids));
+        }
+
+        foreach ($cuentas as $channel_id => $channel) {
+            $message = $this->build_channel_message($post, $channel, $url, $hashtags, $message_override);
+
+            // Lo que admite la red: se recorta lo que no cabe y se avisa de lo que solo conviene.
+            $red  = $this->network_of($channel);
+            $cabe = Platform_Rules::check($red, $message);
+            $avisos = [];
+
+            if (!$cabe['fit']) {
+                $avisos['trimmed'] = ['from' => mb_strlen($message), 'to' => mb_strlen($cabe['message'])];
+                $warnings[]        = sprintf(
+                    /* translators: 1: nombre del canal, 2: caracteres que tenía, 3: caracteres que se enviaron */
+                    __('El mensaje no cabía en %1$s: se recortó de %2$d a %3$d caracteres.', 'convoca-publisher'),
+                    $channel->get_name(),
+                    mb_strlen($message),
+                    mb_strlen($cabe['message'])
+                );
+            }
+
+            if ([] !== $cabe['warnings']) {
+                $avisos['warnings'] = $cabe['warnings'];
+            }
+
+            $message = $cabe['message'];
 
             // D15 — Moderación previa: encolar pendiente de revisión en vez de enviar.
             if ($this->channel_needs_moderation($channel_id) && !$approved) {
@@ -182,8 +229,8 @@ class Publisher
                 continue;
             }
 
-            $result = $channel->publish($post_id, $message, $url, $image_url);
-            $results[$channel_id] = $result;
+            $result               = $channel->publish($post_id, $message, $url, $image_url);
+            $results[$channel_id] = array_merge($result, $avisos);
             $sent_any = true;
 
             $this->log_publish([
@@ -229,6 +276,22 @@ class Publisher
     }
 
     /**
+     * Cómo queda el mensaje de esta entrada en una cuenta, con lo que se mande para este
+     * envío concreto por delante (es lo que enseña y usa «compartir ahora en esta cuenta»).
+     */
+    public function preview_message(int $post_id, string $account_id, string $override = ''): string
+    {
+        $post = get_post($post_id);
+        $canal = $this->channels[$account_id] ?? null;
+
+        if (!$post || !$canal) {
+            return '';
+        }
+
+        return $this->build_channel_message($post, $canal, (string) get_permalink($post), $this->get_post_hashtags($post), $override);
+    }
+
+    /**
      * Obtener el mensaje formateado para un canal específico.
      * Método público que envuelve build_channel_message() para testing.
      */
@@ -248,12 +311,28 @@ class Publisher
     }
 
     /**
+     * De qué red es este canal.
+     *
+     * Con cuentas (perfiles) el canal es un envoltorio que dice a qué red pertenece; un canal
+     * suelto es ya la red. Preguntar por el envoltorio en cada sitio invita a que uno se olvide
+     * y acabe aplicando las reglas de otra red (o de ninguna).
+     */
+    private function network_of(object $channel): string
+    {
+        if (method_exists($channel, 'get_channel_id')) {
+            return (string) $channel->get_channel_id();
+        }
+
+        return (string) $channel->get_id();
+    }
+
+    /**
      * Construir mensaje específico para un canal usando su plantilla.
      */
-    private function build_channel_message(\WP_Post $post, object $channel, string $url, string $hashtags): string
+    private function build_channel_message(\WP_Post $post, object $channel, string $url, string $hashtags, string $override = ''): string
     {
         // Con cuentas (perfiles), el id del canal es el de la cuenta: la red va aparte.
-        $network_id   = $channel instanceof Channel_Profile ? $channel->get_channel_id() : $channel->get_id();
+        $network_id   = $this->network_of($channel);
         $template_key = 'convoca_publisher_' . $network_id . '_template';
         $default_templates = [
             'facebook'        => '{title} — {url} {hashtags}',
@@ -265,17 +344,24 @@ class Publisher
             'mastodon'        => '{title} — {url} {hashtags}',
         ];
 
-        $default  = $default_templates[$network_id] ?? '{title} — {url}';
-        $template = $channel instanceof Channel_Profile ? $channel->get_template() : '';
-        if (empty($template)) {
-            $template = get_option($template_key, '');
-        }
-        if (empty($template)) {
-            $template = get_option('convoca_publisher_message_template', $default);
-        }
-        if (empty($template)) {
-            $template = $default;
-        }
+        $default = $default_templates[$network_id] ?? '{title} — {url}';
+
+        // De lo más concreto a lo más general: lo que se escribe para este envío, lo que se
+        // escribe para esta entrada, la plantilla de la cuenta, la de la red y la global.
+        $candidatas = array_filter(
+            [
+                $override,
+                (string) get_post_meta($post->ID, self::MESSAGE_META, true),
+                $channel instanceof Channel_Profile ? $channel->get_template() : '',
+                (string) get_option($template_key, ''),
+                (string) get_option('convoca_publisher_message_template', ''),
+            ],
+            static fn(string $candidata): bool => '' !== trim($candidata)
+        );
+
+        $template = '' === trim($override) && [] !== $candidatas
+            ? (string) array_values($candidatas)[0]
+            : ($override ?: $default);
 
         $excerpt = get_the_excerpt($post);
         if (empty($excerpt)) {

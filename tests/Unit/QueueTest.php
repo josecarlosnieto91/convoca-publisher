@@ -22,6 +22,8 @@ namespace ConvocaPublisher\Tests {
     {
         protected function setUp(): void
         {
+            \cp_test_reset();
+
             parent::setUp();
 
             $GLOBALS['_cp_test_options']  = [];

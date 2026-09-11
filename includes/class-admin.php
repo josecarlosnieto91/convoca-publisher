@@ -33,6 +33,9 @@ class Admin
         add_action('admin_post_cp_queue_reschedule', [self::class, 'handle_queue_reschedule']);
         add_action('admin_post_cp_queue_cancel', [self::class, 'handle_queue_cancel']);
         add_action('admin_post_cp_queue_spacing', [self::class, 'handle_queue_spacing']);
+        add_action('admin_post_cp_share_now', [self::class, 'handle_share_now']);
+        add_filter('post_row_actions', [self::class, 'row_action'], 10, 2);
+        add_action('admin_notices', [self::class, 'shared_notice']);
         add_action('admin_post_cp_approve_review', [self::class, 'handle_approve_review']);
         add_action('admin_post_cp_reject_review', [self::class, 'handle_reject_review']);
     }
@@ -1776,6 +1779,79 @@ class Admin
             </tbody>
         </table>
         <?php
+    }
+
+    /**
+     * «Compartir ahora» en el listado de entradas, sin abrir el editor: va a las cuentas que
+     * tenga marcadas esa entrada. Para elegir una cuenta concreta, el editor.
+     *
+     * @param array<string, string> $acciones
+     *
+     * @return array<string, string>
+     */
+    public static function row_action(array $acciones, \WP_Post $post): array
+    {
+        if ('post' !== $post->post_type || !current_user_can('edit_post', $post->ID) || [] === Plugin::accounts()) {
+            return $acciones;
+        }
+
+        $acciones['convoca_compartir'] = sprintf(
+            '<a href="%s">%s</a>',
+            esc_url(self::share_now_url($post->ID)),
+            esc_html__('Compartir ahora', 'convoca-publisher')
+        );
+
+        return $acciones;
+    }
+
+    private static function share_now_url(int $post_id): string
+    {
+        return wp_nonce_url(
+            admin_url('admin-post.php?action=cp_share_now&post=' . $post_id),
+            'convoca_publisher_share_now_' . $post_id
+        );
+    }
+
+    /**
+     * Compartir desde el listado: lanza la publicación y vuelve a la lista.
+     */
+    public static function handle_share_now(): void
+    {
+        $post_id = isset($_GET['post']) ? (int) $_GET['post'] : 0;
+
+        if ($post_id <= 0 || !current_user_can('edit_post', $post_id)) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+
+        check_admin_referer('convoca_publisher_share_now_' . $post_id);
+
+        $publicador = Publisher::instance();
+        $enviados   = $publicador ? $publicador->publish_to_accounts($post_id, [], true, true) : [];
+
+        set_transient(
+            'convoca_publisher_queue_notice_' . get_current_user_id(),
+            [] === $enviados
+                ? __('No había ninguna cuenta a la que enviar esta entrada.', 'convoca-publisher')
+                : __('Compartido. Mirando la cola, lo tienes.', 'convoca-publisher'),
+            30
+        );
+        wp_safe_redirect(self::tab_url('queue'));
+        exit;
+    }
+
+    /**
+     * Aviso tras compartir desde el listado.
+     */
+    public static function shared_notice(): void
+    {
+        if (!isset($_GET['convoca_compartido'])) {
+            return;
+        }
+
+        printf(
+            '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+            esc_html__('Compartido. El detalle está en la cola.', 'convoca-publisher')
+        );
     }
 
     /**

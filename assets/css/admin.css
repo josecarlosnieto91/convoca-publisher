@@ -582,3 +582,73 @@
 	gap: 6px;
 	margin: 0 8px 4px 0;
 }
+
+
+/* ── Mensaje de esta entrada (editor) ────────────────────────────────────── */
+
+.cp-cuenta {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 8px 10px;
+	margin: 8px 0;
+	background: #fff;
+}
+
+.cp-cuenta__nombre {
+	margin: 0 0 4px;
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.cp-cuenta__red {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: #787c82;
+}
+
+.cp-contador {
+	margin-left: auto;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	color: #50575e;
+}
+
+.cp-contador--justo {
+	color: #996800;
+}
+
+.cp-contador--pasado {
+	color: #d63638;
+	font-weight: 600;
+}
+
+.cp-previa {
+	margin: 0;
+	padding: 6px 8px;
+	font-size: 12px;
+	line-height: 1.5;
+	background: #f6f7f7;
+	border-radius: 3px;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.cp-aviso {
+	margin: 6px 0 0;
+	font-size: 12px;
+	color: #d63638;
+}
+
+@media (prefers-color-scheme: dark) {
+	.cp-cuenta {
+		background: #1f1f1f;
+		border-color: #3c3c3c;
+	}
+
+	.cp-previa {
+		background: #2c2c2c;
+	}
+}
