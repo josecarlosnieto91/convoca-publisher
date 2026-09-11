@@ -80,7 +80,16 @@ class Log_View
      */
     public static function is_entry(array $entry): bool
     {
-        return '' !== (string) ($entry['channel'] ?? '');
+        $channel = (string) ($entry['channel'] ?? '');
+
+        if ('' === $channel) {
+            return false;
+        }
+
+        // Los avisos del propio plugin no son envíos: ni cuentan, ni se filtran por red,
+        // ni se reintentan. Salen del historial en cuanto se escribía una entrada sin
+        // imagen destacada, y teñían de rojo un envío que había salido bien.
+        return !in_array($channel, self::NOT_A_CHANNEL, true);
     }
 
     /**

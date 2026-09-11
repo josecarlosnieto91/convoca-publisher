@@ -258,18 +258,11 @@ class Publisher
         }
 
         // Adjuntar warnings al resultado si los hay
+        // Los avisos son para quien escribe (título vacío, sin imagen destacada, recorte): se
+        // devuelven para que la pantalla los enseñe, pero **no** se escriben en el historial.
+        // Un historial con una fila roja por cada envío que sí salió no informa de nada.
         if (!empty($warnings)) {
             $results['_warnings'] = $warnings;
-            foreach ($warnings as $w) {
-                $this->log_publish([
-                    'post_id'  => $post_id,
-                    'title'    => $post->post_title,
-                    'channel'  => 'VALIDACIÓN',
-                    'success'  => false,
-                    'time'     => current_time('mysql'),
-                    'response' => $w,
-                ]);
-            }
         }
 
         return $results;

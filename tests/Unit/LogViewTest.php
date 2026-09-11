@@ -39,13 +39,13 @@ final class LogViewTest extends TestCase
             $this->fila('telegram-apuntes', false, 11),
             $this->fila('linkedin', true, 12),
             $this->fila('VALIDACIÓN', false, 0),
-            $this->fila('facebook', false, 0),
+            $this->fila('facebook', false, 3),
         ];
     }
 
     public function testSinFiltrosSaleTodo(): void
     {
-        $this->assertCount(6, Log_View::filter($this->historial(), []));
+        $this->assertCount(5, Log_View::filter($this->historial(), []), 'el aviso del plugin no es una fila del historial');
     }
 
     public function testFiltraPorEstado(): void
@@ -57,7 +57,7 @@ final class LogViewTest extends TestCase
         }
 
         $fail = Log_View::filter($this->historial(), ['status' => 'fail']);
-        $this->assertCount(4, $fail);
+        $this->assertCount(3, $fail);
     }
 
     public function testFiltraPorCuentaExacta(): void
@@ -112,8 +112,8 @@ final class LogViewTest extends TestCase
     {
         $datos = Log_View::facets($this->historial(), ['telegram-apuntes' => 'telegram']);
 
-        $this->assertSame(6, $datos['total']);
-        $this->assertSame(['ok' => 2, 'fail' => 4], $datos['statuses']);
+        $this->assertSame(5, $datos['total']);
+        $this->assertSame(['ok' => 2, 'fail' => 3], $datos['statuses']);
         $this->assertSame(['facebook', 'linkedin', 'telegram'], $datos['networks']);
         $this->assertArrayHasKey('telegram-apuntes', $datos['accounts']);
     }
@@ -125,6 +125,7 @@ final class LogViewTest extends TestCase
         $this->assertFalse(Log_View::retryable($this->fila('telegram', false, 0)), 'sin entrada no hay nada que reenviar');
         $this->assertFalse(Log_View::retryable($this->fila('', false, 11)), 'sin cuenta no se sabe a dónde');
         $this->assertFalse(Log_View::retryable($this->fila('VALIDACIÓN', false, 11)), 'los avisos del plugin no son envíos');
+        $this->assertFalse(Log_View::is_entry($this->fila('VALIDACIÓN', false, 11)), 'y no salen en el historial');
         $this->assertFalse(Log_View::retryable($this->fila('SISTEMA', false, 11)));
     }
 
