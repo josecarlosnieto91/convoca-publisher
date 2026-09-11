@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.10.2
+Stable tag: 1.11.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,10 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.11.0 =
+* Todo el código pasa el mismo control de estilo (46 de 46 ficheros): el proyecto queda con la línea base limpia, que es la que evita que cada cambio futuro traiga ruido.
+
 
 = 1.10.2 =
 * El widget cuenta **todos** los envíos parados, no solo los que caben en la lista: con ocho parados decía «5 envíos no han salido», que es mentir por omisión.

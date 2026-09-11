@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Plugin Name:       Convoca Publisher
  * Plugin URI:        https://getconvoca.app
  * Description:       Publish WordPress posts to social media channels with customizable templates.
- * Version:           1.10.2
+ * Version:           1.11.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Tested up to:      7.1
@@ -18,52 +19,52 @@
 
 namespace ConvocaPublisher;
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (! defined('ABSPATH')) {
     exit;
 }
 
 /* ── Composer autoload ─────────────────────────────── */
 $composer_autoload = __DIR__ . '/vendor/autoload.php';
-if ( file_exists( $composer_autoload ) ) {
-	require_once $composer_autoload;
+if (file_exists($composer_autoload)) {
+    require_once $composer_autoload;
 }
 
 // Load translations.
 add_action(
-	'init',
-	function () {
-		load_plugin_textdomain( 'convoca-publisher', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-	}
+    'init',
+    function () {
+        load_plugin_textdomain('convoca-publisher', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    }
 );
 
 /**
  * Ensure convoca-core is active.
  */
 add_action(
-	'plugins_loaded',
-	function () {
-		if ( ! defined( 'CONVOCA_COMMON_VERSION' ) && ! function_exists( 'convoca_core_is_active' ) ) {
-			add_action(
-				'admin_notices',
-				function () {
-					printf(
-					    '<div class="notice notice-error"><p><strong>%s:</strong> %s <strong>%s</strong> %s</p></div>',
-					    esc_html__('Convoca Publisher', 'convoca-publisher'),
-					    esc_html__('Este plugin requiere el plugin', 'convoca-publisher'),
-					    esc_html__('Convoca Core', 'convoca-publisher'),
-					    esc_html__('activo.', 'convoca-publisher')
-					);
-				}
-			);
-			return;
-		}
-	},
-	5
+    'plugins_loaded',
+    function () {
+        if (! defined('CONVOCA_COMMON_VERSION') && ! function_exists('convoca_core_is_active')) {
+            add_action(
+                'admin_notices',
+                function () {
+                    printf(
+                        '<div class="notice notice-error"><p><strong>%s:</strong> %s <strong>%s</strong> %s</p></div>',
+                        esc_html__('Convoca Publisher', 'convoca-publisher'),
+                        esc_html__('Este plugin requiere el plugin', 'convoca-publisher'),
+                        esc_html__('Convoca Core', 'convoca-publisher'),
+                        esc_html__('activo.', 'convoca-publisher')
+                    );
+                }
+            );
+            return;
+        }
+    },
+    5
 );
 
 // Cache-buster de los assets y version del endpoint REST. Debe seguir la version
 // del plugin: si se queda fija, la CDN sirve JS/CSS viejos para esa misma URL.
-$convoca_publisher_header = get_file_data(__FILE__, array('Version' => 'Version'), 'plugin');
+$convoca_publisher_header = get_file_data(__FILE__, ['Version' => 'Version'], 'plugin');
 define('CONVOCA_PUBLISHER_VERSION', !empty($convoca_publisher_header['Version']) ? $convoca_publisher_header['Version'] : '1.4.2');
 define('CONVOCA_PUBLISHER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CONVOCA_PUBLISHER_PLUGIN_URL', plugin_dir_url(__FILE__));
