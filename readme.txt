@@ -104,6 +104,7 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 5. Test screen: publish a post to the selected channels to check the setup.
 6. Moderation queue: review what is about to go out before it does.
 7. Step-by-step guide for every network, linked from the channel it configures.
+8. The queue: a month and week calendar of what is going out (drag an item to another day to reschedule it), the list of what is waiting, what got stuck and what went out last.
 
 == Frequently Asked Questions ==
 
