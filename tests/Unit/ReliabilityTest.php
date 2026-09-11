@@ -21,6 +21,7 @@ namespace ConvocaPublisher\Tests {
     use ConvocaPublisher\Publisher;
     use ConvocaPublisher\Queue;
     use ConvocaPublisher\Scheduler;
+    use ConvocaPublisher\Tests\Support\FakeChannel;
     use PHPUnit\Framework\TestCase;
 
     final class ReliabilityTest extends TestCase
@@ -53,62 +54,8 @@ namespace ConvocaPublisher\Tests {
                 $this->assertIsArray($perfil);
                 $id = (string) $perfil['id'];
 
-                $canales[$id] = new class ($id, $red, $nombre, $va_bien) implements \ConvocaPublisher\Channels\ChannelInterface {
-                    private string $id;
-                    private string $red;
-                    private string $nombre;
-                    private bool $va_bien;
+                $canales[$id] = new FakeChannel($id, $red, $nombre, $va_bien);
 
-                    public function __construct(string $id, string $red, string $nombre, bool $va_bien)
-                    {
-                        $this->id      = $id;
-                        $this->red     = $red;
-                        $this->nombre  = $nombre;
-                        $this->va_bien = $va_bien;
-                    }
-
-                    public function get_id(): string
-                    {
-                        return $this->id;
-                    }
-
-                    public function get_name(): string
-                    {
-                        return $this->nombre;
-                    }
-
-                    public function get_channel_id(): string
-                    {
-                        return $this->red;
-                    }
-
-                    public function is_available(): bool
-                    {
-                        return true;
-                    }
-
-                    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
-                    {
-                        return $this->va_bien
-                            ? ['success' => true, 'post_id' => 'ok']
-                            : ['success' => false, 'error' => 'la red dijo que no'];
-                    }
-
-                    public function get_settings_fields(): array
-                    {
-                        return [];
-                    }
-
-                    public function validate_settings(array $settings): array
-                    {
-                        return $settings;
-                    }
-
-                    public function verify_connection(): array
-                    {
-                        return ['success' => true];
-                    }
-                };
             }
 
             Publisher::init($canales);

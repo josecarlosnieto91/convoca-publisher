@@ -17,6 +17,7 @@ namespace ConvocaPublisher\Tests {
     use ConvocaPublisher\Plugin;
     use ConvocaPublisher\Profile_Store;
     use ConvocaPublisher\Publisher;
+    use ConvocaPublisher\Tests\Support\FakeChannel;
     use PHPUnit\Framework\TestCase;
 
     final class ShareTest extends TestCase
@@ -68,60 +69,8 @@ namespace ConvocaPublisher\Tests {
 
                 $id       = (string) $perfil['id'];
                 $ids[]    = $id;
-                $canales[$id] = new class ($id, $red, $nombre) implements \ConvocaPublisher\Channels\ChannelInterface {
-                    private string $id;
-                    private string $red;
-                    private string $nombre;
+                $canales[$id] = new FakeChannel($id, $red, $nombre);
 
-                    public function __construct(string $id, string $red, string $nombre)
-                    {
-                        $this->id     = $id;
-                        $this->red    = $red;
-                        $this->nombre = $nombre;
-                    }
-
-                    public function get_id(): string
-                    {
-                        return $this->id;
-                    }
-
-                    public function get_name(): string
-                    {
-                        return $this->nombre;
-                    }
-
-                    public function get_channel_id(): string
-                    {
-                        return $this->red;
-                    }
-
-                    public function is_available(): bool
-                    {
-                        return true;
-                    }
-
-                    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
-                    {
-                        $GLOBALS['_cp_test_envios'][$this->nombre][] = $message;
-
-                        return ['success' => true, 'post_id' => 'ok'];
-                    }
-
-                    public function get_settings_fields(): array
-                    {
-                        return [];
-                    }
-
-                    public function validate_settings(array $settings): array
-                    {
-                        return $settings;
-                    }
-
-                    public function verify_connection(): array
-                    {
-                        return ['success' => true];
-                    }
-                };
             }
 
             $this->canales = $canales;
@@ -232,7 +181,7 @@ namespace ConvocaPublisher\Tests {
             // La segunda cuenta es X (280): un mensaje de 400 caracteres no cabe.
             $this->entrada(77, [Publisher::MESSAGE_META => str_repeat('Asamblea de socios y taller de huerto. ', 12)]);
             $resultado = (new Publisher($this->canales))->publish_to_accounts(77, [$ids[1]], true, true);
-            $enviado   = $GLOBALS['_cp_test_envios']['X'][0] ?? '';
+            $enviado   = $this->canales[$ids[1]]->sent[0]['message'] ?? '';
 
             $this->assertLessThanOrEqual(280, mb_strlen($enviado), 'Lo que se envía cabe.');
             $this->assertArrayHasKey('trimmed', $resultado[$ids[1]], 'Y queda anotado que se recortó.');
