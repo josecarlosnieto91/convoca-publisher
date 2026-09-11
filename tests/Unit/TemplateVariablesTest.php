@@ -72,6 +72,19 @@ final class TemplateVariablesTest extends TestCase
         $this->assertStringContainsString('Taller de huerto', $conNombres, 'Y los nombres siguen saliendo como nombres.');
     }
 
+    public function testLosHashtagsRepetidosSalenUnaSolaVez(): void
+    {
+        // Pasó de verdad en la prueba en producción: dos etiquetas de Lugg daban el mismo
+        // hashtag y salía repetido en el mensaje. Lo ven las etiquetas de verdad, no las
+        // inventadas: basta con que dos normalicen igual.
+        $GLOBALS['_cp_test_tags'][7] = ['Centro Social Los Lugg', 'centro social los lugg', 'asturias'];
+
+        $mensaje = $this->sustituir('{hashtags}');
+
+        $this->assertSame(1, substr_count($mensaje, '#centrosocialloslugg'), 'El hashtag repetido sale una sola vez: ' . $mensaje);
+        $this->assertStringContainsString('#asturias', $mensaje, 'Y los demás siguen saliendo.');
+    }
+
     public function testLaEntradillaEsElTextoAnteriorAlSeguirLeyendo(): void
     {
         $mensaje = $this->sustituir('{entradilla}', 'Esto es la entradilla.<!--more-->Y esto el resto.');

@@ -561,9 +561,24 @@ class Publisher
             return '';
         }
 
-        $hashtags = array_map(static function (string $name): string {
-            return '#' . str_replace(['-', '_', ' '], '', sanitize_title($name));
-        }, array_slice($names, 0, $limit));
+        // Dos etiquetas distintas acaban en el mismo hashtag más veces de las que parece: la
+        // variante en minúsculas de la misma frase, o dos que solo se distinguen en un signo.
+        // Se repite una sola vez, y el tope cuenta hashtags distintos, no etiquetas.
+        $hashtags = [];
+
+        foreach ($names as $name) {
+            $tag = '#' . str_replace(['-', '_', ' '], '', sanitize_title((string) $name));
+
+            if (in_array($tag, $hashtags, true)) {
+                continue;
+            }
+
+            $hashtags[] = $tag;
+
+            if (count($hashtags) >= $limit) {
+                break;
+            }
+        }
 
         return implode(' ', $hashtags);
     }
