@@ -11,6 +11,7 @@ class PublisherMessageTest extends TestCase
 
     protected function setUp(): void
     {
+        $GLOBALS['_cp_test_postmeta'] = [];
         // Cada prueba parte sin plantillas: la que fija un caso no puede filtrarse al
         // siguiente (con eso, la suite solo pasaba en el orden en que está escrita).
         delete_option('convoca_publisher_message_template');

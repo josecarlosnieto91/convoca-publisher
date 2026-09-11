@@ -27,17 +27,26 @@ class Scheduler
 {
     public const CRON_HOOK = 'convoca_publisher_scheduled_publish';
 
+    /** Gancho del recolocado por espaciado. */
+    public const SPACING_HOOK = 'convoca_publisher_apply_spacing';
+
     public static function init(): void
     {
         add_filter('cron_schedules', [self::class, 'add_cron_interval']);
         add_action('convoca_publisher_retry_failed_posts', [self::class, 'retry_failed']);
         add_action(self::CRON_HOOK, [self::class, 'publish_scheduled']);
+        // El espaciado se recalcula en cada vuelta: lo que caiga dentro del intervalo
+        // se recoloca solo, sin que nadie tenga que entrar a la cola.
+        add_action(self::SPACING_HOOK, [Queue::class, 'apply_spacing']);
 
         if (!wp_next_scheduled('convoca_publisher_retry_failed_posts')) {
             wp_schedule_event(time(), 'hourly', 'convoca_publisher_retry_failed_posts');
         }
         if (!wp_next_scheduled(self::CRON_HOOK)) {
             wp_schedule_event(time(), 'every_15min', self::CRON_HOOK);
+        }
+        if (!wp_next_scheduled(self::SPACING_HOOK)) {
+            wp_schedule_event(time(), 'every_15min', self::SPACING_HOOK);
         }
     }
 
@@ -55,29 +64,56 @@ class Scheduler
      */
     public static function publish_scheduled(): void
     {
+        // Espaciado: no se sueltan varias publicaciones seguidas. Si el último envío
+        // programado fue hace menos que el intervalo, este turno no se publica nada;
+        // los que estén dentro del intervalo se habrán recolocado solos (Queue).
+        if (!Queue::can_publish_now()) {
+            return;
+        }
+
         global $wpdb;
         $rows = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT post_id, meta_value FROM {$wpdb->postmeta}
-                 WHERE meta_key = '_convoca_publisher_schedule_time'
+                 WHERE meta_key = %s
                  AND meta_value <= %d
                  AND meta_value > 0",
+                Queue::SCHEDULE_META,
                 time()
             )
         );
 
+        // El más antiguo de los que tocan, uno por vuelta: el resto esperan su turno.
+        $elegido = null;
+
         foreach ($rows as $row) {
-            $post_id = (int) $row->post_id;
-            $post = get_post($post_id);
-            if (!$post || $post->post_status !== 'publish') {
-                continue;
+            $cuando = (int) $row->meta_value;
+
+            if (null === $elegido || $cuando < $elegido['time']) {
+                $elegido = ['post_id' => (int) $row->post_id, 'time' => $cuando];
             }
-            $publisher = Publisher::instance();
-            if ($publisher) {
-                $publisher->publish_post($post_id, true);
-            }
-            delete_post_meta($post_id, '_convoca_publisher_schedule_time');
         }
+
+        if (null === $elegido) {
+            return;
+        }
+
+        $post = get_post($elegido['post_id']);
+
+        if (!$post || 'publish' !== $post->post_status) {
+            delete_post_meta($elegido['post_id'], Queue::SCHEDULE_META);
+
+            return;
+        }
+
+        $publisher = Publisher::instance();
+
+        if ($publisher) {
+            $publisher->publish_post($elegido['post_id'], true);
+            Queue::mark_published();
+        }
+
+        delete_post_meta($elegido['post_id'], Queue::SCHEDULE_META);
     }
 
     public static function retry_failed(): void

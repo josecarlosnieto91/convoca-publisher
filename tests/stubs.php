@@ -163,13 +163,39 @@ function wp_get_attachment_image_src(int $attachment_id, string|array $size = 't
 {
     return false;
 }
+$GLOBALS['_cp_test_postmeta'] = [];
+$GLOBALS['_cp_test_posts']    = [];
+$GLOBALS['_cp_test_titles']   = [];
+
 function get_post_meta(int $post_id, string $key = '', bool $single = false): mixed
 {
-    return $single ? '' : [];
+    $valor = $GLOBALS['_cp_test_postmeta'][$post_id][$key] ?? '';
+
+    return $single ? $valor : ('' === $valor ? [] : [$valor]);
 }
 function update_post_meta(int $post_id, string $meta_key, mixed $meta_value, mixed $prev_value = ''): int|bool
 {
+    $GLOBALS['_cp_test_postmeta'][$post_id][$meta_key] = $meta_value;
+
     return true;
+}
+function delete_post_meta(int $post_id, string $meta_key, mixed $meta_value = ''): bool
+{
+    $existia = isset($GLOBALS['_cp_test_postmeta'][$post_id][$meta_key]);
+    unset($GLOBALS['_cp_test_postmeta'][$post_id][$meta_key]);
+
+    return $existia;
+}
+function get_posts(array $args = []): array
+{
+    // El harness no tiene base de datos: devuelve lo que la prueba haya dejado puesto.
+    return $GLOBALS['_cp_test_posts'];
+}
+function get_the_title(int|WP_Post $post = 0): string
+{
+    $id = $post instanceof WP_Post ? $post->ID : (int) $post;
+
+    return (string) ($GLOBALS['_cp_test_titles'][$id] ?? 'Test Post');
 }
 function wp_clear_scheduled_hook(string $hook, array $args = []): bool
 {
@@ -401,7 +427,8 @@ class wpdb
 
     public function get_results(string $query = null, string $output = 'OBJECT'): array
     {
-        return [];
+        // La prueba puede dejar filas en `_cp_test_db['results']` (cola de reintentos).
+        return $GLOBALS['_cp_test_db']['results'] ?? [];
     }
 
     public function get_row(string $query = null, string $output = 'OBJECT', int $y = 0): object|array|null

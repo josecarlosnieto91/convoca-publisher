@@ -22,6 +22,7 @@ class PublisherSchedulingTest extends TestCase
 
     protected function setUp(): void
     {
+        $GLOBALS['_cp_test_postmeta'] = [];
         $this->loadClass();
     }
 

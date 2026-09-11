@@ -43,13 +43,23 @@ class Retry
     /** @var array<int, int> Backoff por defecto en horas (1h, 4h, 12h, 24h, 72h). */
     private const DEFAULT_BACKOFF_HOURS = [1, 4, 12, 24, 72];
 
-    private const STATUS_PENDING = 'pending';
+    public const STATUS_PENDING = 'pending';
 
-    private const STATUS_PROCESSING = 'processing';
+    public const STATUS_PROCESSING = 'processing';
 
     private const STATUS_PENDING_REVIEW = 'pending_review';
 
-    private const STATUS_FAILED = 'failed';
+    public const STATUS_FAILED = 'failed';
+
+    /**
+     * Nombre completo de la tabla de la cola (con el prefijo del sitio).
+     */
+    public static function table_name(): string
+    {
+        global $wpdb;
+
+        return $wpdb->prefix . self::TABLE;
+    }
 
     public static function init(): void
     {

@@ -81,6 +81,7 @@ namespace ConvocaPublisher\Tests {
 
         protected function setUp(): void
         {
+            $GLOBALS['_cp_test_postmeta'] = [];
             if (!class_exists(\ConvocaPublisher\Plugin::class)) {
                 require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/class-plugin.php';
             }
