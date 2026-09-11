@@ -1431,21 +1431,22 @@ class Admin
         $hoy   = new \DateTimeImmutable('now', wp_timezone());
         $mes   = isset($_GET['mes']) ? max(1, min(12, (int) $_GET['mes'])) : (int) $hoy->format('n');
         $anio  = isset($_GET['anio']) ? max(2020, min(2100, (int) $_GET['anio'])) : (int) $hoy->format('Y');
+        $dia   = isset($_GET['dia']) ? max(1, min(31, (int) $_GET['dia'])) : (int) $hoy->format('j');
         ?>
         <p class="description">
             <?php echo esc_html__('Una entrada puede salir en varias cuentas: cada una es un envío. Arrastra un envío a otro día para reprogramarlo, o hazlo desde la lista de abajo.', 'convoca-publisher'); ?>
         </p>
 
         <div class="cp-cal__barra">
-            <a class="button" href="<?php echo esc_url(self::queue_url($vista, $anio, $mes, -1)); ?>">&larr;</a>
+            <a class="button" href="<?php echo esc_url(self::queue_url($vista, $anio, $mes, $dia, -1)); ?>">&larr;</a>
             <strong class="cp-cal__titulo">
-                <?php echo esc_html('semana' === $vista ? __('Semana del ', 'convoca-publisher') . self::queue_week_start($anio, $mes)->format('d/m/Y') : self::queue_month_name($anio, $mes)); ?>
+                <?php echo esc_html('semana' === $vista ? __('Semana del ', 'convoca-publisher') . self::queue_week_start($anio, $mes, $dia)->format('d/m/Y') : self::queue_month_name($anio, $mes)); ?>
             </strong>
-            <a class="button" href="<?php echo esc_url(self::queue_url($vista, $anio, $mes, 1)); ?>">&rarr;</a>
-            <a class="button" href="<?php echo esc_url(self::tab_url('queue', ['vista' => 'mes', 'anio' => (int) $hoy->format('Y'), 'mes' => (int) $hoy->format('n')])); ?>"><?php echo esc_html__('Hoy', 'convoca-publisher'); ?></a>
+            <a class="button" href="<?php echo esc_url(self::queue_url($vista, $anio, $mes, $dia, 1)); ?>">&rarr;</a>
+            <a class="button" href="<?php echo esc_url(self::tab_url('queue', ['vista' => 'mes', 'anio' => (int) $hoy->format('Y'), 'mes' => (int) $hoy->format('n'), 'dia' => (int) $hoy->format('j')])); ?>"><?php echo esc_html__('Hoy', 'convoca-publisher'); ?></a>
             <span class="cp-cal__vistas">
-                <a class="button <?php echo 'mes' === $vista ? 'button-primary' : ''; ?>" href="<?php echo esc_url(self::tab_url('queue', ['vista' => 'mes', 'anio' => $anio, 'mes' => $mes])); ?>"><?php echo esc_html__('Mes', 'convoca-publisher'); ?></a>
-                <a class="button <?php echo 'semana' === $vista ? 'button-primary' : ''; ?>" href="<?php echo esc_url(self::tab_url('queue', ['vista' => 'semana', 'anio' => $anio, 'mes' => $mes])); ?>"><?php echo esc_html__('Semana', 'convoca-publisher'); ?></a>
+                <a class="button <?php echo 'mes' === $vista ? 'button-primary' : ''; ?>" href="<?php echo esc_url(self::tab_url('queue', ['vista' => 'mes', 'anio' => $anio, 'mes' => $mes, 'dia' => $dia])); ?>"><?php echo esc_html__('Mes', 'convoca-publisher'); ?></a>
+                <a class="button <?php echo 'semana' === $vista ? 'button-primary' : ''; ?>" href="<?php echo esc_url(self::tab_url('queue', ['vista' => 'semana', 'anio' => $anio, 'mes' => $mes, 'dia' => $dia])); ?>"><?php echo esc_html__('Semana', 'convoca-publisher'); ?></a>
             </span>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-cal__recolocar">
                 <input type="hidden" name="action" value="cp_queue_spacing" />
@@ -1463,7 +1464,7 @@ class Admin
 
         <?php
         if ('semana' === $vista) {
-            self::render_queue_week($anio, $mes);
+            self::render_queue_week($anio, $mes, $dia);
         } else {
             self::render_queue_month($anio, $mes);
         }
@@ -1614,9 +1615,9 @@ class Admin
         self::render_queue_grid($dias, $porDia);
     }
 
-    private static function render_queue_week(int $year, int $month): void
+    private static function render_queue_week(int $year, int $month, int $day): void
     {
-        $start = self::queue_week_start($year, $month);
+        $start = self::queue_week_start($year, $month, $day);
 
         $dias = [];
 
@@ -1629,14 +1630,13 @@ class Admin
         self::render_queue_grid($dias, $porDia);
     }
 
-    private static function queue_week_start(int $year, int $month): \DateTimeImmutable
+    /**
+     * El lunes de la semana a la que pertenece un día (el día manda: sin él, la vista de
+     * semana no podría avanzar, siempre caería en la semana del día que se le pase).
+     */
+    private static function queue_week_start(int $year, int $month, int $day): \DateTimeImmutable
     {
-        $ref = new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month), wp_timezone());
-        $hoy = new \DateTimeImmutable('now', wp_timezone());
-
-        if ((int) $ref->format('n') === (int) $hoy->format('n') && (int) $ref->format('Y') === (int) $hoy->format('Y')) {
-            $ref = $hoy;
-        }
+        $ref = new \DateTimeImmutable(sprintf('%04d-%02d-%02d', $year, $month, max(1, min(31, $day))), wp_timezone());
 
         return $ref->modify('-' . ((int) $ref->format('N') - 1) . ' days')->setTime(0, 0);
     }
@@ -1651,12 +1651,21 @@ class Admin
     /**
      * Enlace del calendario (mes anterior o siguiente, según el paso).
      */
-    private static function queue_url(string $vista, int $year, int $month, int $paso): string
+    private static function queue_url(string $vista, int $year, int $month, int $day, int $paso): string
     {
-        $ref = new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month), wp_timezone());
-        $ref = $ref->modify(('semana' === $vista ? ($paso > 0 ? '+1 week' : '-1 week') : ($paso > 0 ? '+1 month' : '-1 month')));
+        if ('semana' === $vista) {
+            $ref = self::queue_week_start($year, $month, $day)->modify($paso > 0 ? '+7 days' : '-7 days');
+        } else {
+            $ref = (new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month), wp_timezone()))
+                ->modify($paso > 0 ? '+1 month' : '-1 month');
+        }
 
-        return self::tab_url('queue', ['vista' => $vista, 'anio' => (int) $ref->format('Y'), 'mes' => (int) $ref->format('n')]);
+        return self::tab_url('queue', [
+            'vista' => $vista,
+            'anio'  => (int) $ref->format('Y'),
+            'mes'   => (int) $ref->format('n'),
+            'dia'   => (int) $ref->format('j'),
+        ]);
     }
 
     /**

@@ -155,6 +155,39 @@ namespace ConvocaPublisher\Tests {
             $this->assertStringNotContainsString('Ajustes', $html);
         }
 
+
+        public function testLaSemanaAvanzaYNoVuelveSiempreAlPrincipio(): void
+        {
+            [, $cuando] = $this->escenario(3);
+
+            $lunes = wp_date('Y-m-d', $cuando);
+            $lunes = new \DateTimeImmutable($lunes, wp_timezone());
+            $lunes = $lunes->modify('-' . ((int) $lunes->format('N') - 1) . ' days');
+
+            $html = $this->render([
+                'vista' => 'semana',
+                'anio'  => (int) wp_date('Y', $cuando),
+                'mes'   => (int) wp_date('n', $cuando),
+                'dia'   => (int) wp_date('j', $cuando),
+            ]);
+
+            $this->assertStringContainsString('data-cp-envio="schedule:', $html, 'La semana del envio lo trae.');
+            $this->assertStringContainsString('data-cp-dia="' . wp_date('Y-m-d', $cuando) . '"', $html);
+            $this->assertSame(7, substr_count($html, 'data-cp-dia="'));
+
+            // Los enlaces llevan el día: sin él, la vista volvería siempre a la primera semana.
+            $this->assertStringContainsString(
+                'dia=' . $lunes->modify('+7 days')->format('j'),
+                $html,
+                'Avanzar de semana lleva el día de la semana siguiente.'
+            );
+            $this->assertStringContainsString(
+                'dia=' . $lunes->modify('-7 days')->format('j'),
+                $html,
+                'Retroceder de semana lleva el día de la semana anterior.'
+            );
+        }
+
         // ── Qué día y qué hora (lo que rompe las fechas) ────────────────────
 
         public function testUnDiaDelCalendarioSeConvierteEnSuMananaDelSitio(): void
