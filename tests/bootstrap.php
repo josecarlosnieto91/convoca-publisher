@@ -23,6 +23,7 @@ require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/channels/class-telegram.ph
 require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/channels/class-mastodon.php';
 require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/class-crypto.php';
 require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/class-scheduler.php';
+require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/class-log-view.php';
 
 // Apoyo de las pruebas (canales de mentira, etc.). Va al final: implementa la interfaz de canal.
 require_once __DIR__ . '/Support/FakeChannel.php';

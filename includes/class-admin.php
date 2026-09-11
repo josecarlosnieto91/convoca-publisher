@@ -27,6 +27,7 @@ class Admin
         add_action('admin_init', [self::class, 'register_settings']);
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
         add_action('admin_action_cp_delete_log', [self::class, 'handle_delete_log']);
+        add_action('admin_action_cp_retry_log', [self::class, 'handle_retry_log']);
         add_action('admin_post_cp_verify_channel', [self::class, 'handle_verify_channel']);
         add_action('admin_post_cp_save_account', [self::class, 'handle_save_account']);
         add_action('admin_post_cp_delete_account', [self::class, 'handle_delete_account']);
@@ -1031,47 +1032,171 @@ class Admin
         <?php
     }
 
+    /**
+     * Historial de publicaciones: con filtros por red, cuenta y estado, y reintento de lo que falló.
+     */
     public static function render_log_page(): void
     {
         $logs = get_option('convoca_publisher_publish_log', []);
+        $logs = is_array($logs) ? $logs : [];
+
+        $redes   = [];
+        $nombres = [];
+
+        foreach (Plugin::accounts() as $id => $cuenta) {
+            $redes[(string) $id]   = $cuenta->get_channel_id();
+            $nombres[(string) $id] = $cuenta->get_name();
+        }
+
+        // Solo se lee para filtrar la vista: no cambia nada, así que no hay nada que verificar.
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $red    = isset($_GET['cp-red']) ? sanitize_key(wp_unslash((string) $_GET['cp-red'])) : '';
+        $cuenta = isset($_GET['cp-cuenta']) ? sanitize_text_field(wp_unslash((string) $_GET['cp-cuenta'])) : '';
+        $estado = isset($_GET['cp-estado']) ? sanitize_key(wp_unslash((string) $_GET['cp-estado'])) : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+        $datos = Admin\Log_View::facets($logs, $redes);
+        $vista = Admin\Log_View::filter($logs, [
+            'network'  => $red,
+            'account'  => $cuenta,
+            'status'   => $estado,
+            'networks' => $redes,
+        ]);
+
+        $aviso = get_transient('convoca_publisher_queue_notice_' . get_current_user_id());
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('Historial de publicaciones', 'convoca-publisher'); ?></h1>
-            <?php if (empty($logs)): ?>
+
+            <?php if (is_string($aviso) && '' !== $aviso): ?>
+                <div class="notice notice-info is-dismissible"><p><?php echo esc_html($aviso); ?></p></div>
+                <?php delete_transient('convoca_publisher_queue_notice_' . get_current_user_id()); ?>
+            <?php endif; ?>
+
+            <?php if (0 === $datos['total']): ?>
                 <p><?php echo esc_html__('No hay publicaciones registradas todavía.', 'convoca-publisher'); ?></p>
             <?php else: ?>
-                <p>
+                <form method="get" class="cp-filters">
+                    <input type="hidden" name="page" value="convoca-publisher-log" />
+                    <label for="cp-red"><?php echo esc_html__('Red', 'convoca-publisher'); ?></label>
+                    <select name="cp-red" id="cp-red">
+                        <option value=""><?php echo esc_html__('Todas', 'convoca-publisher'); ?></option>
+                        <?php foreach ($datos['networks'] as $id_red): ?>
+                            <option value="<?php echo esc_attr($id_red); ?>" <?php selected($red, $id_red); ?>><?php echo esc_html($id_red); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <label for="cp-cuenta"><?php echo esc_html__('Cuenta', 'convoca-publisher'); ?></label>
+                    <select name="cp-cuenta" id="cp-cuenta">
+                        <option value=""><?php echo esc_html__('Todas', 'convoca-publisher'); ?></option>
+                        <?php foreach ($datos['accounts'] as $id_cuenta => $etiqueta): ?>
+                            <option value="<?php echo esc_attr($id_cuenta); ?>" <?php selected($cuenta, (string) $id_cuenta); ?>><?php echo esc_html(Admin\Log_View::label((string) $id_cuenta, $redes, $nombres)); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <label for="cp-estado"><?php echo esc_html__('Resultado', 'convoca-publisher'); ?></label>
+                    <select name="cp-estado" id="cp-estado">
+                        <option value=""><?php echo esc_html__('Todos', 'convoca-publisher'); ?></option>
+                        <option value="ok" <?php selected($estado, 'ok'); ?>><?php echo esc_html__('Salió', 'convoca-publisher'); ?> (<?php echo (int) $datos['statuses']['ok']; ?>)</option>
+                        <option value="fail" <?php selected($estado, 'fail'); ?>><?php echo esc_html__('Falló', 'convoca-publisher'); ?> (<?php echo (int) $datos['statuses']['fail']; ?>)</option>
+                    </select>
+
+                    <button type="submit" class="button"><?php echo esc_html__('Filtrar', 'convoca-publisher'); ?></button>
+                    <?php if ('' !== $red || '' !== $cuenta || '' !== $estado): ?>
+                        <a class="button-link" href="<?php echo esc_url(admin_url('admin.php?page=convoca-publisher-log')); ?>"><?php echo esc_html__('Quitar filtros', 'convoca-publisher'); ?></a>
+                    <?php endif; ?>
+                </form>
+
+                <p class="cp-filters__count">
+                    <?php
+                    printf(
+                        /* translators: 1: cuántas filas se ven, 2: cuántas hay en total. */
+                        esc_html__('Mostrando %1$d de %2$d.', 'convoca-publisher'),
+                        count($vista),
+                        (int) $datos['total']
+                    );
+        ?>
                     <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin.php?action=convoca_publisher_delete_log'), 'convoca_publisher_delete_log')); ?>" class="button" onclick="return confirm('<?php echo esc_js(__('¿Borrar todo el historial?', 'convoca-publisher')); ?>');">
                         <?php echo esc_html__('Limpiar historial', 'convoca-publisher'); ?>
                     </a>
                 </p>
-                <div class="cp-log__scroll">
-                    <?php foreach (array_reverse($logs) as $log): ?>
-                        <div class="cp-log__row">
-                            <span class="cp-status <?php echo !empty($log['success']) ? 'ok' : 'fail'; ?>">
-                                <?php echo !empty($log['success']) ? 'OK' : 'FAIL'; ?>
-                            </span>
-                            <span class="cp-log__time"><?php echo isset($log['time']) ? esc_html($log['time']) : ''; ?></span>
-                            <span class="cp-log__channel"><?php echo isset($log['channel']) ? esc_html($log['channel']) : ''; ?></span>
-                            <span class="cp-log__title"><?php echo isset($log['title']) ? esc_html($log['title']) : ''; ?></span>
-                            <span class="cp-log__id"><?php echo esc_html__('Post #', 'convoca-publisher') . (isset($log['post_id']) ? intval($log['post_id']) : ''); ?></span>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+
+                <?php if ([] === $vista): ?>
+                    <p><?php echo esc_html__('Con esos filtros no hay nada.', 'convoca-publisher'); ?></p>
+                <?php else: ?>
+                    <div class="cp-log__scroll">
+                        <?php foreach (array_reverse($vista) as $log): ?>
+                            <div class="cp-log__row">
+                                <span class="cp-status <?php echo !empty($log['success']) ? 'ok' : 'fail'; ?>">
+                                    <?php echo !empty($log['success']) ? 'OK' : 'FAIL'; ?>
+                                </span>
+                                <span class="cp-log__time"><?php echo isset($log['time']) ? esc_html((string) $log['time']) : ''; ?></span>
+                                <span class="cp-log__channel"><?php echo esc_html(Admin\Log_View::label((string) ($log['channel'] ?? ''), $redes, $nombres)); ?></span>
+                                <span class="cp-log__title"><?php echo isset($log['title']) ? esc_html((string) $log['title']) : ''; ?></span>
+                                <span class="cp-log__id"><?php echo esc_html__('Entrada', 'convoca-publisher') . ' #' . (int) ($log['post_id'] ?? 0); ?></span>
+                                <?php if (Admin\Log_View::retryable($log)): ?>
+                                    <a class="cp-log__retry button-link" href="<?php
+                            echo esc_url(wp_nonce_url(
+                                admin_url('admin.php?action=convoca_publisher_retry_log&post=' . (int) $log['post_id'] . '&channel=' . rawurlencode((string) $log['channel'])),
+                                'convoca_publisher_retry_log_' . (int) $log['post_id'] . '_' . (string) $log['channel']
+                            ));
+                                    ?>"><?php echo esc_html__('Reintentar', 'convoca-publisher'); ?></a>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>
-            
-            <!-- Retry queue stats -->
+
             <?php if (class_exists(Retry::class)):
                 $stats = Retry::get_queue_stats();
                 if ($stats['pending'] > 0 || $stats['failed'] > 0): ?>
                 <div class="cp-section">
                     <h2><?php echo esc_html__('Cola de reintentos', 'convoca-publisher'); ?></h2>
-                    <p><?php echo esc_html__('Pendientes: ', 'convoca-publisher') . intval($stats['pending']); ?> | 
+                    <p><?php echo esc_html__('Pendientes: ', 'convoca-publisher') . intval($stats['pending']); ?> |
                     <?php echo esc_html__('Fallidos: ', 'convoca-publisher') . intval($stats['failed']); ?></p>
                 </div>
             <?php endif; endif; ?>
         </div>
         <?php
+    }
+
+    /**
+     * Reintentar un envío que falló, desde el historial.
+     */
+    public static function handle_retry_log(): void
+    {
+        $post_id = isset($_GET['post']) ? (int) $_GET['post'] : 0;
+        $canal   = isset($_GET['channel']) ? sanitize_text_field(wp_unslash((string) $_GET['channel'])) : '';
+
+        if ($post_id <= 0 || '' === $canal || !current_user_can('edit_post', $post_id)) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+
+        check_admin_referer('convoca_publisher_retry_log_' . $post_id . '_' . $canal);
+
+        $publicador = Publisher::instance();
+        $resultado  = $publicador ? $publicador->publish_to_accounts($post_id, [$canal], true, true) : [];
+        $salio      = !empty($resultado[$canal]['success']);
+
+        foreach (Plugin::accounts() as $id => $cuenta) {
+            if ((string) $id === $canal) {
+                $nombre = $cuenta->get_name();
+                break;
+            }
+        }
+
+        set_transient(
+            'convoca_publisher_queue_notice_' . get_current_user_id(),
+            $salio
+                /* translators: %s: nombre de la cuenta. */
+                ? sprintf(__('Reenviado a %s.', 'convoca-publisher'), $nombre ?? $canal)
+                /* translators: %s: nombre de la cuenta. */
+                : sprintf(__('No se pudo reenviar a %s. El motivo está en el historial.', 'convoca-publisher'), $nombre ?? $canal),
+            30
+        );
+        wp_safe_redirect(admin_url('admin.php?page=convoca-publisher-log'));
+        exit;
     }
 
     public static function render_about_page(): void

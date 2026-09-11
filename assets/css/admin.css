@@ -652,3 +652,28 @@
 		background: #2c2c2c;
 	}
 }
+
+/* Historial: barra de filtros y reintento. */
+.cp-filters {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 12px 0 6px;
+}
+
+.cp-filters select {
+	max-width: 220px;
+}
+
+.cp-filters__count {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	color: #50575e;
+}
+
+.cp-log__retry {
+	margin-left: auto;
+}
