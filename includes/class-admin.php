@@ -30,6 +30,9 @@ class Admin
         add_action('admin_post_cp_verify_channel', [self::class, 'handle_verify_channel']);
         add_action('admin_post_cp_save_account', [self::class, 'handle_save_account']);
         add_action('admin_post_cp_delete_account', [self::class, 'handle_delete_account']);
+        add_action('admin_post_cp_queue_reschedule', [self::class, 'handle_queue_reschedule']);
+        add_action('admin_post_cp_queue_cancel', [self::class, 'handle_queue_cancel']);
+        add_action('admin_post_cp_queue_spacing', [self::class, 'handle_queue_spacing']);
         add_action('admin_post_cp_approve_review', [self::class, 'handle_approve_review']);
         add_action('admin_post_cp_reject_review', [self::class, 'handle_reject_review']);
     }
@@ -88,6 +91,12 @@ class Admin
             }
         }
 
+        register_setting('convoca_publisher_settings', 'convoca_publisher_queue_interval', [
+            'type'              => 'integer',
+            'sanitize_callback' => [self::class, 'sanitize_queue_interval'],
+            'show_in_rest'      => false,
+            'default'           => Queue::DEFAULT_INTERVAL,
+        ]);
         register_setting('convoca_publisher_settings', 'convoca_publisher_message_template', [
             'type' => 'string', 'default' => '{title} — {url}',
         ]);
@@ -121,6 +130,14 @@ class Admin
      *
      * @param mixed $value
      */
+    /**
+     * Ajuste: cada cuánto como mínimo entre envíos (en segundos; 0 = sin espaciado).
+     */
+    public static function sanitize_queue_interval($value): int
+    {
+        return Queue::save_interval((int) $value);
+    }
+
     public static function sanitize_moderation_mode($value): string
     {
         $value = (string) $value;
@@ -234,6 +251,7 @@ class Admin
 
         $tabs = [
             'channels'   => __('Canales', 'convoca-publisher'),
+            'queue'      => __('Cola', 'convoca-publisher'),
             'settings'   => __('Configuración', 'convoca-publisher'),
             'templates'  => __('Plantillas', 'convoca-publisher'),
             'test'       => __('Probar', 'convoca-publisher'),
@@ -254,6 +272,9 @@ class Admin
 
             <?php
             switch ($active_tab) {
+                case 'queue':
+                    self::render_queue_tab();
+                    break;
                 case 'settings':
                     self::render_settings_tab();
                     break;
@@ -491,7 +512,7 @@ class Admin
         ?>
         <form method="post" action="options.php">
             <?php settings_fields('convoca_publisher_settings'); ?>
-            
+
             <!-- Aviso de privacidad -->
             <div class="cp-notice cp-notice--warn">
                 <h3><?php echo esc_html__('🔐 Aviso de privacidad', 'convoca-publisher'); ?></h3>
@@ -515,6 +536,17 @@ class Admin
                                 <input type="checkbox" name="convoca_publisher_auto_publish" value="1" <?php checked(get_option('convoca_publisher_auto_publish', true)); ?> />
                                 <?php echo esc_html__('Publicar automáticamente al publicar una entrada', 'convoca-publisher'); ?>
                             </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="convoca_publisher_queue_interval"><?php echo esc_html__('Espaciado entre envíos', 'convoca-publisher'); ?></label></th>
+                        <td>
+                            <select name="convoca_publisher_queue_interval" id="convoca_publisher_queue_interval">
+                                <?php foreach ([0 => __('Sin espaciado', 'convoca-publisher'), 900 => __('15 minutos', 'convoca-publisher'), 1800 => __('30 minutos', 'convoca-publisher'), 3600 => __('1 hora', 'convoca-publisher'), 7200 => __('2 horas', 'convoca-publisher')] as $segundos => $etiqueta) : ?>
+                                    <option value="<?php echo esc_attr((string) $segundos); ?>" <?php selected(Queue::interval(), $segundos); ?>><?php echo esc_html($etiqueta); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="description"><?php echo esc_html__('Cuánto tiene que pasar, como mínimo, entre dos publicaciones, para no soltar varias de golpe. Lo que caiga dentro se recoloca solo.', 'convoca-publisher'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -1378,4 +1410,490 @@ class Admin
         wp_safe_redirect(self::tab_url('channels'));
         exit;
     }
+
+    /**
+     * La cola: calendario de lo que va a salir y lista con lo que espera, lo que falló y lo
+     * que ya salió. Se puede reprogramar (o arrastrar a otro día) y quitar de la cola sin
+     * entrar en la entrada.
+     */
+    private static function render_queue_tab(): void
+    {
+        $aviso = get_transient('convoca_publisher_queue_notice_' . get_current_user_id());
+
+        if (false !== $aviso) {
+            delete_transient('convoca_publisher_queue_notice_' . get_current_user_id());
+            ?>
+            <div class="notice notice-success is-dismissible"><p><?php echo esc_html((string) $aviso); ?></p></div>
+            <?php
+        }
+
+        $vista = isset($_GET['vista']) ? sanitize_key(wp_unslash((string) $_GET['vista'])) : 'mes';
+        $hoy   = new \DateTimeImmutable('now', wp_timezone());
+        $mes   = isset($_GET['mes']) ? max(1, min(12, (int) $_GET['mes'])) : (int) $hoy->format('n');
+        $anio  = isset($_GET['anio']) ? max(2020, min(2100, (int) $_GET['anio'])) : (int) $hoy->format('Y');
+        ?>
+        <p class="description">
+            <?php echo esc_html__('Una entrada puede salir en varias cuentas: cada una es un envío. Arrastra un envío a otro día para reprogramarlo, o hazlo desde la lista de abajo.', 'convoca-publisher'); ?>
+        </p>
+
+        <div class="cp-cal__barra">
+            <a class="button" href="<?php echo esc_url(self::queue_url($vista, $anio, $mes, -1)); ?>">&larr;</a>
+            <strong class="cp-cal__titulo">
+                <?php echo esc_html('semana' === $vista ? __('Semana del ', 'convoca-publisher') . self::queue_week_start($anio, $mes)->format('d/m/Y') : self::queue_month_name($anio, $mes)); ?>
+            </strong>
+            <a class="button" href="<?php echo esc_url(self::queue_url($vista, $anio, $mes, 1)); ?>">&rarr;</a>
+            <a class="button" href="<?php echo esc_url(self::tab_url('queue', ['vista' => 'mes', 'anio' => (int) $hoy->format('Y'), 'mes' => (int) $hoy->format('n')])); ?>"><?php echo esc_html__('Hoy', 'convoca-publisher'); ?></a>
+            <span class="cp-cal__vistas">
+                <a class="button <?php echo 'mes' === $vista ? 'button-primary' : ''; ?>" href="<?php echo esc_url(self::tab_url('queue', ['vista' => 'mes', 'anio' => $anio, 'mes' => $mes])); ?>"><?php echo esc_html__('Mes', 'convoca-publisher'); ?></a>
+                <a class="button <?php echo 'semana' === $vista ? 'button-primary' : ''; ?>" href="<?php echo esc_url(self::tab_url('queue', ['vista' => 'semana', 'anio' => $anio, 'mes' => $mes])); ?>"><?php echo esc_html__('Semana', 'convoca-publisher'); ?></a>
+            </span>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-cal__recolocar">
+                <input type="hidden" name="action" value="cp_queue_spacing" />
+                <?php wp_nonce_field('convoca_publisher_queue_spacing'); ?>
+                <button type="submit" class="button"><?php echo esc_html__('Recolocar ahora', 'convoca-publisher'); ?></button>
+            </form>
+        </div>
+
+        <form id="cp-cal-form" class="cp-hidden" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <input type="hidden" name="action" value="cp_queue_reschedule" />
+            <input type="hidden" name="cp_envio" value="" />
+            <input type="hidden" name="cp_dia" value="" />
+            <?php wp_nonce_field('convoca_publisher_queue_reschedule'); ?>
+        </form>
+
+        <?php
+        if ('semana' === $vista) {
+            self::render_queue_week($anio, $mes);
+        } else {
+            self::render_queue_month($anio, $mes);
+        }
+
+        self::render_queue_list();
+    }
+
+    /**
+     * Envíos de un rango de días, agrupados por día natural del sitio.
+     *
+     * @return array<string, array<int, array<string, mixed>>>
+     */
+    private static function queue_by_day(int $from, int $to): array
+    {
+        $entradas = Queue::scheduled_entries($from, $to);
+
+        foreach (Queue::retry_entries() as $reintento) {
+            if (($reintento['time'] ?? 0) >= $from && ($reintento['time'] ?? 0) <= $to) {
+                $entradas[] = $reintento;
+            }
+        }
+
+        foreach (Queue::sent_entries() as $salio) {
+            $cuando = (int) strtotime($salio['time']);
+
+            if ($cuando >= $from && $cuando <= $to) {
+                $entradas[] = [
+                    'kind'         => 'sent',
+                    'time'         => $cuando,
+                    'title'        => $salio['title'],
+                    'account_name' => $salio['account'],
+                    'success'      => $salio['success'],
+                ];
+            }
+        }
+
+        $porDia = [];
+
+        foreach ($entradas as $entrada) {
+            $porDia[wp_date('Y-m-d', (int) $entrada['time'])][] = $entrada;
+        }
+
+        return $porDia;
+    }
+
+    /**
+     * Rejilla del calendario (la usan la vista de mes y la de semana).
+     *
+     * @param array<int, \DateTimeImmutable> $dias
+     */
+    private static function render_queue_grid(array $dias, array $porDia): void
+    {
+        $hoy = wp_date('Y-m-d');
+        ?>
+        <table class="cp-cal">
+            <thead>
+                <tr>
+                    <?php foreach ($dias as $indice => $dia) : ?>
+                        <?php if ($indice < 7) : ?>
+                            <th scope="col"><?php echo esc_html(wp_date('D', $dia->getTimestamp())); ?></th>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach (array_chunk($dias, 7) as $semana) : ?>
+                    <tr>
+                        <?php foreach ($semana as $dia) : ?>
+                            <?php
+                            $fecha = $dia->format('Y-m-d');
+                            $clase = 'cp-cal__dia';
+
+                            if ($fecha === $hoy) {
+                                $clase .= ' cp-cal__hoy';
+                            }
+                            ?>
+                            <td class="<?php echo esc_attr($clase); ?>" data-cp-dia="<?php echo esc_attr($fecha); ?>">
+                                <div class="cp-cal__day-number"><?php echo esc_html($dia->format('j')); ?></div>
+                                <?php foreach ($porDia[$fecha] ?? [] as $envio) : ?>
+                                    <?php echo self::queue_entry_html($envio); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
+                                <?php endforeach; ?>
+                            </td>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php
+    }
+
+    /**
+     * Un envío dentro del calendario (movible si todavía no ha salido).
+     *
+     * @param array<string, mixed> $envio
+     */
+    private static function queue_entry_html(array $envio): string
+    {
+        $kind  = (string) ($envio['kind'] ?? 'schedule');
+        $clase = 'cp-cal__envio';
+        $ref   = '';
+        $pista = '';
+
+        if ('sent' === $kind) {
+            $clase .= !empty($envio['success']) ? ' cp-cal__envio--hecho' : ' cp-cal__envio--fallo';
+        } elseif ('retry' === $kind && 'failed' === ($envio['status'] ?? '')) {
+            $clase      .= ' cp-cal__envio--fallo';
+            $ref         = 'retry:' . (int) ($envio['id'] ?? 0);
+            $pista       = (string) ($envio['error'] ?? '');
+        } else {
+            if ('retry' === $kind) {
+                $ref = 'retry:' . (int) ($envio['id'] ?? 0);
+            } else {
+                $ref = 'schedule:' . (int) ($envio['post_id'] ?? 0);
+            }
+        }
+
+        $texto = sprintf(
+            '%s · %s — %s',
+            wp_date('H:i', (int) ($envio['time'] ?? 0)),
+            (string) ($envio['account_name'] ?? ''),
+            (string) ($envio['title'] ?? '')
+        );
+
+        return sprintf(
+            '<span class="%1$s"%2$s draggable="%3$s" title="%4$s">%5$s</span>',
+            esc_attr($clase),
+            '' !== $ref ? ' data-cp-envio="' . esc_attr($ref) . '"' : '',
+            '' !== $ref ? 'true' : 'false',
+            esc_attr(trim($texto . ('' !== $pista ? ' — ' . $pista : ''))),
+            esc_html($texto)
+        );
+    }
+
+    private static function render_queue_month(int $year, int $month): void
+    {
+        $tz    = wp_timezone();
+        $start = new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month), $tz);
+        $start = $start->modify('-' . ((int) $start->format('N') - 1) . ' days');
+
+        $dias = [];
+
+        for ($i = 0; $i < 42; ++$i) {
+            $dias[] = $start->modify('+' . $i . ' days');
+        }
+
+        $porDia = self::queue_by_day($start->getTimestamp(), $start->modify('+42 days')->getTimestamp());
+
+        self::render_queue_grid($dias, $porDia);
+    }
+
+    private static function render_queue_week(int $year, int $month): void
+    {
+        $start = self::queue_week_start($year, $month);
+
+        $dias = [];
+
+        for ($i = 0; $i < 7; ++$i) {
+            $dias[] = $start->modify('+' . $i . ' days');
+        }
+
+        $porDia = self::queue_by_day($start->getTimestamp(), $start->modify('+7 days')->getTimestamp());
+
+        self::render_queue_grid($dias, $porDia);
+    }
+
+    private static function queue_week_start(int $year, int $month): \DateTimeImmutable
+    {
+        $ref = new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month), wp_timezone());
+        $hoy = new \DateTimeImmutable('now', wp_timezone());
+
+        if ((int) $ref->format('n') === (int) $hoy->format('n') && (int) $ref->format('Y') === (int) $hoy->format('Y')) {
+            $ref = $hoy;
+        }
+
+        return $ref->modify('-' . ((int) $ref->format('N') - 1) . ' days')->setTime(0, 0);
+    }
+
+    private static function queue_month_name(int $year, int $month): string
+    {
+        $fecha = new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month), wp_timezone());
+
+        return wp_date('F Y', $fecha->getTimestamp());
+    }
+
+    /**
+     * Enlace del calendario (mes anterior o siguiente, según el paso).
+     */
+    private static function queue_url(string $vista, int $year, int $month, int $paso): string
+    {
+        $ref = new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month), wp_timezone());
+        $ref = $ref->modify(('semana' === $vista ? ($paso > 0 ? '+1 week' : '-1 week') : ($paso > 0 ? '+1 month' : '-1 month')));
+
+        return self::tab_url('queue', ['vista' => $vista, 'anio' => (int) $ref->format('Y'), 'mes' => (int) $ref->format('n')]);
+    }
+
+    /**
+     * La lista de la cola: lo que espera turno, lo que falló y lo último que salió.
+     */
+    private static function render_queue_list(): void
+    {
+        $ahora = time();
+        $proximos = array_merge(Queue::scheduled_entries($ahora - DAY_IN_SECONDS, $ahora + (90 * DAY_IN_SECONDS)), Queue::retry_entries());
+        $futuros  = array_values(array_filter($proximos, static fn(array $e): bool => (int) ($e['time'] ?? 0) >= $ahora));
+        $fallidos = array_values(array_filter($proximos, static fn(array $e): bool => (int) ($e['time'] ?? 0) < $ahora));
+
+        usort($futuros, static fn(array $a, array $b): int => ($a['time'] ?? 0) <=> ($b['time'] ?? 0));
+        usort($fallidos, static fn(array $a, array $b): int => ($b['time'] ?? 0) <=> ($a['time'] ?? 0));
+        ?>
+        <h2><?php echo esc_html__('Lo que espera turno', 'convoca-publisher'); ?></h2>
+        <?php self::render_queue_table($futuros, false); ?>
+
+        <?php if ([] !== $fallidos) : ?>
+            <h2><?php echo esc_html__('Atascado: toca revisarlo', 'convoca-publisher'); ?></h2>
+            <?php self::render_queue_table($fallidos, true); ?>
+        <?php endif; ?>
+
+        <h2><?php echo esc_html__('Lo último que salió', 'convoca-publisher'); ?></h2>
+        <table class="wp-list-table widefat striped">
+            <thead>
+                <tr>
+                    <th scope="col"><?php echo esc_html__('Cuándo', 'convoca-publisher'); ?></th>
+                    <th scope="col"><?php echo esc_html__('Cuenta', 'convoca-publisher'); ?></th>
+                    <th scope="col"><?php echo esc_html__('Entrada', 'convoca-publisher'); ?></th>
+                    <th scope="col"><?php echo esc_html__('Resultado', 'convoca-publisher'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach (array_slice(Queue::sent_entries(20), 0, 20) as $salio) : ?>
+                    <tr>
+                        <td><?php echo esc_html($salio['time']); ?></td>
+                        <td><?php echo esc_html($salio['account']); ?></td>
+                        <td><?php echo esc_html($salio['title']); ?></td>
+                        <td>
+                            <?php if ($salio['success']) : ?>
+                                <span class="cp-status cp-status--ok">✅ <?php echo esc_html__('Enviado', 'convoca-publisher'); ?></span>
+                            <?php else : ?>
+                                <span class="cp-status cp-status--fail">❌ <?php echo esc_html((string) $salio['detail']); ?></span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $envios
+     */
+    private static function render_queue_table(array $envios, bool $atascados): void
+    {
+        if ([] === $envios) {
+            ?>
+            <p class="description"><?php echo esc_html__('No hay nada en la cola.', 'convoca-publisher'); ?></p>
+            <?php
+
+            return;
+        }
+        ?>
+        <table class="wp-list-table widefat striped">
+            <thead>
+                <tr>
+                    <th scope="col"><?php echo esc_html__('Cuándo', 'convoca-publisher'); ?></th>
+                    <th scope="col"><?php echo esc_html__('Cuenta', 'convoca-publisher'); ?></th>
+                    <th scope="col"><?php echo esc_html__('Entrada', 'convoca-publisher'); ?></th>
+                    <th scope="col"><?php echo esc_html__('Reprogramar', 'convoca-publisher'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($envios as $envio) : ?>
+                    <?php
+                    $kind = (string) ($envio['kind'] ?? 'schedule');
+                    $ref  = 'retry' === $kind ? 'retry:' . (int) ($envio['id'] ?? 0) : 'schedule:' . (int) ($envio['post_id'] ?? 0);
+                    ?>
+                    <tr>
+                        <td>
+                            <?php echo esc_html(wp_date('d/m/Y H:i', (int) ($envio['time'] ?? 0))); ?>
+                            <?php if ($atascados) : ?>
+                                <div class="description"><?php echo esc_html((string) ($envio['error'] ?? '')); ?></div>
+                            <?php endif; ?>
+                        </td>
+                        <td><?php echo esc_html((string) ($envio['account_name'] ?? '')); ?></td>
+                        <td><?php echo esc_html((string) ($envio['title'] ?? '')); ?></td>
+                        <td>
+                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-acciones">
+                                <input type="hidden" name="action" value="cp_queue_reschedule" />
+                                <input type="hidden" name="cp_envio" value="<?php echo esc_attr($ref); ?>" />
+                                <?php wp_nonce_field('convoca_publisher_queue_reschedule'); ?>
+                                <input type="datetime-local" name="cp_cuando" value="<?php echo esc_attr(wp_date('Y-m-d\TH:i', (int) ($envio['time'] ?? 0))); ?>" />
+                                <button type="submit" class="button"><?php echo esc_html__('Mover', 'convoca-publisher'); ?></button>
+                            </form>
+                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-acciones">
+                                <input type="hidden" name="action" value="cp_queue_cancel" />
+                                <input type="hidden" name="cp_envio" value="<?php echo esc_attr($ref); ?>" />
+                                <?php wp_nonce_field('convoca_publisher_queue_cancel'); ?>
+                                <button type="submit" class="button" data-cp-confirm="<?php echo esc_attr__('¿Quitar este envío de la cola?', 'convoca-publisher'); ?>"><?php echo esc_html__('Quitar', 'convoca-publisher'); ?></button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php
+    }
+
+    /**
+     * Reprogramar un envío (desde la lista o arrastrándolo en el calendario).
+     */
+    public static function handle_queue_reschedule(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+
+        check_admin_referer('convoca_publisher_queue_reschedule');
+
+        $ref  = isset($_POST['cp_envio']) ? sanitize_text_field(wp_unslash((string) $_POST['cp_envio'])) : '';
+        $dia  = isset($_POST['cp_dia']) ? sanitize_text_field(wp_unslash((string) $_POST['cp_dia'])) : '';
+        $cuando = isset($_POST['cp_cuando']) ? sanitize_text_field(wp_unslash((string) $_POST['cp_cuando'])) : '';
+
+        $sello = self::queue_parse_when($dia, $cuando);
+
+        if ($sello > 0) {
+            self::queue_move($ref, $sello);
+            set_transient('convoca_publisher_queue_notice_' . get_current_user_id(), __('Envío reprogramado.', 'convoca-publisher'), 30);
+        }
+
+        wp_safe_redirect(self::tab_url('queue'));
+        exit;
+    }
+
+    /**
+     * Quitar un envío de la cola.
+     */
+    public static function handle_queue_cancel(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+
+        check_admin_referer('convoca_publisher_queue_cancel');
+
+        $ref = isset($_POST['cp_envio']) ? sanitize_text_field(wp_unslash((string) $_POST['cp_envio'])) : '';
+        self::queue_remove($ref);
+
+        set_transient('convoca_publisher_queue_notice_' . get_current_user_id(), __('Envío quitado de la cola.', 'convoca-publisher'), 30);
+        wp_safe_redirect(self::tab_url('queue'));
+        exit;
+    }
+
+    /**
+     * Recolocar ahora mismo, sin esperar al cron.
+     */
+    public static function handle_queue_spacing(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+
+        check_admin_referer('convoca_publisher_queue_spacing');
+
+        $movidos = Queue::apply_spacing();
+
+        set_transient(
+            'convoca_publisher_queue_notice_' . get_current_user_id(),
+            sprintf(
+                /* translators: %d: envíos recolocados */
+                _n('%d envío recolocado.', '%d envíos recolocados.', $movidos, 'convoca-publisher'),
+                $movidos
+            ),
+            30
+        );
+        wp_safe_redirect(self::tab_url('queue'));
+        exit;
+    }
+
+    /**
+     * Referencia de un envío («schedule:12» o «retry:5»).
+     */
+    private static function queue_move(string $ref, int $when): bool
+    {
+        [$kind, $id] = array_pad(explode(':', $ref, 2), 2, '');
+        $id          = (int) $id;
+
+        if ($id <= 0) {
+            return false;
+        }
+
+        return 'retry' === $kind ? Queue::reschedule_retry($id, $when) : Queue::reschedule_schedule($id, $when);
+    }
+
+    /**
+     * Quitar un envío de la cola.
+     */
+    private static function queue_remove(string $ref): bool
+    {
+        [$kind, $id] = array_pad(explode(':', $ref, 2), 2, '');
+        $id          = (int) $id;
+
+        if ($id <= 0) {
+            return false;
+        }
+
+        return 'retry' === $kind ? Queue::cancel_retry($id) : Queue::cancel_schedule($id);
+    }
+
+    /**
+     * Del formulario a un sello de tiempo del sitio.
+     *
+     * Dos formas de decir cuándo: el día desde el que se suelta un envío en el calendario
+     * (`$dia`, a las 9:00, que es lo que se puede elegir arrastrando) o una fecha y hora
+     * completas (`$cuando`, de la lista de la cola). Todo en la zona horaria del sitio.
+     */
+    public static function queue_parse_when(string $dia, string $cuando): int
+    {
+        $tz = wp_timezone();
+
+        if ('' !== $cuando) {
+            $fecha = \DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $cuando, $tz);
+
+            return $fecha instanceof \DateTimeImmutable ? $fecha->getTimestamp() : 0;
+        }
+
+        if ('' !== $dia) {
+            $fecha = \DateTimeImmutable::createFromFormat('Y-m-d H:i', $dia . ' 09:00', $tz);
+
+            return $fecha instanceof \DateTimeImmutable ? $fecha->getTimestamp() : 0;
+        }
+
+        return 0;
+    }
+
 }

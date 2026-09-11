@@ -518,3 +518,13 @@ function sanitize_text_field(string $str): string
 {
     return trim(strip_tags($str));
 }
+
+// --- Dobles del calendario ---
+function wp_timezone(): DateTimeZone
+{
+    return new DateTimeZone('UTC');
+}
+function wp_date(string $format, ?int $timestamp = null, ?DateTimeZone $timezone = null): string
+{
+    return gmdate($format, $timestamp ?? time());
+}

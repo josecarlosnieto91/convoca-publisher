@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,12 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.8.0 =
+* Pantalla de la cola: calendario de mes y semana con los envíos de cada día (una entrada puede salir en varias cuentas: cada una es un envío), más la lista de lo que espera turno, lo que se ha atascado y lo último que salió.
+* Arrastrar un envío a otro día para reprogramarlo, o cambiarle la hora y quitarlo de la cola desde la lista, sin entrar en la entrada.
+* El espaciado entre envíos se elige en Configuración (sin espaciado, 15, 30 minutos, 1 o 2 horas) y hay un botón para recolocar la cola en el momento.
+
 
 = 1.7.0 =
 * La cola, como una sola cosa: los envíos programados (uno por cuenta), los reintentos y lo que ya salió, con su resultado.

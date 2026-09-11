@@ -97,8 +97,81 @@
 		sincronizar();
 	}
 
+	/**
+	 * Arrastrar un envío del calendario a otro día.
+	 *
+	 * Sin JavaScript el calendario se sigue usando: cada envío se puede cambiar de hora
+	 * desde la lista de la cola (formulario normal).
+	 */
+	function prepararCalendario() {
+		var arrastrado = null;
+
+		document.addEventListener( 'dragstart', function ( evento ) {
+			var envio = evento.target.closest( '[data-cp-envio]' );
+
+			if ( ! envio ) {
+				return;
+			}
+
+			arrastrado = envio;
+			envio.classList.add( 'cp-cal__envio--arrastrando' );
+			evento.dataTransfer.setData( 'text/plain', envio.getAttribute( 'data-cp-envio' ) );
+			evento.dataTransfer.effectAllowed = 'move';
+		} );
+
+		document.addEventListener( 'dragend', function () {
+			if ( arrastrado ) {
+				arrastrado.classList.remove( 'cp-cal__envio--arrastrando' );
+			}
+			document.querySelectorAll( '.cp-cal__drop' ).forEach( function ( celda ) {
+				celda.classList.remove( 'cp-cal__drop' );
+			} );
+			arrastrado = null;
+		} );
+
+		document.addEventListener( 'dragover', function ( evento ) {
+			var celda = evento.target.closest( '[data-cp-dia]' );
+
+			if ( ! celda || ! arrastrado ) {
+				return;
+			}
+
+			evento.preventDefault();
+			celda.classList.add( 'cp-cal__drop' );
+		} );
+
+		document.addEventListener( 'dragleave', function ( evento ) {
+			var celda = evento.target.closest( '[data-cp-dia]' );
+
+			if ( celda ) {
+				celda.classList.remove( 'cp-cal__drop' );
+			}
+		} );
+
+		document.addEventListener( 'drop', function ( evento ) {
+			var celda = evento.target.closest( '[data-cp-dia]' );
+
+			if ( ! celda || ! arrastrado ) {
+				return;
+			}
+
+			evento.preventDefault();
+
+			var formulario = document.getElementById( 'cp-cal-form' );
+
+			if ( ! formulario ) {
+				return;
+			}
+
+			formulario.querySelector( '[name="cp_envio"]' ).value = arrastrado.getAttribute( 'data-cp-envio' );
+			formulario.querySelector( '[name="cp_dia"]' ).value = celda.getAttribute( 'data-cp-dia' );
+			formulario.submit();
+		} );
+	}
+
 	document.addEventListener( 'DOMContentLoaded', function () {
 		prepararConfirmaciones();
+		prepararCalendario();
 		prepararMostrarTokens();
 		prepararCopiar();
 		prepararModeracionPorCanal();

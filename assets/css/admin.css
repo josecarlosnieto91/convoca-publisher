@@ -423,3 +423,162 @@
 		color: #f0c33c;
 	}
 }
+
+
+/* ── Calendario de la cola ───────────────────────────────────────────────── */
+
+.cp-cal {
+	width: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.cp-cal th {
+	background: #f6f7f7;
+	text-align: left;
+	font-size: 12px;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	color: #50575e;
+	padding: 8px 10px;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.cp-cal td {
+	vertical-align: top;
+	border-bottom: 1px solid #f0f0f1;
+	border-right: 1px solid #f0f0f1;
+	padding: 6px 8px;
+	height: 6.5em;
+}
+
+.cp-cal td:last-child,
+.cp-cal th:last-child {
+	border-right: 0;
+}
+
+.cp-cal__day-number {
+	font-size: 12px;
+	font-weight: 600;
+	color: #646970;
+	margin-bottom: 4px;
+}
+
+.cp-cal__hoy {
+	color: #2271b1;
+}
+
+.cp-cal__fuera {
+	background: #fbfbfc;
+	color: #8c8f94;
+}
+
+.cp-cal__envio {
+	display: block;
+	font-size: 12px;
+	line-height: 1.4;
+	margin: 2px 0;
+	padding: 2px 4px;
+	border-radius: 3px;
+	border-left: 3px solid #2271b1;
+	background: #f0f6fc;
+	cursor: grab;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cp-cal__envio--fallo {
+	border-left-color: #d63638;
+	background: #fcf0f1;
+}
+
+.cp-cal__envio--hecho {
+	border-left-color: #46b450;
+	background: #edfaef;
+	cursor: default;
+}
+
+.cp-cal__envio--arrastrando {
+	opacity: 0.5;
+}
+
+.cp-cal__drop {
+	outline: 2px dashed #2271b1;
+	outline-offset: -2px;
+	background: #f0f6fc;
+}
+
+@media (prefers-color-scheme: dark) {
+	.cp-cal,
+	.cp-cal__envio--hecho {
+		background: #1f1f1f;
+	}
+
+	.cp-cal th {
+		background: #2c2c2c;
+		border-color: #3c3c3c;
+	}
+
+	.cp-cal td,
+	.cp-cal th {
+		border-color: #3c3c3c;
+	}
+
+	.cp-cal__fuera {
+		background: #191919;
+	}
+
+	.cp-cal__envio {
+		background: #1c2b3a;
+	}
+
+	.cp-cal__envio--fallo {
+		background: #3a1d1d;
+	}
+
+	.cp-cal__envio--hecho {
+		background: #16281a;
+	}
+}
+
+
+/* ── Barra del calendario y acciones de la cola ──────────────────────────── */
+
+.cp-cal__barra {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 16px 0;
+	flex-wrap: wrap;
+}
+
+.cp-cal__titulo {
+	font-size: 15px;
+	min-width: 12em;
+}
+
+.cp-cal__vistas {
+	margin-left: auto;
+	display: inline-flex;
+	gap: 4px;
+}
+
+.cp-cal__recolocar {
+	display: inline-flex;
+}
+
+.cp-hidden {
+	display: none;
+}
+
+.cp-acciones {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0 8px 4px 0;
+}
