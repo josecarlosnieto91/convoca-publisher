@@ -33,7 +33,8 @@ class Platform_Rules
      */
     private const RULES = [
         'twitter' => ['chars' => 280, 'url_weight' => 23, 'hashtags' => 3, 'urls' => 1],
-        'mastodon' => ['chars' => 500, 'url_weight' => 0, 'hashtags' => 5, 'urls' => 0, 'bold' => 'html'],
+        // Mastodon NO: su API recibe texto plano (el HTML es solo lo que devuelve al leer).
+        'mastodon' => ['chars' => 500, 'url_weight' => 0, 'hashtags' => 5, 'urls' => 0, 'bold' => ''],
         'linkedin' => ['chars' => 3000, 'url_weight' => 0, 'hashtags' => 3, 'urls' => 0],
         'facebook' => ['chars' => 63206, 'url_weight' => 0, 'hashtags' => 0, 'urls' => 0],
         'telegram' => ['chars' => 4096, 'url_weight' => 0, 'hashtags' => 0, 'urls' => 0, 'bold' => 'html'],
@@ -75,9 +76,13 @@ class Platform_Rules
     /**
      * Si la red acepta negrita, y cómo.
      *
-     * Telegram (en modo HTML) y Mastodon admiten etiquetas HTML sencillas. En las demás el texto
-     * se publica tal cual, así que la variable del título en negrita se degrada a texto normal:
-     * mejor eso que un `<b>` a la vista en el mensaje.
+     * **Solo Telegram**, y solo en su modo HTML: es la única de las redes del plugin que acepta
+     * formato en el texto que se le manda (comprobado en su documentación: pasado `HTML` en
+     * `parse_mode` admite `<b>`). Mastodon, X, Facebook, LinkedIn, Google y TikTok reciben texto
+     * plano, y en Mastodon el HTML es solo lo que devuelve al leer, no lo que acepta al publicar.
+     *
+     * En las demás, la variable del título en negrita devuelve el título tal cual: mejor eso que un
+     * `<b>` a la vista en el mensaje, que fue justo lo que pasó.
      */
     public static function bold_format(string $network): string
     {

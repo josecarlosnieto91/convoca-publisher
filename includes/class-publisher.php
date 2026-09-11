@@ -478,27 +478,39 @@ class Publisher
             $entradilla = trim(wp_strip_all_tags($partes[0]));
         }
 
-        // El título en negrita, solo donde la red acepta formato. Donde no, sale el título tal
-        // cual: la misma plantilla vale para todas las redes y ninguna enseña etiquetas raras.
+        // En las redes que interpretan HTML, lo que viene de la entrada se escapa: un `&` o un `<`
+        // en un título rompen el parseo y la red rechaza el mensaje entero. Nuestro propio `<b>` no
+        // se escapa, porque se añade después.
+        $escapa = static fn(string $valor): string => 'html' === Platform_Rules::bold_format($network)
+            ? esc_html($valor)
+            : $valor;
+
+        // El título, escapado una sola vez si la red interpreta HTML: se usa para `{title}` y, en
+        // las redes con formato, dentro de `{titulo_negrita}`. Escaparlo dos veces sacaría
+        // `&amp;amp;` a la vista.
+        $titulo = $escapa((string) $post->post_title);
+
+        // Y el título en negrita, solo donde la red acepta formato: donde no, sale tal cual, para
+        // que la misma plantilla valga en todas y ninguna enseñe etiquetas.
         $titulo_negrita = 'html' === Platform_Rules::bold_format($network)
-            ? '<b>' . esc_html((string) $post->post_title) . '</b>'
-            : (string) $post->post_title;
+            ? '<b>' . $titulo . '</b>'
+            : $titulo;
 
         $replacements = [
-            '{title}'      => $post->post_title,
+            '{title}'      => $titulo,
             '{titulo_negrita}' => $titulo_negrita,
-            '{entradilla}' => '' !== $entradilla ? $entradilla : wp_trim_words($excerpt, 25, '…'),
-            '{categorias}' => implode(', ', $categorias),
+            '{entradilla}' => $escapa('' !== $entradilla ? $entradilla : wp_trim_words($excerpt, 25, '…')),
+            '{categorias}' => $escapa(implode(', ', $categorias)),
             '{categorias_hashtags}' => $this->names_to_hashtags($categorias),
-            '{etiquetas}'  => implode(', ', (array) wp_get_post_tags($post->ID, ['fields' => 'names'])),
-            '{sitio}'      => (string) get_bloginfo('name'),
+            '{etiquetas}'  => $escapa(implode(', ', (array) wp_get_post_tags($post->ID, ['fields' => 'names']))),
+            '{sitio}'      => $escapa((string) get_bloginfo('name')),
             '{autor_url}'  => (string) get_author_posts_url((int) $post->post_author),
-            '{excerpt}'    => wp_trim_words($excerpt, 25, '…'),
+            '{excerpt}'    => $escapa(wp_trim_words($excerpt, 25, '…')),
             '{url}'        => $url,
             '{hashtags}'   => $hashtags,
             '{permalink}'  => $url,
-            '{date}'       => get_the_date('', $post),
-            '{author}'     => get_the_author_meta('display_name', (int) $post->post_author),
+            '{date}'       => $escapa((string) get_the_date('', $post)),
+            '{author}'     => $escapa((string) get_the_author_meta('display_name', (int) $post->post_author)),
             '{featured_image}' => $this->get_featured_image($post),
         ];
 

@@ -34,20 +34,20 @@ final class TemplateVariablesTest extends TestCase
         Publisher::init([]);
     }
 
-    private function entrada(string $contenido = 'Texto de la entrada.'): \WP_Post
+    private function entrada(string $contenido = 'Texto de la entrada.', string $titulo = 'Taller de huerto'): \WP_Post
     {
         $post               = new \WP_Post((object) []);
         $post->ID           = 7;
-        $post->post_title   = 'Taller de huerto';
+        $post->post_title   = $titulo;
         $post->post_content = $contenido;
         $post->post_author  = 3;
 
         return $post;
     }
 
-    private function sustituir(string $plantilla, string $contenido = 'Texto de la entrada.', string $red = ''): string
+    private function sustituir(string $plantilla, string $contenido = 'Texto de la entrada.', string $red = '', string $titulo = 'Taller de huerto'): string
     {
-        return Publisher::instance()->render_template($this->entrada($contenido), $plantilla, '', '', $red);
+        return Publisher::instance()->render_template($this->entrada($contenido, $titulo), $plantilla, '', '', $red);
     }
 
     public function testElTituloSeSustituyeAunqueSeEscribaEnMayusculas(): void
@@ -79,6 +79,18 @@ final class TemplateVariablesTest extends TestCase
 
         $this->assertStringContainsString('<b>Taller de huerto</b>', $conFormato, 'Donde se acepta formato, sale en negrita.');
         $this->assertSame('Taller de huerto', $sinFormato, 'Y donde no, el título tal cual: nada de etiquetas a la vista.');
+    }
+
+    public function testEnLasRedesConFormatoLosValoresSeEscapan(): void
+    {
+        // Un `&` o un `<` en el título rompen el parseo HTML de Telegram y la red rechaza el
+        // mensaje entero. Se escapa solo donde hay formato: en las demás, el texto va tal cual.
+        $con = $this->sustituir('{title}', 'Texto.', 'telegram', 'Pan & vino <gratis>');
+        $sin = $this->sustituir('{title}', 'Texto.', 'twitter', 'Pan & vino <gratis>');
+
+        $this->assertStringContainsString('&amp;', $con, 'Donde hay formato, se escapa: ' . $con);
+        $this->assertStringNotContainsString('<gratis>', $con, 'Y no queda una etiqueta suelta.');
+        $this->assertSame('Pan & vino <gratis>', $sin, 'Donde no hay formato, el texto va tal cual.');
     }
 
     public function testLosHashtagsRepetidosSalenUnaSolaVez(): void

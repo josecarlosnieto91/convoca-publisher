@@ -51,7 +51,13 @@ class Telegram implements ChannelInterface
             $text .= "\n\n" . $falta;
         }
 
-        $parse_mode = get_option('convoca_publisher_telegram_parse_mode', 'HTML');
+        // Ojo: `get_option($clave, 'HTML')` devuelve la cadena vacía si la opción EXISTE vacía, no
+        // el valor por defecto. Con eso, Telegram recibía `<b>` como texto y se veía la etiqueta en
+        // el mensaje. Una opción vacía aquí significa «lo de siempre», que es HTML.
+        $parse_mode = (string) get_option('convoca_publisher_telegram_parse_mode', 'HTML');
+        if ('' === $parse_mode) {
+            $parse_mode = 'HTML';
+        }
         $body = [
             'chat_id'                  => $chat_id,
             'text'                     => mb_substr($text, 0, 4096),
