@@ -100,6 +100,24 @@ namespace ConvocaPublisher\Tests {
             $this->assertStringContainsString('data-cp-reset', $html, 'Y su botón de volver a la de fábrica.');
         }
 
+        public function testSinCanalDePruebasSeAvisaDeQuePublicaraEnLasRedesReales(): void
+        {
+            $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'test']);
+
+            $this->assertStringContainsString('convoca_publisher_test_channel', $html, 'Se puede elegir el canal de pruebas.');
+            $this->assertStringContainsString('Sin canal de pruebas, esto publica en las redes configuradas', $html, 'Y se avisa de lo que va a pasar.');
+        }
+
+        public function testConCanalDePruebasElBotonDiceQueSoloVaAhi(): void
+        {
+            $GLOBALS['_cp_test_options']['convoca_publisher_test_channel'] = 'tg-pruebas';
+
+            $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'test']);
+
+            $this->assertStringContainsString('Publicar solo en el canal de pruebas', $html);
+            $this->assertStringNotContainsString('esto publica en las redes configuradas', $html, 'Ya no hay nada que avisar: no va a publicar en ellas.');
+        }
+
         private function canal(string $channel_id): object
         {
             $channels = Plugin::discover_channels();

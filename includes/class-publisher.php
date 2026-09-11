@@ -275,6 +275,36 @@ class Publisher
     }
 
     /**
+     * Publica en UN canal y solo en él, para probar la integración sin tocar las demás.
+     *
+     * Es una publicación de verdad: si el canal elegido es el del centro social, en él queda.
+     * Por eso existe el ajuste del canal de pruebas; aquí no se decide nada, se obedece.
+     *
+     * No pasa por la cola ni por el historial: no es una publicación de la entrada, es una
+     * prueba, y el resultado se cuenta en la pantalla.
+     *
+     * @param int    $post_id    Entrada con la que se prueba.
+     * @param string $channel_id Cuenta o red a la que mandarlo.
+     * @return array{success: bool, post_id?: string, error?: string, networks?: string, notice?: string}
+     */
+    public function publish_test(int $post_id, string $channel_id): array
+    {
+        $post  = get_post($post_id);
+        $canal = $this->channels[$channel_id] ?? null;
+
+        if (!$post instanceof \WP_Post || !$canal) {
+            return ['success' => false, 'error' => __('Ese canal no está configurado.', 'convoca-publisher')];
+        }
+
+        return $canal->publish(
+            $post_id,
+            $this->preview_message($post_id, $channel_id),
+            (string) get_permalink($post),
+            $this->get_featured_image($post)
+        );
+    }
+
+    /**
      * Cómo queda el mensaje de esta entrada en una cuenta, con lo que se mande para este
      * envío concreto por delante (es lo que enseña y usa «compartir ahora en esta cuenta»).
      */

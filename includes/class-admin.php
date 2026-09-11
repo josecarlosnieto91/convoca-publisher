@@ -115,6 +115,12 @@ class Admin
             'sanitize_callback' => 'wp_kses_post',
             'default'           => '{title} — {url} {hashtags}',
         ]);
+        register_setting('convoca_publisher_settings', 'convoca_publisher_test_channel', [
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_key',
+            'show_in_rest'      => false,
+            'default'           => '',
+        ]);
         register_setting('convoca_publisher_settings', 'convoca_publisher_auto_publish', [
             'type' => 'boolean', 'default' => true,
         ]);
@@ -1094,6 +1100,30 @@ class Admin
         <div class="cp-section">
             <h2><?php echo esc_html__('Prueba de publicación', 'convoca-publisher'); ?></h2>
             <p><?php echo esc_html__('Selecciona una entrada reciente y haz clic en "Publicar en redes" para probar la integración.', 'convoca-publisher'); ?></p>
+
+            <?php $canal_de_pruebas = (string) get_option('convoca_publisher_test_channel', ''); ?>
+            <form method="post" action="options.php">
+                <?php settings_fields('convoca_publisher_settings'); ?>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><?php echo esc_html__('Canal de pruebas', 'convoca-publisher'); ?></th>
+                        <td>
+                            <select name="convoca_publisher_test_channel">
+                                <option value=""><?php echo esc_html__('Ninguno: prueba en las redes configuradas', 'convoca-publisher'); ?></option>
+                                <?php foreach (Plugin::accounts() as $cuenta_id => $cuenta) : ?>
+                                    <option value="<?php echo esc_attr((string) $cuenta_id); ?>" <?php selected($canal_de_pruebas, (string) $cuenta_id); ?>>
+                                        <?php echo esc_html($cuenta->get_name() . ' — ' . $cuenta->get_channel_id()); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="description">
+                                <?php echo esc_html__('Si eliges uno, el botón de abajo publica SOLO ahí: es la forma de probar sin que la entrada salga en las redes de verdad. Elige un canal que no sea público (por ejemplo tu Telegram).', 'convoca-publisher'); ?>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <?php submit_button(__('Guardar canal de pruebas', 'convoca-publisher'), 'secondary'); ?>
+            </form>
             
             <form method="post">
                 <?php wp_nonce_field('convoca_publisher_test_publish', 'convoca_publisher_test_nonce'); ?>
@@ -1123,8 +1153,15 @@ class Admin
                 </table>
                 <p class="sp-test-publish">
                     <button type="submit" name="convoca_publisher_do_test" class="button button-primary">
-                        <?php echo esc_html__('🚀 Publicar en redes', 'convoca-publisher'); ?>
+                        <?php
+                        echo '' !== $canal_de_pruebas
+                            ? esc_html__('🚀 Publicar solo en el canal de pruebas', 'convoca-publisher')
+                            : esc_html__('🚀 Publicar en redes', 'convoca-publisher');
+        ?>
                     </button>
+                    <?php if ('' === $canal_de_pruebas) : ?>
+                        <span class="description"><?php echo esc_html__('Sin canal de pruebas, esto publica en las redes configuradas.', 'convoca-publisher'); ?></span>
+                    <?php endif; ?>
                 </p>
             </form>
             
@@ -1135,7 +1172,11 @@ class Admin
                     echo '<h3>' . esc_html__('Resultado:', 'convoca-publisher') . '</h3>';
                     $publisher = Publisher::instance();
                     if ($publisher) {
-                        $results = $publisher->publish_post($post_id, true);
+                        // Con canal de pruebas se manda SOLO ahí: probar no puede publicar en
+                        // las redes reales sin querer.
+                        $results = '' !== $canal_de_pruebas
+                            ? [$canal_de_pruebas => $publisher->publish_test($post_id, $canal_de_pruebas)]
+                            : $publisher->publish_post($post_id, true);
                         foreach ($results as $channel_id => $result) {
                             $icon = $result['success'] ? '✅' : '❌';
                             echo '<p>' . esc_html($icon) . ' <strong>' . esc_html($channel_id) . '</strong>: ';
