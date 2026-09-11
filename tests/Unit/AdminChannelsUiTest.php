@@ -16,6 +16,7 @@
 namespace ConvocaPublisher\Tests {
 
     use ConvocaPublisher\Admin;
+    use ConvocaPublisher\Profile_Store;
     use ConvocaPublisher\Plugin;
     use PHPUnit\Framework\TestCase;
 
@@ -154,7 +155,7 @@ namespace ConvocaPublisher\Tests {
 
         // ── Pantallas ───────────────────────────────────────────────────────
 
-        public function testLaPantallaDeCanalesListaLosSieteConSuEstado(): void
+        public function testLaPantallaDeCanalesListaLasSieteRedes(): void
         {
             $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'channels']);
 
@@ -164,8 +165,22 @@ namespace ConvocaPublisher\Tests {
 
             $this->assertStringContainsString('cp-status', $html);
             $this->assertStringContainsString('Falta token', $html);
-            $this->assertStringContainsString('Verificar conexión', $html);
+            $this->assertStringContainsString('Añadir cuenta', $html);
+        }
+
+        public function testUnaRedConCuentasLasListaConEstadoYAcciones(): void
+        {
+            Profile_Store::create('telegram', 'Telegram — Centro Social', [
+                'convoca_publisher_telegram_token'   => 'TOKEN',
+                'convoca_publisher_telegram_chat_id' => '-100',
+            ]);
+
+            $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'channels']);
+
+            $this->assertStringContainsString('Telegram — Centro Social', $html);
+            $this->assertStringContainsString('1 cuenta', $html);
             $this->assertStringContainsString('Configurar', $html);
+            $this->assertStringContainsString('Verificar conexión', $html);
         }
 
         public function testSinCanalesConfiguradosSaleElAsistenteDeInicio(): void
@@ -185,24 +200,46 @@ namespace ConvocaPublisher\Tests {
             $this->assertStringNotContainsString('Por dónde empezar', $html);
         }
 
-        public function testLaPantallaDeUnCanalTraeTodoJunto(): void
+        public function testLaPantallaDeUnaCuentaTraeTodoJunto(): void
         {
-            $html = $this->render(['page' => 'convoca-publisher', 'canal' => 'telegram']);
+            $cuenta = Profile_Store::create('telegram', 'Telegram — Centro Social', [
+                'convoca_publisher_telegram_token'   => 'TOKEN',
+                'convoca_publisher_telegram_chat_id' => '-100',
+            ], '{title} propio');
+
+            $this->assertIsArray($cuenta);
+
+            $html = $this->render(['page' => 'convoca-publisher', 'canal' => $cuenta['id']]);
 
             $this->assertStringContainsString('name="convoca_publisher_telegram_token"', $html);
             $this->assertStringContainsString('name="convoca_publisher_telegram_chat_id"', $html);
-            $this->assertStringContainsString('convoca_publisher_telegram_template', $html);
+            $this->assertStringContainsString('cuenta_plantilla', $html);
+            $this->assertStringContainsString('{title} propio', $html);
             $this->assertStringContainsString('Verificar conexión', $html);
             $this->assertStringContainsString('#canal-telegram', $html);
             $this->assertStringContainsString('Todos los canales', $html);
+            $this->assertStringContainsString('Borrar cuenta', $html);
         }
 
-        public function testLaPantallaDeUnCanalTraduceSuAvisoYTieneSuEstado(): void
+        public function testLaPantallaDeCuentaNuevaPideLosDatosYNoTraeBorrar(): void
         {
-            $html = $this->render(['page' => 'convoca-publisher', 'canal' => 'facebook']);
+            $html = $this->render(['page' => 'convoca-publisher', 'canal' => 'telegram', 'nueva' => 1]);
 
-            $this->assertStringContainsString('Falta token', $html);
-            $this->assertStringContainsString('Todavía faltan datos para que este canal funcione', $html);
+            $this->assertStringContainsString('Crear cuenta', $html);
+            $this->assertStringContainsString('Mientras falten datos, esta cuenta no publicará nada', $html);
+            $this->assertStringContainsString('name="convoca_publisher_telegram_token"', $html);
+            $this->assertStringNotContainsString('Borrar cuenta', $html);
+        }
+
+        public function testSeAvisaCuandoLaRedLlegaAlLimiteDeCuentas(): void
+        {
+            for ($i = 1; $i <= Profile_Store::LIMIT_PER_NETWORK; ++$i) {
+                Profile_Store::create('telegram', 'Cuenta ' . $i);
+            }
+
+            $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'channels']);
+
+            $this->assertStringContainsString('Límite alcanzado', $html);
         }
 
         public function testNingunaPantallaUsaEstilosSueltosNiMencionaAjustes(): void
@@ -214,7 +251,7 @@ namespace ConvocaPublisher\Tests {
                 ['page' => 'convoca-publisher', 'tab' => 'test'],
                 ['page' => 'convoca-publisher', 'tab' => 'moderation'],
                 ['page' => 'convoca-publisher', 'tab' => 'guide'],
-                ['page' => 'convoca-publisher', 'canal' => 'telegram'],
+                ['page' => 'convoca-publisher', 'canal' => 'telegram', 'nueva' => 1],
                 ['page' => 'convoca-publisher', 'canal' => 'mastodon'],
                 ['page' => 'convoca-publisher', 'canal' => 'linkedin'],
             ];
@@ -268,12 +305,14 @@ namespace {
             return new class {
                 public function get_channels(): array
                 {
-                    return \ConvocaPublisher\Plugin::discover_channels();
+                    return \ConvocaPublisher\Plugin::accounts();
                 }
 
                 public function get_channel(string $channel_id): ?object
                 {
-                    return \ConvocaPublisher\Plugin::discover_channels()[$channel_id] ?? null;
+                    $accounts = \ConvocaPublisher\Plugin::accounts();
+
+                    return $accounts[$channel_id] ?? \ConvocaPublisher\Plugin::networks()[$channel_id] ?? null;
                 }
             };
         }

@@ -42,6 +42,8 @@ function esc_html(string $text): string
     return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 }
 
+$GLOBALS['_cp_test_http'] = [];
+
 // --- Options ---
 $GLOBALS['_cp_test_options'] = [];
 
@@ -50,6 +52,14 @@ function get_option(string $option, mixed $default = false): mixed
     if ($option === 'cp_encryption_key') {
         return 'SISo4fW6aYd2QYYabknhj3S9no1GI8HOjX0OMOEmsGA=';
     }
+
+    // Como WordPress: `pre_option_{$option}` puede cortocircuitar la lectura (lo usa el
+    // perfil para poner SUS ajustes en su sitio mientras se llama al canal).
+    $pre = apply_filters("pre_option_{$option}", false);
+    if (false !== $pre) {
+        return $pre;
+    }
+
     return $GLOBALS['_cp_test_options'][$option] ?? $default;
 }
 function update_option(string $option, mixed $value, bool $autoload = false): bool
@@ -75,10 +85,14 @@ function wp_salt(string $scheme = 'auth'): string
 }
 function wp_remote_post(string $url, array $args = []): array|WP_Error
 {
+    // Se apunta la llamada: hay pruebas que necesitan comprobar QUÉ se envió y con qué
+    // credencial (por ejemplo, que cada cuenta use su propio token).
+    $GLOBALS['_cp_test_http'][] = ['method' => 'POST', 'url' => $url, 'args' => $args];
     return [];
 }
 function wp_remote_get(string $url, array $args = []): array|WP_Error
 {
+    $GLOBALS['_cp_test_http'][] = ['method' => 'GET', 'url' => $url, 'args' => $args];
     return [];
 }
 function wp_remote_retrieve_body(array|WP_Error $response): string
@@ -175,14 +189,58 @@ function wp_get_post_tags(int $post_id, array $args = []): array
 }
 function sanitize_title(string $title): string
 {
-    return strtolower(trim(preg_replace('/[^a-zA-Z0-9áéíóúüñÁÉÍÓÚÜÑ\s-]/', '', $title)));
+    // Como WordPress: minúsculas, lo que no sea alfanumérico pasa a guion y se recorta.
+    $title = strtolower($title);
+    $title = preg_replace('/[^a-z0-9]+/', '-', $title) ?? '';
+
+    return trim($title, '-');
 }
 
 // --- Hooks ---
 function add_action(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): void {}
-function add_filter(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): void {}
+$GLOBALS['_cp_test_filters'] = [];
+
+function add_filter(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): bool
+{
+    $GLOBALS['_cp_test_filters'][$hook_name][$priority][] = ['callback' => $callback, 'accepted' => $accepted_args];
+    return true;
+}
+function remove_filter(string $hook_name, callable $callback, int $priority = 10): bool
+{
+    if (empty($GLOBALS['_cp_test_filters'][$hook_name][$priority])) {
+        return false;
+    }
+
+    $antes = $GLOBALS['_cp_test_filters'][$hook_name][$priority];
+    $quedan = array_values(array_filter(
+        $antes,
+        static fn(array $entry): bool => $entry['callback'] !== $callback && $entry['callback'] != $callback
+    ));
+
+    $GLOBALS['_cp_test_filters'][$hook_name][$priority] = $quedan;
+
+    return count($quedan) < count($antes);
+}
+function has_filter(string $hook_name, callable|false $callback = false): bool
+{
+    return !empty($GLOBALS['_cp_test_filters'][$hook_name]);
+}
 function apply_filters(string $hook_name, mixed $value, mixed ...$args): mixed
 {
+    if (empty($GLOBALS['_cp_test_filters'][$hook_name])) {
+        return $value;
+    }
+
+    $porPrioridad = $GLOBALS['_cp_test_filters'][$hook_name];
+    ksort($porPrioridad);
+
+    foreach ($porPrioridad as $entradas) {
+        foreach ($entradas as $entrada) {
+            $valores = array_slice(array_merge([$value], $args), 0, max(1, (int) $entrada['accepted']));
+            $value   = ($entrada['callback'])(...$valores);
+        }
+    }
+
     return $value;
 }
 function do_action(string $hook_name, mixed ...$args): void {}
@@ -426,4 +484,10 @@ function number_format_i18n(float $number, int $decimals = 0): string
 function _n(string $single, string $plural, int $number, string $domain = 'default'): string
 {
     return 1 === $number ? $single : $plural;
+}
+
+// --- Dobles del panel de cuentas ---
+function sanitize_text_field(string $str): string
+{
+    return trim(strip_tags($str));
 }

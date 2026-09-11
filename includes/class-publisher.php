@@ -258,7 +258,9 @@ class Publisher
      */
     private function build_channel_message(\WP_Post $post, object $channel, string $url, string $hashtags): string
     {
-        $template_key = 'convoca_publisher_' . $channel->get_id() . '_template';
+        // Con cuentas (perfiles), el id del canal es el de la cuenta: la red va aparte.
+        $network_id   = $channel instanceof Channel_Profile ? $channel->get_channel_id() : $channel->get_id();
+        $template_key = 'convoca_publisher_' . $network_id . '_template';
         $default_templates = [
             'facebook'        => '{title} — {url} {hashtags}',
             'linkedin'        => '{title} — {url} {hashtags}',
@@ -269,8 +271,11 @@ class Publisher
             'mastodon'        => '{title} — {url} {hashtags}',
         ];
 
-        $default = $default_templates[$channel->get_id()] ?? '{title} — {url}';
-        $template = get_option($template_key, '');
+        $default  = $default_templates[$network_id] ?? '{title} — {url}';
+        $template = $channel instanceof Channel_Profile ? $channel->get_template() : '';
+        if (empty($template)) {
+            $template = get_option($template_key, '');
+        }
         if (empty($template)) {
             $template = get_option('convoca_publisher_message_template', $default);
         }

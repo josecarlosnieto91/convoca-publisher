@@ -65,7 +65,8 @@ class Plugin
 
     private function load_channels(): void
     {
-        $this->channels = self::discover_channels();
+        // `channels` son las **cuentas** (perfiles): lo que usa el motor para publicar.
+        $this->channels = self::accounts();
     }
 
     /**
@@ -181,13 +182,64 @@ class Plugin
     }
 
     /**
+     * Las redes disponibles, sin cuentas de por medio.
+     *
+     * Se usa para lo que se configura por red (la pantalla de alta de una cuenta, la guía,
+     * los campos que define cada canal). Para publicar y para el editor van las **cuentas**
+     * (`get_channels()`): es lo que de verdad se usa para enviar.
+     *
+     * @return array<string, Channels\ChannelInterface>
+     */
+    public static function networks(): array
+    {
+        return self::discover_channels();
+    }
+
+    /**
+     * Construir las cuentas (perfiles) a partir de la configuración guardada.
+     *
+     * Si todavía no hay ninguna y la instalación venía de «un token por red», aquí se
+     * migra: un perfil por red con el id de la red, para no romper lo ya publicado, la
+     * cola ni el historial.
+     *
+     * @return array<string, Channel_Profile>
+     */
+    public static function accounts(): array
+    {
+        $networks = self::discover_channels();
+
+        Profile_Store::migrate($networks);
+
+        $accounts = [];
+
+        foreach (Profile_Store::all() as $profile) {
+            if (!isset($networks[$profile['channel']])) {
+                continue; // Una cuenta cuya red ya no existe (canal retirado): se ignora.
+            }
+
+            $accounts[$profile['id']] = new Channel_Profile($profile, $networks[$profile['channel']]);
+        }
+
+        return $accounts;
+    }
+
+    /**
      * Get a channel instance by its ID.
+     *
+     * Acepta el id de una **cuenta** (lo normal) o el de una **red** (para la pantalla de
+     * alta de una cuenta nueva, que todavía no existe).
      *
      * @param string $id The channel ID (e.g., 'facebook', 'telegram').
      * @return Channels\ChannelInterface|null
      */
     public function get_channel(string $id): ?Channels\ChannelInterface
     {
-        return $this->channels[$id] ?? null;
+        if (isset($this->channels[$id])) {
+            return $this->channels[$id];
+        }
+
+        $networks = self::networks();
+
+        return $networks[$id] ?? null;
     }
 }

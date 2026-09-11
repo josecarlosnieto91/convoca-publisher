@@ -28,6 +28,8 @@ class Admin
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
         add_action('admin_action_cp_delete_log', [self::class, 'handle_delete_log']);
         add_action('admin_post_cp_verify_channel', [self::class, 'handle_verify_channel']);
+        add_action('admin_post_cp_save_account', [self::class, 'handle_save_account']);
+        add_action('admin_post_cp_delete_account', [self::class, 'handle_delete_account']);
         add_action('admin_post_cp_approve_review', [self::class, 'handle_approve_review']);
         add_action('admin_post_cp_reject_review', [self::class, 'handle_reject_review']);
     }
@@ -207,14 +209,24 @@ class Admin
             return;
         }
 
-        $channels = convoca_publisher()->get_channels();
+        $accounts   = convoca_publisher()->get_channels();
+        $networks   = Plugin::networks();
         $channel_id = isset($_GET['canal']) ? sanitize_key(wp_unslash((string) $_GET['canal'])) : '';
 
-        // La pantalla de un canal concreto manda sobre las pestañas.
-        if ('' !== $channel_id && isset($channels[$channel_id])) {
-            self::render_channel_screen($channels[$channel_id]);
+        // La pantalla de una cuenta manda sobre las pestañas. Si el id es de una red que
+        // todavía no tiene cuenta, es el alta de una cuenta nueva de esa red.
+        if ('' !== $channel_id) {
+            if (isset($accounts[$channel_id])) {
+                self::render_channel_screen($accounts[$channel_id]);
 
-            return;
+                return;
+            }
+
+            if (isset($networks[$channel_id])) {
+                self::render_channel_screen($networks[$channel_id]);
+
+                return;
+            }
         }
 
         $active_tab = isset($_GET['tab']) ? sanitize_key(wp_unslash((string) $_GET['tab'])) : 'channels';
@@ -289,23 +301,42 @@ class Admin
      */
     private static function render_channel_screen(object $channel): void
     {
-        $channel_id   = $channel->get_id();
-        $status       = self::channel_status($channel);
-        $available    = $channel->is_available();
-        $fields       = $channel->get_settings_fields();
-        $template_key = 'convoca_publisher_' . $channel_id . '_template';
+        $account  = $channel instanceof Channel_Profile ? $channel : null;
+        $networks = Plugin::networks();
+        $network_id = $account ? $account->get_channel_id() : $channel->get_id();
+        $network    = $networks[$network_id] ?? $channel;
+        $fields     = $network->get_settings_fields();
+        $template_key = 'convoca_publisher_' . $network_id . '_template';
+        $settings   = $account ? $account->get_settings() : [];
+        $status     = $account ? self::channel_status($account) : [];
+        $guardado   = isset($_GET['guardado']);
+        $new_account = !$account;
+
+        $nombre = $account
+            ? $account->get_name()
+            : sprintf(
+                /* translators: %s: nombre de la red */
+                __('%s — cuenta nueva', 'convoca-publisher'),
+                $network->get_name()
+            );
         ?>
         <div class="wrap">
-            <h1 class="wp-heading-inline"><?php echo esc_html($channel->get_name()); ?></h1>
-            <?php echo self::status_badge($status); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
+            <h1 class="wp-heading-inline"><?php echo esc_html($nombre); ?></h1>
+            <?php if ($account) : ?>
+                <?php echo self::status_badge(self::channel_status($account)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
+            <?php endif; ?>
 
             <p>
                 <a href="<?php echo esc_url(self::tab_url('channels')); ?>">&larr; <?php echo esc_html__('Todos los canales', 'convoca-publisher'); ?></a>
             </p>
 
-            <?php if (!$available) : ?>
+            <?php if ($guardado) : ?>
+                <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('Cuenta guardada.', 'convoca-publisher'); ?></p></div>
+            <?php endif; ?>
+
+            <?php if (!$account || !$account->is_available()) : ?>
                 <div class="cp-notice cp-notice--warn">
-                    <p><?php echo esc_html__('Todavía faltan datos para que este canal funcione: no se publicará nada por aquí hasta que estén. Rellénalos, guarda y usa «Verificar conexión».', 'convoca-publisher'); ?></p>
+                    <p><?php echo esc_html__('Mientras falten datos, esta cuenta no publicará nada. Rellénalos, guarda y usa «Verificar conexión».', 'convoca-publisher'); ?></p>
                 </div>
             <?php elseif (!empty($status['detail'])) : ?>
                 <div class="cp-notice cp-notice--warn">
@@ -313,13 +344,37 @@ class Admin
                 </div>
             <?php endif; ?>
 
-            <form method="post" action="options.php">
-                <?php settings_fields('convoca_publisher_settings'); ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="cp_save_account" />
+                <input type="hidden" name="red" value="<?php echo esc_attr($network_id); ?>" />
+                <input type="hidden" name="cuenta" value="<?php echo esc_attr($account ? $account->get_id() : ''); ?>" />
+                <?php wp_nonce_field('convoca_publisher_save_account'); ?>
+
+                <div class="cp-section">
+                    <h2><?php echo esc_html__('Esta cuenta', 'convoca-publisher'); ?></h2>
+                    <div class="cp-field">
+                        <label for="cuenta_nombre"><?php echo esc_html__('Nombre', 'convoca-publisher'); ?></label>
+                        <input type="text" id="cuenta_nombre" name="cuenta_nombre" value="<?php echo esc_attr($nombre); ?>" class="cp-input regular-text" />
+                        <p class="description"><?php echo esc_html__('Con qué nombre la reconoces. Por ejemplo: «Telegram — Centro Social», «Facebook — Grupo».', 'convoca-publisher'); ?></p>
+                    </div>
+
+                    <?php if ($account) : ?>
+                        <p class="description">
+                            <?php
+                            printf(
+                                /* translators: %s: identificador de la cuenta */
+                                esc_html__('Identificador: %s (es el que usan la cola y el historial).', 'convoca-publisher'),
+                                esc_html($account->get_id())
+                            );
+                        ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
 
                 <div class="cp-section">
                     <h2><?php echo esc_html__('Credenciales y datos', 'convoca-publisher'); ?></h2>
                     <?php if (empty($fields)) : ?>
-                        <p><?php echo esc_html__('Este canal no necesita configuración.', 'convoca-publisher'); ?></p>
+                        <p><?php echo esc_html__('Esta red no necesita configuración.', 'convoca-publisher'); ?></p>
                     <?php endif; ?>
 
                     <?php foreach ($fields as $key => $field) : ?>
@@ -327,7 +382,10 @@ class Admin
                             <?php continue; ?>
                         <?php endif; ?>
 
-                        <?php $type = ($field['type'] ?? 'text') === 'password' ? 'password' : 'text'; ?>
+                        <?php
+                        $type  = ($field['type'] ?? 'text') === 'password' ? 'password' : 'text';
+                        $value = (string) ($settings[$key] ?? '');
+                        ?>
                         <div class="cp-field">
                             <label for="<?php echo esc_attr($key); ?>"><?php echo esc_html($field['title'] ?? $key); ?></label>
 
@@ -335,7 +393,7 @@ class Admin
                                 type="<?php echo esc_attr($type); ?>"
                                 id="<?php echo esc_attr($key); ?>"
                                 name="<?php echo esc_attr($key); ?>"
-                                value="<?php echo esc_attr((string) get_option($key, '')); ?>"
+                                value="<?php echo esc_attr($value); ?>"
                                 class="cp-input regular-text"
                             />
 
@@ -359,47 +417,66 @@ class Admin
 
                 <?php if (isset($fields[$template_key])) : ?>
                     <div class="cp-section">
-                        <h2><?php echo esc_html__('Plantilla de este canal', 'convoca-publisher'); ?></h2>
+                        <h2><?php echo esc_html__('Plantilla de esta cuenta', 'convoca-publisher'); ?></h2>
                         <div class="cp-field">
-                            <label for="<?php echo esc_attr($template_key); ?>"><?php echo esc_html($fields[$template_key]['title'] ?? __('Mensaje', 'convoca-publisher')); ?></label>
+                            <label for="cuenta_plantilla"><?php echo esc_html__('Mensaje', 'convoca-publisher'); ?></label>
                             <input
                                 type="text"
-                                id="<?php echo esc_attr($template_key); ?>"
-                                name="<?php echo esc_attr($template_key); ?>"
-                                value="<?php echo esc_attr((string) get_option($template_key, '')); ?>"
+                                id="cuenta_plantilla"
+                                name="cuenta_plantilla"
+                                value="<?php echo esc_attr($account ? $account->get_template() : ''); ?>"
                                 class="cp-input cp-input--wide"
-                                placeholder="<?php echo esc_attr__('Usar la plantilla global', 'convoca-publisher'); ?>"
+                                placeholder="<?php echo esc_attr__('Usar la plantilla de la red', 'convoca-publisher'); ?>"
                             />
                             <p class="description">
-                                <?php echo esc_html__('Déjalo vacío para usar la plantilla global. Variables: {title}, {excerpt}, {url}, {hashtags}, {date}, {author}.', 'convoca-publisher'); ?>
+                                <?php echo esc_html__('Déjalo vacío para usar la plantilla de la red (pestaña Plantillas). Variables: {title}, {excerpt}, {url}, {hashtags}, {date}, {author}.', 'convoca-publisher'); ?>
                             </p>
                         </div>
                     </div>
                 <?php endif; ?>
 
-                <?php submit_button(__('Guardar cambios', 'convoca-publisher')); ?>
+                <?php submit_button($new_account ? __('Crear cuenta', 'convoca-publisher') : __('Guardar cambios', 'convoca-publisher')); ?>
             </form>
 
-            <div class="cp-section">
-                <h2><?php echo esc_html__('Verificar la conexión', 'convoca-publisher'); ?></h2>
-                <p><?php echo esc_html__('Pregunta a la red si la credencial sigue sirviendo. No publica nada ni gasta cuota de envío.', 'convoca-publisher'); ?></p>
-                <p><?php echo self::verify_button($channel); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?></p>
-            </div>
+            <?php if ($account) : ?>
+                <div class="cp-section">
+                    <h2><?php echo esc_html__('Verificar la conexión', 'convoca-publisher'); ?></h2>
+                    <p><?php echo esc_html__('Pregunta a la red si la credencial de esta cuenta sigue sirviendo. No publica nada ni gasta cuota de envío.', 'convoca-publisher'); ?></p>
+                    <p><?php echo self::verify_button($account); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?></p>
+                </div>
+            <?php endif; ?>
 
             <div class="cp-section">
                 <h2><?php echo esc_html__('Cómo conseguir estas credenciales', 'convoca-publisher'); ?></h2>
                 <p>
-                    <a href="<?php echo esc_url(self::tab_url('guide') . '#canal-' . $channel_id); ?>">
+                    <a href="<?php echo esc_url(self::tab_url('guide') . '#canal-' . $network_id); ?>">
                         <?php
                         printf(
                             /* translators: %s: nombre de la red social */
                             esc_html__('Guía paso a paso de %s', 'convoca-publisher'),
-                            esc_html($channel->get_name())
+                            esc_html($network->get_name())
                         );
         ?>
                     </a>
                 </p>
             </div>
+
+            <?php if ($account) : ?>
+                <div class="cp-section">
+                    <h2><?php echo esc_html__('Borrar esta cuenta', 'convoca-publisher'); ?></h2>
+                    <p class="description"><?php echo esc_html__('Se borra su configuración. Las entradas ya publicadas y el historial se quedan como están.', 'convoca-publisher'); ?></p>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                        <input type="hidden" name="action" value="cp_delete_account" />
+                        <input type="hidden" name="cuenta" value="<?php echo esc_attr($account->get_id()); ?>" />
+                        <?php wp_nonce_field('convoca_publisher_delete_account'); ?>
+                        <button
+                            type="submit"
+                            class="button button-link-delete"
+                            data-cp-confirm="<?php echo esc_attr__('¿Borrar esta cuenta?', 'convoca-publisher'); ?>"
+                        ><?php echo esc_html__('Borrar cuenta', 'convoca-publisher'); ?></button>
+                    </form>
+                </div>
+            <?php endif; ?>
         </div>
         <?php
     }
@@ -606,6 +683,10 @@ class Admin
      */
     public static function channel_fingerprint(object $channel): string
     {
+        if ($channel instanceof Channel_Profile) {
+            return md5((string) wp_json_encode($channel->get_settings()));
+        }
+
         $valores = [];
 
         foreach (array_keys($channel->get_settings_fields()) as $key) {
@@ -664,7 +745,8 @@ class Admin
 
     private static function render_channels_tab(): void
     {
-        $channels = convoca_publisher()->get_channels();
+        $networks = Plugin::networks();
+        $accounts = convoca_publisher()->get_channels();
 
         $verify_result = get_transient('convoca_publisher_verify_result_' . get_current_user_id());
 
@@ -677,23 +759,21 @@ class Admin
             <?php
         }
 
-        if (empty($channels)) {
+        if (empty($networks)) {
             ?>
             <div class="cp-notice cp-notice--warn">
-                <p><?php echo esc_html__('No se ha cargado ningún canal. Es un fallo del plugin, no de tu configuración: revisa que la carpeta includes/channels esté completa.', 'convoca-publisher'); ?></p>
+                <p><?php echo esc_html__('No se ha cargado ninguna red. Es un fallo del plugin, no de tu configuración: revisa que la carpeta includes/channels esté completa.', 'convoca-publisher'); ?></p>
             </div>
             <?php
 
             return;
         }
 
-        $configurados = array_filter($channels, static fn(object $channel): bool => $channel->is_available());
-
-        if (empty($configurados)) {
+        if (empty($accounts)) {
             ?>
             <div class="cp-notice">
                 <h2><?php echo esc_html__('Por dónde empezar', 'convoca-publisher'); ?></h2>
-                <p><?php echo esc_html__('Todavía no hay ningún canal configurado: mientras no lo esté, el plugin no publica en ninguna red. El orden que menos guerra da:', 'convoca-publisher'); ?></p>
+                <p><?php echo esc_html__('Todavía no hay ninguna cuenta configurada: mientras no la haya, el plugin no publica en ninguna red. El orden que menos guerra da:', 'convoca-publisher'); ?></p>
                 <ol class="cp-steps">
                     <li>
                         <strong><?php echo esc_html__('Telegram', 'convoca-publisher'); ?></strong> —
@@ -708,8 +788,8 @@ class Admin
                         <?php echo esc_html__('Facebook, LinkedIn, Twitter/X, TikTok y Google piden cuenta de desarrollador y tokens que caducan cada cierto tiempo.', 'convoca-publisher'); ?>
                     </li>
                 </ol>
-                <?php if (isset($channels['telegram'])) : ?>
-                    <p><a class="button button-primary" href="<?php echo esc_url(self::tab_url('channels', ['canal' => 'telegram'])); ?>"><?php echo esc_html__('Empezar por Telegram', 'convoca-publisher'); ?></a></p>
+                <?php if (isset($networks['telegram'])) : ?>
+                    <p><a class="button button-primary" href="<?php echo esc_url(self::tab_url('channels', ['canal' => 'telegram', 'nueva' => 1])); ?>"><?php echo esc_html__('Empezar por Telegram', 'convoca-publisher'); ?></a></p>
                 <?php endif; ?>
             </div>
             <?php
@@ -717,31 +797,87 @@ class Admin
 
         ?>
         <p class="description">
-            <?php echo esc_html__('Cada canal se configura en su propia pantalla: token, plantilla, verificación y guía, todo junto.', 'convoca-publisher'); ?>
+            <?php echo esc_html__('Una cuenta es una cuenta: puedes tener varias de la misma red (la página y el grupo de Facebook, dos canales de Telegram) cada una con sus credenciales y su plantilla.', 'convoca-publisher'); ?>
         </p>
 
-        <div class="cp-channels">
-            <?php foreach ($channels as $channel_id => $channel) : ?>
-                <?php $status = self::channel_status($channel); ?>
-                <div class="cp-card">
-                    <div class="cp-card__head">
-                        <h3 class="cp-card__title"><?php echo esc_html($channel->get_name()); ?></h3>
-                        <?php echo self::status_badge($status); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
-                    </div>
-
-                    <?php if (!empty($status['detail'])) : ?>
-                        <p class="cp-card__desc"><?php echo esc_html($status['detail']); ?></p>
+        <?php foreach ($networks as $network_id => $network) : ?>
+            <?php
+            $own = array_values(array_filter(
+                $accounts,
+                static fn(object $account): bool => $account instanceof Channel_Profile && $account->get_channel_id() === $network_id
+            ));
+            $free = Profile_Store::LIMIT_PER_NETWORK - count($own);
+            ?>
+            <div class="cp-section">
+                <div class="cp-card__head">
+                    <h2><?php echo esc_html($network->get_name()); ?></h2>
+                    <?php if (empty($own)) : ?>
+                        <?php echo self::status_badge(['key' => 'missing', 'class' => 'cp-status--off', 'icon' => '❌', 'label' => __('Falta token', 'convoca-publisher')]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
+                    <?php else : ?>
+                        <span class="cp-status cp-status--ok">
+                            <?php
+                            printf(
+                                /* translators: %d: número de cuentas de esa red */
+                                esc_html(_n('%d cuenta', '%d cuentas', count($own), 'convoca-publisher')),
+                                count($own)
+                            );
+                        ?>
+                        </span>
                     <?php endif; ?>
-
-                    <div class="cp-card__foot">
-                        <a class="button button-primary" href="<?php echo esc_url(self::tab_url('channels', ['canal' => $channel_id])); ?>">
-                            <?php echo esc_html__('Configurar', 'convoca-publisher'); ?>
-                        </a>
-                        <?php echo self::verify_button($channel); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
-                    </div>
                 </div>
-            <?php endforeach; ?>
-        </div>
+
+                <?php if (empty($own)) : ?>
+                    <p class="description"><?php echo esc_html__('Esta red no publica todavía: no tiene ninguna cuenta configurada.', 'convoca-publisher'); ?></p>
+                <?php else : ?>
+                    <table class="wp-list-table widefat striped">
+                        <thead>
+                            <tr>
+                                <th scope="col"><?php echo esc_html__('Cuenta', 'convoca-publisher'); ?></th>
+                                <th scope="col"><?php echo esc_html__('Estado', 'convoca-publisher'); ?></th>
+                                <th scope="col"><?php echo esc_html__('Acciones', 'convoca-publisher'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($own as $account) : ?>
+                                <tr>
+                                    <td>
+                                        <strong><?php echo esc_html($account->get_name()); ?></strong>
+                                        <div class="description"><?php echo esc_html($account->get_id()); ?></div>
+                                    </td>
+                                    <td>
+                                        <?php echo self::status_badge(self::channel_status($account)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
+                                    </td>
+                                    <td>
+                                        <a class="button" href="<?php echo esc_url(self::tab_url('channels', ['canal' => $account->get_id()])); ?>">
+                                            <?php echo esc_html__('Configurar', 'convoca-publisher'); ?>
+                                        </a>
+                                        <?php echo self::verify_button($account); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+
+                <?php if ($free > 0) : ?>
+                    <p>
+                        <a class="button" href="<?php echo esc_url(self::tab_url('channels', ['canal' => $network_id, 'nueva' => 1])); ?>">
+                            <?php echo esc_html__('Añadir cuenta', 'convoca-publisher'); ?>
+                        </a>
+                    </p>
+                <?php else : ?>
+                    <p class="description">
+                        <?php
+                        printf(
+                            /* translators: %d: límite de cuentas por red */
+                            esc_html__('Límite alcanzado: %d cuentas por red. Borra una para añadir otra.', 'convoca-publisher'),
+                            Profile_Store::LIMIT_PER_NETWORK
+                        );
+                    ?>
+                    </p>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
         <?php
     }
 
@@ -1167,5 +1303,74 @@ class Admin
             <p><a href="https://docs.joinmastodon.org/api/" target="_blank">📄 <?php echo esc_html__('Documentación oficial de Mastodon API', 'convoca-publisher'); ?></a></p>
         </div>
         <?php
+    }
+
+    /**
+     * Guardar (o crear) una cuenta.
+     */
+    public static function handle_save_account(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+
+        check_admin_referer('convoca_publisher_save_account');
+
+        $network_id = isset($_POST['red']) ? sanitize_key(wp_unslash((string) $_POST['red'])) : '';
+        $account_id = isset($_POST['cuenta']) ? sanitize_key(wp_unslash((string) $_POST['cuenta'])) : '';
+        $name       = isset($_POST['cuenta_nombre']) ? sanitize_text_field(wp_unslash((string) $_POST['cuenta_nombre'])) : '';
+        $template   = isset($_POST['cuenta_plantilla']) ? wp_kses_post(wp_unslash((string) $_POST['cuenta_plantilla'])) : '';
+        $networks   = Plugin::networks();
+
+        if (!isset($networks[$network_id])) {
+            wp_die(esc_html__('Esa red no existe.', 'convoca-publisher'));
+        }
+
+        $settings = [];
+
+        foreach (array_keys($networks[$network_id]->get_settings_fields()) as $option) {
+            if (str_ends_with($option, '_template') || !isset($_POST[$option])) {
+                continue;
+            }
+
+            $settings[$option] = sanitize_text_field(wp_unslash((string) $_POST[$option]));
+        }
+
+        if ('' !== $account_id && Profile_Store::find($account_id)) {
+            Profile_Store::update($account_id, ['name' => $name, 'template' => $template, 'settings' => $settings]);
+            $destino = $account_id;
+        } else {
+            $cuenta = Profile_Store::create($network_id, $name, $settings, $template);
+
+            if (false === $cuenta) {
+                wp_safe_redirect(self::tab_url('channels'));
+
+                return;
+            }
+
+            $destino = $cuenta['id'];
+        }
+
+        wp_safe_redirect(self::tab_url('channels', ['canal' => $destino, 'guardado' => 1]));
+        exit;
+    }
+
+    /**
+     * Borrar una cuenta.
+     */
+    public static function handle_delete_account(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('No tienes permisos.', 'convoca-publisher'));
+        }
+
+        check_admin_referer('convoca_publisher_delete_account');
+
+        $account_id = isset($_POST['cuenta']) ? sanitize_key(wp_unslash((string) $_POST['cuenta'])) : '';
+
+        Profile_Store::delete($account_id);
+
+        wp_safe_redirect(self::tab_url('channels'));
+        exit;
     }
 }
