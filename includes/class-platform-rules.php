@@ -54,6 +54,16 @@ class Platform_Rules
         return self::RULES[$network] ?? self::FALLBACK;
     }
 
+    /**
+     * Las redes con reglas propias (las demás caen en el tope prudente).
+     *
+     * @return string[]
+     */
+    public static function networks(): array
+    {
+        return array_keys(self::RULES);
+    }
+
     public static function limit(string $network): int
     {
         return self::rules($network)['chars'];

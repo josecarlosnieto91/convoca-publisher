@@ -22,6 +22,18 @@ namespace ConvocaPublisher\Tests {
             $this->assertSame(3000, Platform_Rules::limit('linkedin'));
         }
 
+        public function testTodosLosCanalesDelPluginTienenSusReglas(): void
+        {
+            $canales = array_keys(\ConvocaPublisher\Plugin::networks());
+            $sin_reglas = array_diff($canales, Platform_Rules::networks());
+
+            $this->assertSame(
+                [],
+                array_values($sin_reglas),
+                'Un canal sin reglas propias cuenta con el tope genérico: nadie se enteraría de que se queda sin revisar.'
+            );
+        }
+
         public function testUnaRedDesconocidaNoSeQuedaSinReglas(): void
         {
             $reglas = Platform_Rules::rules('bluesky');

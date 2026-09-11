@@ -359,9 +359,8 @@ class Publisher
             static fn(string $candidata): bool => '' !== trim($candidata)
         );
 
-        $template = '' === trim($override) && [] !== $candidatas
-            ? (string) array_values($candidatas)[0]
-            : ($override ?: $default);
+        // El primero que haya manda: lo de este envío, lo de la entrada, la cuenta, la red, lo global.
+        $template = [] === $candidatas ? $default : (string) array_values($candidatas)[0];
 
         $excerpt = get_the_excerpt($post);
         if (empty($excerpt)) {
