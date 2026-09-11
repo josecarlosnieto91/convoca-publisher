@@ -281,7 +281,7 @@ class Facebook implements ChannelInterface
 
         return sprintf(
             /* translators: %d: publicaciones hechas en las últimas 24 horas */
-            __('✅ Instagram responde (publicadas en 24 h: %d de 100). La publicación directa por API aún no está implementada: hoy lo que llega a Instagram lo lleva el cross-post de la Página.', 'convoca-publisher'),
+            __('✅ Instagram responde (publicadas en 24 h: %d de 100). Se publica por la API: primero el contenedor y luego la publicación, además del muro de la Página.', 'convoca-publisher'),
             $cuota
         );
     }
