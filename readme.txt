@@ -163,6 +163,8 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 
 == Screenshots ==
 
+(The same screens in Spanish are in `assets/es/`.)
+
 1. Channels by network, each with its accounts and their status (configured, missing token, verification error, needs reconnecting).
 2. Everything for one account on a single screen: its name, credentials, its own message template, the connection check and the step-by-step guide.
 3. General settings: automatic publishing, scheduling, moderation and the privacy notice.
