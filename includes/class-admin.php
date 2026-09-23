@@ -1287,14 +1287,15 @@ class Admin
 
                 <p class="cp-filters__count">
                     <?php
-                    // Las cifras se calculan aparte y se castean: van a salir impresas.
-                    $cp_primera = (int) ( count($paginado['entries']) > 0 ? ( ( $paginado['page'] - 1 ) * 25 ) + 1 : 0 );
-                    $cp_ultima  = (int) ( ( ( $paginado['page'] - 1 ) * 25 ) + count($paginado['entries']) );
+                    // Las cifras se calculan aparte y se castean en la llamada: la
+                    // comprobación de escapado de Plugin Check mira el argumento.
+                    $cp_primera = ( ( $paginado['page'] - 1 ) * 25 ) + 1;
+                    $cp_ultima  = ( ( $paginado['page'] - 1 ) * 25 ) + count($paginado['entries']);
                     printf(
                         /* translators: 1: primera fila que se ve, 2: última, 3: total, 4: página, 5: páginas. */
                         esc_html__('Mostrando %1$d-%2$d de %3$d (página %4$d de %5$d).', 'convoca-publisher'),
-                        $cp_primera,
-                        $cp_ultima,
+                        (int) ( count($paginado['entries']) > 0 ? $cp_primera : 0 ),
+                        (int) $cp_ultima,
                         (int) $datos['total'],
                         (int) $paginado['page'],
                         (int) $paginado['pages']
