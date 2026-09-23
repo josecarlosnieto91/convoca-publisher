@@ -48,7 +48,12 @@ class Platform_Rules
     private const FALLBACK = ['chars' => 2000, 'url_weight' => 0, 'hashtags' => 0, 'urls' => 0, 'bold' => ''];
 
     /**
-     * @return array{chars: int, url_weight: int, hashtags: int, urls: int}
+     * Reglas de una red.
+     *
+     * `bold` viaja aparte y solo lo declara la red que acepta formato
+     * (Telegram, en modo HTML): por eso es opcional en la forma devuelta.
+     *
+     * @return array{chars: int, url_weight: int, hashtags: int, urls: int, bold?: string}
      */
     public static function rules(string $network): array
     {

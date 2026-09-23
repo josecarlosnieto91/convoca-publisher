@@ -262,7 +262,9 @@ class Admin
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce'   => wp_create_nonce('convoca_publisher_preview'),
             'i18n'    => [
+                /* translators: %s: número de caracteres que quedan. */
                 'quedan'    => __('Quedan %s caracteres', 'convoca-publisher'),
+                /* translators: %s: número de caracteres de más. */
                 'pasado'    => __('Te pasas por %s caracteres: se recortará antes de enviar. Esto es lo que se mandaría:', 'convoca-publisher'),
                 'error'     => __('No se pudo generar la vista previa.', 'convoca-publisher'),
             ],
@@ -1285,11 +1287,14 @@ class Admin
 
                 <p class="cp-filters__count">
                     <?php
+                    // Las cifras se calculan aparte y se castean: van a salir impresas.
+                    $cp_primera = (int) ( count($paginado['entries']) > 0 ? ( ( $paginado['page'] - 1 ) * 25 ) + 1 : 0 );
+                    $cp_ultima  = (int) ( ( ( $paginado['page'] - 1 ) * 25 ) + count($paginado['entries']) );
                     printf(
                         /* translators: 1: primera fila que se ve, 2: última, 3: total, 4: página, 5: páginas. */
                         esc_html__('Mostrando %1$d-%2$d de %3$d (página %4$d de %5$d).', 'convoca-publisher'),
-                        count($paginado['entries']) > 0 ? (($paginado['page'] - 1) * 25) + 1 : 0,
-                        (($paginado['page'] - 1) * 25) + count($paginado['entries']),
+                        $cp_primera,
+                        $cp_ultima,
                         (int) $datos['total'],
                         (int) $paginado['page'],
                         (int) $paginado['pages']
