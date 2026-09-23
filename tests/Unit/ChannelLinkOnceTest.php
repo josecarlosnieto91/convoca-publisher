@@ -38,7 +38,7 @@ final class ChannelLinkOnceTest extends TestCase
     public function testConElEnlaceEnLaPlantillaNoSeRepiteAlFinal(): void
     {
         $canal = new Telegram();
-        $url   = 'https://lugg.biodevas.org/2026/09/puertas-abiertas/';
+        $url   = 'https://example.org/2026/09/puertas-abiertas/';
 
         $canal->publish(12167, "Un mensaje\n\n" . $url, $url);
 
@@ -49,7 +49,7 @@ final class ChannelLinkOnceTest extends TestCase
     public function testSiLaPlantillaNoLlevaEnlaceSeAnade(): void
     {
         $canal = new Telegram();
-        $url   = 'https://lugg.biodevas.org/2026/09/puertas-abiertas/';
+        $url   = 'https://example.org/2026/09/puertas-abiertas/';
 
         $canal->publish(12167, 'Un mensaje sin enlace', $url);
 

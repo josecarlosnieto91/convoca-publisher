@@ -44,7 +44,7 @@ namespace ConvocaPublisher\Tests {
 
         public function testElContadorDeXCuentaElEnlaceComoLoCuentaX(): void
         {
-            $enlace = 'https://lugg.biodevas.org/actividades/taller-de-huerto-y-compostaje-comunitario/';
+            $enlace = 'https://example.org/actividades/taller-de-huerto-y-compostaje-comunitario/';
             $texto  = 'Taller de huerto ' . $enlace;
 
             // 16 letras + espacio + los 23 que cuenta X, no los 80 y pico que mide el enlace.
@@ -54,7 +54,7 @@ namespace ConvocaPublisher\Tests {
 
         public function testUnEnlaceLargoCabeEnXGraciasAlPesoFijo(): void
         {
-            $mensaje = str_repeat('a', 250) . ' https://lugg.biodevas.org/una/ruta/larguisima/que/ocupa/mucho/espacio/';
+            $mensaje = str_repeat('a', 250) . ' https://example.org/una/ruta/larguisima/que/ocupa/mucho/espacio/';
 
             $this->assertTrue(Platform_Rules::check('twitter', $mensaje)['fit'], 'Con el peso real del enlace, cabe.');
             $this->assertGreaterThan(280, mb_strlen($mensaje), 'Aunque medido a pelo no quepa.');
@@ -72,12 +72,12 @@ namespace ConvocaPublisher\Tests {
 
         public function testUnMensajeQueCabeNoTraeAvisos(): void
         {
-            $resultado = Platform_Rules::check('twitter', 'Asamblea de socios el jueves https://lugg.biodevas.org/ #asamblea');
+            $resultado = Platform_Rules::check('twitter', 'Asamblea de socios el jueves https://example.org/ #asamblea');
 
             $this->assertTrue($resultado['ok']);
             $this->assertSame([], $resultado['problems']);
             $this->assertSame([], $resultado['warnings']);
-            $this->assertSame($resultado['message'], 'Asamblea de socios el jueves https://lugg.biodevas.org/ #asamblea', 'Lo que cabe no se toca.');
+            $this->assertSame($resultado['message'], 'Asamblea de socios el jueves https://example.org/ #asamblea', 'Lo que cabe no se toca.');
         }
 
         public function testDemasiadasEtiquetasAvisanPeroNoImpidenEnviar(): void
@@ -91,7 +91,7 @@ namespace ConvocaPublisher\Tests {
 
         public function testUnMensajeQueNoCabeSeRecortaYConservaElEnlace(): void
         {
-            $enlace  = 'https://lugg.biodevas.org/actividades/';
+            $enlace  = 'https://example.org/actividades/';
             $mensaje = str_repeat('palabra ', 60) . $enlace;
 
             // En X, que además cuenta el enlace con su peso: el recorte tiene que valer ahí.
@@ -130,10 +130,10 @@ namespace ConvocaPublisher\Tests {
 
         public function testLasUrlsSeExtraenSinLaPuntuacionDeAlLado(): void
         {
-            $urls = Platform_Rules::urls('Ver https://lugg.biodevas.org/actividades/, y también https://getconvoca.app.');
+            $urls = Platform_Rules::urls('Ver https://example.org/actividades/, y también https://getconvoca.app.');
 
             $this->assertCount(2, $urls);
-            $this->assertSame('https://lugg.biodevas.org/actividades/', $urls[0]);
+            $this->assertSame('https://example.org/actividades/', $urls[0]);
             $this->assertSame('https://getconvoca.app', $urls[1]);
         }
     }
