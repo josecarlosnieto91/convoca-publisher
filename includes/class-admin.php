@@ -26,8 +26,12 @@ class Admin
         add_action('admin_menu', [self::class, 'add_menu_page']);
         add_action('admin_init', [self::class, 'register_settings']);
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
-        add_action('admin_action_cp_delete_log', [self::class, 'handle_delete_log']);
-        add_action('admin_action_cp_retry_log', [self::class, 'handle_retry_log']);
+        // Los enlaces de la página de logs apuntan a admin.php?action=convoca_publisher_*,
+        // pero estos handlers se quedaron con el prefijo cp_ en el refactor de prefijos: el
+        // navegador pedía una acción que nadie atendía y los dos botones (Limpiar historial y
+        // Reintentar) no hacían nada. Ver docs/deuda-tecnica.md.
+        add_action('admin_action_convoca_publisher_delete_log', [self::class, 'handle_delete_log']);
+        add_action('admin_action_convoca_publisher_retry_log', [self::class, 'handle_retry_log']);
         add_action('admin_post_convoca_publisher_verify_channel', [self::class, 'handle_verify_channel']);
         add_action('admin_post_convoca_publisher_save_account', [self::class, 'handle_save_account']);
         add_action('admin_post_convoca_publisher_delete_account', [self::class, 'handle_delete_account']);

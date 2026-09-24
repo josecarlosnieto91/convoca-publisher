@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.22.2] - 2026-09-23
+
+### Arreglado
+- **Los dos botones de la página de historial no funcionaban**: los enlaces apuntaban a `admin.php?action=convoca_publisher_delete_log` / `…_retry_log`, pero los handlers seguían registrados como `admin_action_cp_delete_log` / `admin_action_cp_retry_log`. El desajuste venía del refactor de prefijos, que renombró enlaces y nonces pero no los `add_action()`. Ahora «Limpiar historial» y «Reintentar» hacen lo que dicen.
+
+### Eliminado (código muerto auditado)
+- Cuatro acciones AJAX sin ningún productor y sin nonce que se genere en el plugin: `clear_log`, `republish`, `dismiss_notice` y `test_publish` (esta última, además, se saltaba el canal de pruebas). Se conservan sus flujos reales: el enlace de limpiar historial, el formulario de prueba y «Compartir ahora».
+- El botón «Republicar» del metabox, al que no escuchaba ningún JavaScript.
+- Auditoría completa y decisiones en `docs/deuda-tecnica.md`.
+
+
 ## [1.22.1] - 2026-09-23
 
 ### Cambiado (interno)

@@ -25,7 +25,6 @@ class Metabox
     {
         add_action('add_meta_boxes', [self::class, 'register']);
         add_action('save_post', [self::class, 'save']);
-        add_action('wp_ajax_convoca_publisher_republish', [self::class, 'ajax_republish']);
         add_action('wp_ajax_convoca_publisher_share', [self::class, 'ajax_share']);
         add_action('admin_enqueue_scripts', [self::class, 'enqueue']);
     }
@@ -126,8 +125,9 @@ class Metabox
                     echo '<p class="cp-meta__warn">⚠️ ' . esc_html($w) . '</p>';
                 }
             }
-            echo '<p><button type="button" class="button button-small cp-republish" data-post-id="' . esc_attr((string) $post->ID) . '">'
-                . esc_html__('↻ Republicar', 'convoca-publisher') . '</button></p>';
+            // El botón «Republicar» vivía aquí sin ningún JS que lo escuchara: pulsarlo no
+            // hacía nada. La acción AJAX a la que apuntaba se ha retirado (ver docs/deuda-tecnica.md).
+            // Para republicar está «Compartir ahora», que sí funciona.
         } elseif (get_option('convoca_publisher_auto_publish', true)) {
             echo '<p>' . esc_html__('Se publicará automáticamente al guardar.', 'convoca-publisher') . '</p>';
         } else {
@@ -281,20 +281,4 @@ class Metabox
         ]);
     }
 
-    public static function ajax_republish(): void
-    {
-        check_ajax_referer('convoca_publisher_republish', '_wpnonce');
-        if (!current_user_can('edit_posts')) {
-            wp_die('-1');
-        }
-
-        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
-        if ($post_id) {
-            $publisher = Publisher::instance();
-            if ($publisher) {
-                $publisher->publish_post($post_id, true);
-            }
-        }
-        wp_send_json(['success' => true]);
-    }
 }

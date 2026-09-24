@@ -24,7 +24,6 @@ class Notifications
     public static function init(): void
     {
         add_action('admin_notices', [self::class, 'show_alerts']);
-        add_action('wp_ajax_convoca_publisher_dismiss_notice', [self::class, 'dismiss']);
     }
 
     /**
@@ -131,6 +130,11 @@ class Notifications
             }
         }
 
+        // El meta del descarte se sigue LEYENDO aquí (y en los demás avisos), pero ya nadie lo
+        // escribe: la acción AJAX que lo hacía se retiró por no tener ningún llamador. El aviso
+        // se oculta igual al cerrarlo (comportamiento nativo de WordPress) y reaparece en la
+        // carga siguiente. Si algún día se quiere descarte permanente, hay que reconectar el JS
+        // con una acción (ver docs/deuda-tecnica.md).
         if (!empty($unconfigured) && !get_user_meta(get_current_user_id(), 'convoca_publisher_dismiss_unconfigured', true)) {
             echo '<div class="notice notice-warning is-dismissible cp-notice" data-key="unconfigured">';
             echo '<p><strong>🔌 ' . esc_html__('Convoca Publisher:', 'convoca-publisher') . '</strong> ';
@@ -167,13 +171,5 @@ class Notifications
                 echo '</p></div>';
             }
         }
-    }
-
-    public static function dismiss(): void
-    {
-        check_ajax_referer('convoca_publisher_dismiss_notice', '_wpnonce');
-        $key = isset($_POST['key']) ? sanitize_key($_POST['key']) : '';
-        update_user_meta(get_current_user_id(), 'convoca_publisher_dismiss_' . $key, true);
-        wp_send_json(['success' => true]);
     }
 }

@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.22.1
+Stable tag: 1.22.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,10 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.22.2 =
+* Arreglado: los botones «Limpiar historial» y «Reintentar» de la página de historial no hacían nada. Sus enlaces pedían una acción de administración que ningún handler atendía (el registro se quedó con el prefijo antiguo cuando se renombraron los enlaces).
+* Limpieza: se retiran cuatro acciones AJAX sin ningún productor (`clear_log`, `republish`, `dismiss_notice` y `test_publish`) y el botón «Republicar», que estaba desconectado. Los flujos reales (limpiar historial por enlace, probar publicación por formulario, republicar con «Compartir ahora») siguen igual.
 
 = 1.22.1 =
 * Nomenclatura interna: las acciones de administración y AJAX, los campos del panel y sus atributos dejan el prefijo `cp_` y pasan a `convoca_publisher_`, como el resto del ecosistema. Sin cambio de comportamiento; los nonces y los flujos del panel se han verificado sobre un WordPress real.

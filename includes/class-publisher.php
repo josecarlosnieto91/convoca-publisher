@@ -37,8 +37,6 @@ class Publisher
         add_action('publish_post', [self::$instance, 'on_publish_post'], 10, 2);
         add_action('future_to_publish', [self::$instance, 'on_scheduled_publish'], 10, 1);
         add_action('convoca_publisher_async_publish', [self::$instance, 'on_async_publish'], 10, 1);
-        add_action('wp_ajax_convoca_publisher_test_publish', [self::$instance, 'ajax_test_publish']);
-        add_action('wp_ajax_convoca_publisher_clear_log', [self::$instance, 'ajax_clear_log']);
         add_action('wp_ajax_convoca_publisher_preview_template', [self::$instance, 'ajax_preview_template']);
     }
 
@@ -659,25 +657,4 @@ class Publisher
         wp_send_json($this->preview_message($post_id, $network_id, $template));
     }
 
-    public function ajax_test_publish(): void
-    {
-        check_ajax_referer('convoca_publisher_test_publish', '_wpnonce');
-        if (!current_user_can('manage_options')) {
-            wp_die('-1');
-        }
-
-        $post_id = intval($_POST['post_id'] ?? 0);
-        $results = $this->publish_post($post_id, true);
-        wp_send_json($results);
-    }
-
-    public function ajax_clear_log(): void
-    {
-        check_ajax_referer('convoca_publisher_clear_log', '_wpnonce');
-        if (!current_user_can('manage_options')) {
-            wp_die('-1');
-        }
-        delete_option('convoca_publisher_publish_log');
-        wp_send_json(['success' => true]);
-    }
 }
