@@ -3,7 +3,7 @@
 /**
  * El enlace no se pega dos veces.
  *
- * Visto en producción, con el último post de Lugg: Telegram añadía el enlace al final **siempre**,
+ * Visto en producción, con el último post de una instalación real: Telegram añadía el enlace al final **siempre**,
  * así que con una plantilla que ya trae `{url}` el mismo enlace salía dos veces en el mensaje.
  * Lo mismo hacían Mastodon y Twitter.
  */

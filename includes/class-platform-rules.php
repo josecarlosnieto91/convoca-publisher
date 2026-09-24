@@ -99,7 +99,7 @@ class Platform_Rules
      *
      * Telegram y Mastodon lo pegaban siempre al final: con una plantilla que ya trae `{url}` —o
      * con el enlace dentro del extracto— el mismo enlace salía dos veces. Visto en producción,
-     * con el último post de Lugg.
+     * con el último post de una instalación real.
      */
     public static function url_if_missing(string $message, string $url): string
     {
