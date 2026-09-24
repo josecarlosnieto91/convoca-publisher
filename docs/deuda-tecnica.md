@@ -10,7 +10,7 @@ nonce que se genere no es una API, es código muerto.**
 
 Auditoría: se buscó el nombre literal (viejo `cp_*` y nuevo `convoca_publisher_*`) en
 PHP, JS, CSS, tests, i18n y documentación de todo el ecosistema, y en el código
-**desplegado** de Lugg, Biodevas y demo (plugins, mu-plugins, temas). Se siguió el
+**desplegado** de las instalaciones en producción (plugins, mu-plugins y temas). Se siguió el
 flujo productor → acción → consumidor, incluidos `data-action`, `fetch`, `$.ajax`,
 generación dinámica de nombres y `wp_localize_script`.
 
@@ -19,7 +19,7 @@ generación dinámica de nombres y `wp_localize_script`.
 | `convoca_publisher_clear_log` | `Publisher::ajax_clear_log()` | nonce `convoca_publisher_clear_log` · `manage_options` | **ninguno.** El nonce no se genera en ningún sitio (`wp_create_nonce` solo existe para `share` y `preview`): ni un consumidor externo podría invocarla | **REMOVE.** La limpieza del log tiene su propio flujo, el enlace `admin.php?action=convoca_publisher_delete_log` de la página de historial (con nonce y confirmación) |
 | `convoca_publisher_test_publish` | `Publisher::ajax_test_publish()` | nonce `convoca_publisher_test_publish` · `manage_options` | **ninguno** para la vía AJAX: el flujo real es el **formulario POST** de la pestaña «Probar», que usa `check_admin_referer()` y llama a `publish_test()`/`publish_post()` pintando el resultado en la página | **REMOVE.** Además de estar huérfana, la vía AJAX **se saltaba el canal de pruebas**: publicaba en las redes reales. Se conserva el flujo POST, que sí respeta la salvaguarda |
 | `convoca_publisher_republish` | `Metabox::ajax_republish()` | nonce `convoca_publisher_republish` · `edit_posts` | **botón sin JS.** Existía el botón `.cp-republish` en el metabox, pero ningún JavaScript lo escuchaba (solo hay `admin.js` y `metabox.js`, y ninguno lo menciona), así que pulsarlo no hacía nada | **REMOVE** (callback, registro y el botón muerto). Para republicar está «Compartir ahora», que sí funciona |
-| `convoca_publisher_dismiss_notice` | `Notifications::dismiss()` | nonce `convoca_publisher_dismiss_notice` · sin capacidad | **ninguno.** Los avisos se pintan con `is-dismissible` y `data-key`, pero nadie enviaba la petición. No hay ni un `convoca_publisher_dismiss_*` guardado en ningún sitio (Lugg, Biodevas y demo: cero) | **REMOVE.** Sin productor, sin nonce generado y sin estado persistido tras años de uso del plugin |
+| `convoca_publisher_dismiss_notice` | `Notifications::dismiss()` | nonce `convoca_publisher_dismiss_notice` · sin capacidad | **ninguno.** Los avisos se pintan con `is-dismissible` y `data-key`, pero nadie enviaba la petición. No hay ni un `convoca_publisher_dismiss_*` guardado en ningún sitio (las instalaciones en producción: cero) | **REMOVE.** Sin productor, sin nonce generado y sin estado persistido tras años de uso del plugin |
 
 ## Lo que se ha conservado (y por qué)
 
