@@ -28,18 +28,18 @@ class Admin
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
         add_action('admin_action_cp_delete_log', [self::class, 'handle_delete_log']);
         add_action('admin_action_cp_retry_log', [self::class, 'handle_retry_log']);
-        add_action('admin_post_cp_verify_channel', [self::class, 'handle_verify_channel']);
-        add_action('admin_post_cp_save_account', [self::class, 'handle_save_account']);
-        add_action('admin_post_cp_delete_account', [self::class, 'handle_delete_account']);
-        add_action('admin_post_cp_queue_reschedule', [self::class, 'handle_queue_reschedule']);
-        add_action('admin_post_cp_queue_cancel', [self::class, 'handle_queue_cancel']);
-        add_action('admin_post_cp_queue_spacing', [self::class, 'handle_queue_spacing']);
-        add_action('admin_post_cp_queue_send_stuck', [self::class, 'handle_queue_send_stuck']);
-        add_action('admin_post_cp_share_now', [self::class, 'handle_share_now']);
+        add_action('admin_post_convoca_publisher_verify_channel', [self::class, 'handle_verify_channel']);
+        add_action('admin_post_convoca_publisher_save_account', [self::class, 'handle_save_account']);
+        add_action('admin_post_convoca_publisher_delete_account', [self::class, 'handle_delete_account']);
+        add_action('admin_post_convoca_publisher_queue_reschedule', [self::class, 'handle_queue_reschedule']);
+        add_action('admin_post_convoca_publisher_queue_cancel', [self::class, 'handle_queue_cancel']);
+        add_action('admin_post_convoca_publisher_queue_spacing', [self::class, 'handle_queue_spacing']);
+        add_action('admin_post_convoca_publisher_queue_send_stuck', [self::class, 'handle_queue_send_stuck']);
+        add_action('admin_post_convoca_publisher_share_now', [self::class, 'handle_share_now']);
         add_filter('post_row_actions', [self::class, 'row_action'], 10, 2);
         add_action('admin_notices', [self::class, 'shared_notice']);
-        add_action('admin_post_cp_approve_review', [self::class, 'handle_approve_review']);
-        add_action('admin_post_cp_reject_review', [self::class, 'handle_reject_review']);
+        add_action('admin_post_convoca_publisher_approve_review', [self::class, 'handle_approve_review']);
+        add_action('admin_post_convoca_publisher_reject_review', [self::class, 'handle_reject_review']);
     }
 
     public static function add_menu_page(): void
@@ -417,7 +417,7 @@ class Admin
             <?php endif; ?>
 
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                <input type="hidden" name="action" value="cp_save_account" />
+                <input type="hidden" name="action" value="convoca_publisher_save_account" />
                 <input type="hidden" name="red" value="<?php echo esc_attr($network_id); ?>" />
                 <input type="hidden" name="cuenta" value="<?php echo esc_attr($account ? $account->get_id() : ''); ?>" />
                 <?php wp_nonce_field('convoca_publisher_save_account'); ?>
@@ -538,7 +538,7 @@ class Admin
                     <h2><?php echo esc_html__('Borrar esta cuenta', 'convoca-publisher'); ?></h2>
                     <p class="description"><?php echo esc_html__('Se borra su configuración. Las entradas ya publicadas y el historial se quedan como están.', 'convoca-publisher'); ?></p>
                     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                        <input type="hidden" name="action" value="cp_delete_account" />
+                        <input type="hidden" name="action" value="convoca_publisher_delete_account" />
                         <input type="hidden" name="cuenta" value="<?php echo esc_attr($account->get_id()); ?>" />
                         <?php wp_nonce_field('convoca_publisher_delete_account'); ?>
                         <button
@@ -913,7 +913,7 @@ class Admin
     public static function verify_button(object $channel): string
     {
         $url = wp_nonce_url(
-            admin_url('admin-post.php?action=cp_verify_channel&channel=' . $channel->get_id()),
+            admin_url('admin-post.php?action=convoca_publisher_verify_channel&channel=' . $channel->get_id()),
             'convoca_publisher_verify_channel'
         );
 
@@ -1531,8 +1531,8 @@ class Admin
                     <?php foreach ($items as $item):
                         $review_id = (int) $item->id;
                         $post = get_post((int) $item->post_id);
-                        $approve_url = wp_nonce_url(admin_url('admin-post.php?action=cp_approve_review&id=' . $review_id), 'convoca_publisher_review_' . $review_id);
-                        $reject_url = wp_nonce_url(admin_url('admin-post.php?action=cp_reject_review&id=' . $review_id), 'convoca_publisher_review_' . $review_id);
+                        $approve_url = wp_nonce_url(admin_url('admin-post.php?action=convoca_publisher_approve_review&id=' . $review_id), 'convoca_publisher_review_' . $review_id);
+                        $reject_url = wp_nonce_url(admin_url('admin-post.php?action=convoca_publisher_reject_review&id=' . $review_id), 'convoca_publisher_review_' . $review_id);
                         ?>
                         <tr>
                             <td>
@@ -1862,16 +1862,16 @@ class Admin
                 <a class="button <?php echo 'semana' === $vista ? 'button-primary' : ''; ?>" href="<?php echo esc_url(self::tab_url('queue', ['vista' => 'semana', 'anio' => $anio, 'mes' => $mes, 'dia' => $dia])); ?>"><?php echo esc_html__('Semana', 'convoca-publisher'); ?></a>
             </span>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-cal__recolocar">
-                <input type="hidden" name="action" value="cp_queue_spacing" />
+                <input type="hidden" name="action" value="convoca_publisher_queue_spacing" />
                 <?php wp_nonce_field('convoca_publisher_queue_spacing'); ?>
                 <button type="submit" class="button"><?php echo esc_html__('Recolocar ahora', 'convoca-publisher'); ?></button>
             </form>
         </div>
 
         <form id="cp-cal-form" class="cp-hidden" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-            <input type="hidden" name="action" value="cp_queue_reschedule" />
-            <input type="hidden" name="cp_envio" value="" />
-            <input type="hidden" name="cp_dia" value="" />
+            <input type="hidden" name="action" value="convoca_publisher_queue_reschedule" />
+            <input type="hidden" name="convoca_publisher_envio" value="" />
+            <input type="hidden" name="convoca_publisher_dia" value="" />
             <?php wp_nonce_field('convoca_publisher_queue_reschedule'); ?>
         </form>
 
@@ -1955,7 +1955,7 @@ class Admin
                                 $clase .= ' cp-cal__hoy';
                             }
                             ?>
-                            <td class="<?php echo esc_attr($clase); ?>" data-cp-dia="<?php echo esc_attr($fecha); ?>">
+                            <td class="<?php echo esc_attr($clase); ?>" data-convoca-publisher-dia="<?php echo esc_attr($fecha); ?>">
                                 <div class="cp-cal__day-number"><?php echo esc_html($dia->format('j')); ?></div>
                                 <?php foreach ($porDia[$fecha] ?? [] as $envio) : ?>
                                     <?php echo self::queue_entry_html($envio); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.?>
@@ -2005,7 +2005,7 @@ class Admin
         return sprintf(
             '<span class="%1$s"%2$s draggable="%3$s" title="%4$s">%5$s</span>',
             esc_attr($clase),
-            '' !== $ref ? ' data-cp-envio="' . esc_attr($ref) . '"' : '',
+            '' !== $ref ? ' data-convoca-publisher-envio="' . esc_attr($ref) . '"' : '',
             '' !== $ref ? 'true' : 'false',
             esc_attr(trim($texto . ('' !== $pista ? ' — ' . $pista : ''))),
             esc_html($texto)
@@ -2104,8 +2104,8 @@ class Admin
         </p>
         <?php if ([] !== $atrasados) : ?>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-acciones">
-                <input type="hidden" name="action" value="cp_queue_send_stuck" />
-                <input type="hidden" name="cp_todos" value="1" />
+                <input type="hidden" name="action" value="convoca_publisher_queue_send_stuck" />
+                <input type="hidden" name="convoca_publisher_todos" value="1" />
                 <?php wp_nonce_field('convoca_publisher_queue_send_stuck'); ?>
                 <button type="submit" class="button button-primary"><?php echo esc_html__('Enviar todo lo atrasado', 'convoca-publisher'); ?></button>
             </form>
@@ -2155,8 +2155,8 @@ class Admin
                         <td><?php echo esc_html(sprintf('%d / %d', (int) ($fila['attempts'] ?? 0), Queue::MAX_ATTEMPTS)); ?></td>
                         <td>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-acciones">
-                                <input type="hidden" name="action" value="cp_queue_send_stuck" />
-                                <input type="hidden" name="cp_post" value="<?php echo esc_attr((string) $fila['post_id']); ?>" />
+                                <input type="hidden" name="action" value="convoca_publisher_queue_send_stuck" />
+                                <input type="hidden" name="convoca_publisher_post" value="<?php echo esc_attr((string) $fila['post_id']); ?>" />
                                 <?php wp_nonce_field('convoca_publisher_queue_send_stuck'); ?>
                                 <button type="submit" class="button"><?php echo esc_html__('Enviar ahora', 'convoca-publisher'); ?></button>
                             </form>
@@ -2179,8 +2179,8 @@ class Admin
 
         check_admin_referer('convoca_publisher_queue_send_stuck');
 
-        $todos   = !empty($_POST['cp_todos']);
-        $post_id = isset($_POST['cp_post']) ? (int) $_POST['cp_post'] : 0;
+        $todos   = !empty($_POST['convoca_publisher_todos']);
+        $post_id = isset($_POST['convoca_publisher_post']) ? (int) $_POST['convoca_publisher_post'] : 0;
         $ids     = $todos ? array_map(static fn(array $fila): int => (int) $fila['post_id'], array_merge(Queue::overdue(), array_map(static fn(int $id): array => ['post_id' => $id], Queue::needs_help()))) : [$post_id];
         $hechos  = 0;
 
@@ -2313,15 +2313,15 @@ class Admin
                         <td><?php echo esc_html((string) ($envio['title'] ?? '')); ?></td>
                         <td>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-acciones">
-                                <input type="hidden" name="action" value="cp_queue_reschedule" />
-                                <input type="hidden" name="cp_envio" value="<?php echo esc_attr($ref); ?>" />
+                                <input type="hidden" name="action" value="convoca_publisher_queue_reschedule" />
+                                <input type="hidden" name="convoca_publisher_envio" value="<?php echo esc_attr($ref); ?>" />
                                 <?php wp_nonce_field('convoca_publisher_queue_reschedule'); ?>
-                                <input type="datetime-local" name="cp_cuando" value="<?php echo esc_attr(wp_date('Y-m-d\TH:i', (int) ($envio['time'] ?? 0))); ?>" />
+                                <input type="datetime-local" name="convoca_publisher_cuando" value="<?php echo esc_attr(wp_date('Y-m-d\TH:i', (int) ($envio['time'] ?? 0))); ?>" />
                                 <button type="submit" class="button"><?php echo esc_html__('Mover', 'convoca-publisher'); ?></button>
                             </form>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="cp-acciones">
-                                <input type="hidden" name="action" value="cp_queue_cancel" />
-                                <input type="hidden" name="cp_envio" value="<?php echo esc_attr($ref); ?>" />
+                                <input type="hidden" name="action" value="convoca_publisher_queue_cancel" />
+                                <input type="hidden" name="convoca_publisher_envio" value="<?php echo esc_attr($ref); ?>" />
                                 <?php wp_nonce_field('convoca_publisher_queue_cancel'); ?>
                                 <button type="submit" class="button" data-cp-confirm="<?php echo esc_attr__('¿Quitar este envío de la cola?', 'convoca-publisher'); ?>"><?php echo esc_html__('Quitar', 'convoca-publisher'); ?></button>
                             </form>
@@ -2359,7 +2359,7 @@ class Admin
     private static function share_now_url(int $post_id): string
     {
         return wp_nonce_url(
-            admin_url('admin-post.php?action=cp_share_now&post=' . $post_id),
+            admin_url('admin-post.php?action=convoca_publisher_share_now&post=' . $post_id),
             'convoca_publisher_share_now_' . $post_id
         );
     }
@@ -2417,9 +2417,9 @@ class Admin
 
         check_admin_referer('convoca_publisher_queue_reschedule');
 
-        $ref  = isset($_POST['cp_envio']) ? sanitize_text_field(wp_unslash((string) $_POST['cp_envio'])) : '';
-        $dia  = isset($_POST['cp_dia']) ? sanitize_text_field(wp_unslash((string) $_POST['cp_dia'])) : '';
-        $cuando = isset($_POST['cp_cuando']) ? sanitize_text_field(wp_unslash((string) $_POST['cp_cuando'])) : '';
+        $ref  = isset($_POST['convoca_publisher_envio']) ? sanitize_text_field(wp_unslash((string) $_POST['convoca_publisher_envio'])) : '';
+        $dia  = isset($_POST['convoca_publisher_dia']) ? sanitize_text_field(wp_unslash((string) $_POST['convoca_publisher_dia'])) : '';
+        $cuando = isset($_POST['convoca_publisher_cuando']) ? sanitize_text_field(wp_unslash((string) $_POST['convoca_publisher_cuando'])) : '';
 
         $sello = self::queue_parse_when($dia, $cuando);
 
@@ -2443,7 +2443,7 @@ class Admin
 
         check_admin_referer('convoca_publisher_queue_cancel');
 
-        $ref = isset($_POST['cp_envio']) ? sanitize_text_field(wp_unslash((string) $_POST['cp_envio'])) : '';
+        $ref = isset($_POST['convoca_publisher_envio']) ? sanitize_text_field(wp_unslash((string) $_POST['convoca_publisher_envio'])) : '';
         self::queue_remove($ref);
 
         set_transient('convoca_publisher_queue_notice_' . get_current_user_id(), __('Envío quitado de la cola.', 'convoca-publisher'), 30);

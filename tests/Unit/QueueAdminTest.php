@@ -78,9 +78,9 @@ namespace ConvocaPublisher\Tests {
             $html = $this->render([]);
 
             $this->assertStringContainsString('cp-cal', $html);
-            $this->assertSame(42, substr_count($html, 'data-cp-dia="'), 'Seis semanas de celdas, como cualquier calendario de mes.');
-            $this->assertStringContainsString('data-cp-dia="' . wp_date('Y-m-d', $cuando) . '"', $html, 'El día del envío está en la rejilla.');
-            $this->assertStringContainsString('data-cp-envio="schedule:' . $post . '"', $html);
+            $this->assertSame(42, substr_count($html, 'data-convoca-publisher-dia="'), 'Seis semanas de celdas, como cualquier calendario de mes.');
+            $this->assertStringContainsString('data-convoca-publisher-dia="' . wp_date('Y-m-d', $cuando) . '"', $html, 'El día del envío está en la rejilla.');
+            $this->assertStringContainsString('data-convoca-publisher-envio="schedule:' . $post . '"', $html);
             $this->assertStringContainsString('draggable="true"', $html, 'Lo que no ha salido se puede arrastrar.');
             $this->assertStringContainsString('Fiesta del centro', $html);
             $this->assertStringContainsString('Telegram — Centro Social', $html);
@@ -94,7 +94,7 @@ namespace ConvocaPublisher\Tests {
             $html = $this->render(['vista' => 'semana']);
 
             $this->assertStringContainsString('Semana del ', $html);
-            $this->assertSame(7, substr_count($html, 'data-cp-dia="'), 'Una celda por día de la semana.');
+            $this->assertSame(7, substr_count($html, 'data-convoca-publisher-dia="'), 'Una celda por día de la semana.');
         }
 
         public function testLosEnviosQueYaSalieronNoSeArrastran(): void
@@ -135,7 +135,7 @@ namespace ConvocaPublisher\Tests {
 
             $this->assertStringContainsString('Atascado', $html);
             $this->assertStringContainsString('HTTP 500', $html);
-            $this->assertStringContainsString('data-cp-envio="retry:5"', $html);
+            $this->assertStringContainsString('data-convoca-publisher-envio="retry:5"', $html);
         }
 
         public function testLaListaTraeReprogramarYQuitar(): void
@@ -146,8 +146,8 @@ namespace ConvocaPublisher\Tests {
 
             $this->assertStringContainsString('Lo que espera turno', $html);
             $this->assertStringContainsString('Lo último que salió', $html);
-            $this->assertStringContainsString('name="cp_cuando"', $html, 'Se puede cambiar la hora desde la lista.');
-            $this->assertStringContainsString('cp_queue_cancel', $html, 'Y quitarlo de la cola.');
+            $this->assertStringContainsString('name="convoca_publisher_cuando"', $html, 'Se puede cambiar la hora desde la lista.');
+            $this->assertStringContainsString('convoca_publisher_queue_cancel', $html, 'Y quitarlo de la cola.');
         }
 
         public function testLaPantallaDeLaColaNoUsaEstilosSueltos(): void
@@ -176,9 +176,9 @@ namespace ConvocaPublisher\Tests {
                 'dia'   => (int) wp_date('j', $cuando),
             ]);
 
-            $this->assertStringContainsString('data-cp-envio="schedule:', $html, 'La semana del envio lo trae.');
-            $this->assertStringContainsString('data-cp-dia="' . wp_date('Y-m-d', $cuando) . '"', $html);
-            $this->assertSame(7, substr_count($html, 'data-cp-dia="'));
+            $this->assertStringContainsString('data-convoca-publisher-envio="schedule:', $html, 'La semana del envio lo trae.');
+            $this->assertStringContainsString('data-convoca-publisher-dia="' . wp_date('Y-m-d', $cuando) . '"', $html);
+            $this->assertSame(7, substr_count($html, 'data-convoca-publisher-dia="'));
 
             // Los enlaces llevan el día: sin él, la vista volvería siempre a la primera semana.
             $this->assertStringContainsString(

@@ -25,8 +25,8 @@ class Metabox
     {
         add_action('add_meta_boxes', [self::class, 'register']);
         add_action('save_post', [self::class, 'save']);
-        add_action('wp_ajax_cp_republish', [self::class, 'ajax_republish']);
-        add_action('wp_ajax_cp_share', [self::class, 'ajax_share']);
+        add_action('wp_ajax_convoca_publisher_republish', [self::class, 'ajax_republish']);
+        add_action('wp_ajax_convoca_publisher_share', [self::class, 'ajax_share']);
         add_action('admin_enqueue_scripts', [self::class, 'enqueue']);
     }
 

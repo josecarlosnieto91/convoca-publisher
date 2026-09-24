@@ -107,7 +107,7 @@
 		var arrastrado = null;
 
 		document.addEventListener( 'dragstart', function ( evento ) {
-			var envio = evento.target.closest( '[data-cp-envio]' );
+			var envio = evento.target.closest( '[data-convoca-publisher-envio]' );
 
 			if ( ! envio ) {
 				return;
@@ -115,7 +115,7 @@
 
 			arrastrado = envio;
 			envio.classList.add( 'cp-cal__envio--arrastrando' );
-			evento.dataTransfer.setData( 'text/plain', envio.getAttribute( 'data-cp-envio' ) );
+			evento.dataTransfer.setData( 'text/plain', envio.getAttribute( 'data-convoca-publisher-envio' ) );
 			evento.dataTransfer.effectAllowed = 'move';
 		} );
 
@@ -130,7 +130,7 @@
 		} );
 
 		document.addEventListener( 'dragover', function ( evento ) {
-			var celda = evento.target.closest( '[data-cp-dia]' );
+			var celda = evento.target.closest( '[data-convoca-publisher-dia]' );
 
 			if ( ! celda || ! arrastrado ) {
 				return;
@@ -141,7 +141,7 @@
 		} );
 
 		document.addEventListener( 'dragleave', function ( evento ) {
-			var celda = evento.target.closest( '[data-cp-dia]' );
+			var celda = evento.target.closest( '[data-convoca-publisher-dia]' );
 
 			if ( celda ) {
 				celda.classList.remove( 'cp-cal__drop' );
@@ -149,7 +149,7 @@
 		} );
 
 		document.addEventListener( 'drop', function ( evento ) {
-			var celda = evento.target.closest( '[data-cp-dia]' );
+			var celda = evento.target.closest( '[data-convoca-publisher-dia]' );
 
 			if ( ! celda || ! arrastrado ) {
 				return;
@@ -163,8 +163,8 @@
 				return;
 			}
 
-			formulario.querySelector( '[name="cp_envio"]' ).value = arrastrado.getAttribute( 'data-cp-envio' );
-			formulario.querySelector( '[name="cp_dia"]' ).value = celda.getAttribute( 'data-cp-dia' );
+			formulario.querySelector( '[name="convoca_publisher_envio"]' ).value = arrastrado.getAttribute( 'data-convoca-publisher-envio' );
+			formulario.querySelector( '[name="convoca_publisher_dia"]' ).value = celda.getAttribute( 'data-convoca-publisher-dia' );
 			formulario.submit();
 		} );
 	}
@@ -190,7 +190,7 @@
 			}
 
 			var datos = new window.FormData();
-			datos.append( 'action', 'cp_preview_template' );
+			datos.append( 'action', 'convoca_publisher_preview_template' );
 			datos.append( '_wpnonce', window.convocaPublisher.nonce );
 			datos.append( 'post_id', entrada ? entrada.value : '0' );
 			datos.append( 'network', panel.getAttribute( 'data-cp-network' ) );

@@ -54,7 +54,7 @@ $GLOBALS['_cp_test_options'] = [];
 
 function get_option(string $option, mixed $default = false): mixed
 {
-    if ($option === 'cp_encryption_key') {
+    if ($option === 'convoca_publisher_encryption_key') {
         return 'SISo4fW6aYd2QYYabknhj3S9no1GI8HOjX0OMOEmsGA=';
     }
 
@@ -555,7 +555,7 @@ function cp_test_reset(): void
     $_GET                          = [];
     $_POST                         = [];
 
-    unset($GLOBALS['_cp_test_publisher_stub']);
+    unset($GLOBALS['_convoca_publisher_test_stub']);
 
     // El publicador es un singleton y `init()` solo crea la instancia si no la hay: sin
     // soltarla, la prueba siguiente publica con los canales de la anterior y el resultado

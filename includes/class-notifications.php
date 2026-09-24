@@ -24,7 +24,7 @@ class Notifications
     public static function init(): void
     {
         add_action('admin_notices', [self::class, 'show_alerts']);
-        add_action('wp_ajax_cp_dismiss_notice', [self::class, 'dismiss']);
+        add_action('wp_ajax_convoca_publisher_dismiss_notice', [self::class, 'dismiss']);
     }
 
     /**

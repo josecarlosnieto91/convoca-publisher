@@ -37,9 +37,9 @@ class Publisher
         add_action('publish_post', [self::$instance, 'on_publish_post'], 10, 2);
         add_action('future_to_publish', [self::$instance, 'on_scheduled_publish'], 10, 1);
         add_action('convoca_publisher_async_publish', [self::$instance, 'on_async_publish'], 10, 1);
-        add_action('wp_ajax_cp_test_publish', [self::$instance, 'ajax_test_publish']);
-        add_action('wp_ajax_cp_clear_log', [self::$instance, 'ajax_clear_log']);
-        add_action('wp_ajax_cp_preview_template', [self::$instance, 'ajax_preview_template']);
+        add_action('wp_ajax_convoca_publisher_test_publish', [self::$instance, 'ajax_test_publish']);
+        add_action('wp_ajax_convoca_publisher_clear_log', [self::$instance, 'ajax_clear_log']);
+        add_action('wp_ajax_convoca_publisher_preview_template', [self::$instance, 'ajax_preview_template']);
     }
 
     public static function instance(): ?Publisher

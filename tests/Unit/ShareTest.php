@@ -288,7 +288,7 @@ namespace ConvocaPublisher\Tests {
             $acciones = Admin::row_action([], $post);
 
             $this->assertArrayHasKey('convoca_compartir', $acciones);
-            $this->assertStringContainsString('cp_share_now', $acciones['convoca_compartir']);
+            $this->assertStringContainsString('convoca_publisher_share_now', $acciones['convoca_compartir']);
             $this->assertStringContainsString('Compartir ahora', $acciones['convoca_compartir']);
         }
 

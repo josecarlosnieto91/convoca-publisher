@@ -97,7 +97,7 @@
 			boton.textContent = datos.compartir.enviando || '…';
 
 			var cuerpo = new URLSearchParams();
-			cuerpo.set( 'action', 'cp_share' );
+			cuerpo.set( 'action', 'convoca_publisher_share' );
 			cuerpo.set( 'post_id', boton.getAttribute( 'data-post-id' ) );
 			cuerpo.set( 'cuenta', boton.getAttribute( 'data-cuenta' ) );
 			cuerpo.set( '_wpnonce', datos.compartir.nonce );

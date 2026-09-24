@@ -84,7 +84,7 @@ define('CONVOCA_PUBLISHER_VERSION', !empty($convoca_publisher_header['Version'])
 define('CONVOCA_PUBLISHER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CONVOCA_PUBLISHER_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('CONVOCA_PUBLISHER_MIN_PHP', '8.0');
-define('CP_MIN_WP', '6.0');
+define('CONVOCA_PUBLISHER_MIN_WP', '6.0');
 
 // Comprobación de requisitos al activar
 register_activation_hook(__FILE__, 'ConvocaPublisher\\convoca_publisher_activation_check');
@@ -104,13 +104,13 @@ function convoca_publisher_activation_check(): void
         );
     }
 
-    if (version_compare($wp_version, CP_MIN_WP, '<')) {
+    if (version_compare($wp_version, CONVOCA_PUBLISHER_MIN_WP, '<')) {
         deactivate_plugins(plugin_basename(__FILE__));
         wp_die(
             sprintf(
                 /* translators: %s: minimum required WordPress version */
                 esc_html__('Convoca Publisher requiere WordPress %s o superior.', 'convoca-publisher'),
-                esc_html(CP_MIN_WP)
+                esc_html(CONVOCA_PUBLISHER_MIN_WP)
             )
         );
     }
