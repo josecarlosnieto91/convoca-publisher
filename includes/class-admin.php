@@ -1289,13 +1289,13 @@ class Admin
                     <?php
                     // Las cifras se calculan aparte y se castean en la llamada: la
                     // comprobación de escapado de Plugin Check mira el argumento.
-                    $cp_primera = ( ( $paginado['page'] - 1 ) * 25 ) + 1;
-                    $cp_ultima  = ( ( $paginado['page'] - 1 ) * 25 ) + count($paginado['entries']);
+                    $primera_fila = ( ( $paginado['page'] - 1 ) * 25 ) + 1;
+                    $ultima_fila  = ( ( $paginado['page'] - 1 ) * 25 ) + count($paginado['entries']);
                     printf(
                         /* translators: 1: primera fila que se ve, 2: última, 3: total, 4: página, 5: páginas. */
                         esc_html__('Mostrando %1$d-%2$d de %3$d (página %4$d de %5$d).', 'convoca-publisher'),
-                        (int) ( count($paginado['entries']) > 0 ? $cp_primera : 0 ),
-                        (int) $cp_ultima,
+                        (int) ( count($paginado['entries']) > 0 ? $primera_fila : 0 ),
+                        (int) $ultima_fila,
                         (int) $datos['total'],
                         (int) $paginado['page'],
                         (int) $paginado['pages']

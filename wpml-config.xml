@@ -5,7 +5,7 @@
 -->
 <wpml-config>
     <admin-texts>
-        <key name="cp_message_template"/>
-        <key name="cp_facebook_template"/>
+        <key name="convoca_publisher_message_template"/>
+        <key name="convoca_publisher_facebook_template"/>
     </admin-texts>
 </wpml-config>
