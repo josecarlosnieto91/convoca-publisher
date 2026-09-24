@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.22.0
+Stable tag: 1.22.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,9 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.22.1 =
+* Nomenclatura interna: las acciones de administración y AJAX, los campos del panel y sus atributos dejan el prefijo `cp_` y pasan a `convoca_publisher_`, como el resto del ecosistema. Sin cambio de comportamiento; los nonces y los flujos del panel se han verificado sobre un WordPress real.
 
 = 1.13.0 =
 * Traducción completa al inglés (en_US): 421 cadenas, incluidos los avisos, las guías por red y las plantillas.

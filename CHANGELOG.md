@@ -1,4 +1,12 @@
-# Changelog — convoca-publisher
+# Changelog
+
+## [1.22.1] - 2026-09-23
+
+### Cambiado (interno)
+- Los identificadores internos pierden el prefijo `cp_`: 10 acciones `admin-post`, 6 acciones AJAX, 5 campos de formulario, sus atributos `data-*` y la constante `CP_MIN_WP` pasan a `convoca_publisher_*` / `CONVOCA_PUBLISHER_MIN_WP`.
+- Verificado sobre WordPress real: los 10 + 6 ganchos cargan con el nombre nuevo, no queda ninguno con el viejo, los nonces validan y el panel registra sus páginas.
+- Se conserva `cp_test_reset()`, ayudante del propio banco de pruebas (no es API ni identificador de producto).
+ — convoca-publisher
 
 ## v1.21.1 (2026-09-11)
 
