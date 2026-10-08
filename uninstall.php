@@ -96,3 +96,17 @@ $wpdb->query("DROP TABLE IF EXISTS {$table}");
 // 5. Limpiar cron hooks
 wp_clear_scheduled_hook('convoca_publisher_retry_failed_posts');
 wp_clear_scheduled_hook('convoca_publisher_retry_process');
+// Faltaban estos dos (`Scheduler::CRON_HOOK` y `Scheduler::SPACING_HOOK`): desinstalado en un
+// WordPress limpio (09/10/2026) seguían en la lista de cron.
+wp_clear_scheduled_hook('convoca_publisher_scheduled_publish');
+wp_clear_scheduled_hook('convoca_publisher_apply_spacing');
+
+// Y los perfiles de canal, que guardan los tokens cifrados: sin esto se quedaban en la base.
+// Se borran TODAS las opciones del plugin, que casi todas guardan credenciales o ajustes suyos.
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+$convoca_publisher_opciones = $wpdb->get_col(
+    "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE 'convoca_publisher_%'"
+);
+foreach ($convoca_publisher_opciones as $convoca_publisher_opcion) {
+    delete_option($convoca_publisher_opcion);
+}
