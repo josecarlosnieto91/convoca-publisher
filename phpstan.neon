@@ -16,6 +16,7 @@ parameters:
 			- node_modules (?)
 	scanFiles:
 		- stubs/constants.stub
+		- stubs/convoca-core.stub
 		- stubs/wp-cli.stub
 	bootstrapFiles:
 		- vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
