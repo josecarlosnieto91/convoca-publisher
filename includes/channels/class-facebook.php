@@ -243,18 +243,25 @@ class Facebook implements ChannelInterface
     }
 
     /**
-     * ¿Se puede publicar en esa cuenta de Instagram? Se le pregunta a Meta por la cuota de
-     * publicación, que es el endpoint que confirma las tres cosas a la vez: que el ID existe,
-     * que el token lleva `instagram_content_publish` y cuánto queda del límite de 24 h.
+     * Estado de la cuenta de Instagram vinculada a la Página.
+     *
+     * Se le pregunta a la **Página** por su cuenta de Instagram vinculada, no a la cuenta por su
+     * cuota de publicación: el campo `content_publishing_limit` ya no existe en la API y Meta
+     * responde «(#100) Tried accessing nonexisting field», con lo que la comprobación avisaba de
+     * un fallo que no existía y tapaba el estado real.
+     *
+     * La respuesta de la Página es además la fuente fiable del **ID** de la cuenta, que es lo que
+     * necesita la publicación: si el ID configurado no es ese, se dice AQUÍ, con el correcto, en
+     * vez de descubrirlo con una publicación perdida.
      *
      * @return string Una frase para la pantalla, ya traducida.
      */
     private function instagram_state(): string
     {
-        $ig_id = (string) get_option('convoca_publisher_instagram_business_id', '');
+        $page_id = $this->get_page_id();
 
         $resp = wp_remote_get(
-            "https://graph.facebook.com/v22.0/{$ig_id}/content_publishing_limit?access_token=" . rawurlencode($this->get_token()),
+            "https://graph.facebook.com/v22.0/{$page_id}?fields=instagram_business_account{username}&access_token=" . rawurlencode( $this->get_token() ),
             ['timeout' => 15]
         );
 
@@ -272,17 +279,35 @@ class Facebook implements ChannelInterface
         if ($code < 200 || $code >= 300) {
             return sprintf(
                 /* translators: %s: error message from Meta */
-                __('❌ Instagram: ese ID no responde con este token (%s)', 'convoca-publisher'),
+                __('❌ Instagram: Meta respondió con un error (%s)', 'convoca-publisher'),
                 $body['error']['message'] ?? $code
             );
         }
 
-        $cuota = (int) ($body['data'][0]['quota_usage'] ?? 0);
+        $cuenta = $body['instagram_business_account'] ?? [];
+
+        if (empty($cuenta['id'])) {
+            return __('⚠️ Instagram: la página no tiene ninguna cuenta de Instagram vinculada.', 'convoca-publisher');
+        }
+
+        $real     = (string) $cuenta['id'];
+        $usuario  = (string) ($cuenta['username'] ?? '');
+        $guardado = (string) get_option('convoca_publisher_instagram_business_id', '');
+
+        if ('' !== $guardado && $guardado !== $real) {
+            return sprintf(
+                /* translators: 1: configured account ID, 2: correct account ID */
+                __('❌ Instagram: el ID configurado (%1$s) no es el de la cuenta vinculada a la página. El correcto es %2$s.', 'convoca-publisher'),
+                $guardado,
+                $real
+            );
+        }
 
         return sprintf(
-            /* translators: %d: publicaciones hechas en las últimas 24 horas */
-            __('✅ Instagram responde (publicadas en 24 h: %d de 100). Se publica por la API: primero el contenedor y luego la publicación, además del muro de la Página.', 'convoca-publisher'),
-            $cuota
+            /* translators: 1: Instagram username, 2: Instagram account ID */
+            __('✅ Instagram: cuenta vinculada @%1$s (%2$s). Se publica por la API: primero el contenedor y luego la publicación, además del muro de la Página.', 'convoca-publisher'),
+            '' !== $usuario ? $usuario : __('sin nombre de usuario', 'convoca-publisher'),
+            $real
         );
     }
 

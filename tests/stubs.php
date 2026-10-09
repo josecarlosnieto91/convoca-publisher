@@ -570,6 +570,13 @@ class wpdb
     public string $prefix = 'wp_';
     public int $insert_id = 0;
 
+    // Propiedades de tabla: WordPress las declara en su clase wpdb, así que el doble tiene que
+    // declararlas también. Sin esto, leer `$wpdb->postmeta` desde el plugin avisa de «undefined
+    // property» solo en las pruebas, y parece un fallo del código cuando es un hueco del doble.
+    public string $posts    = 'wp_posts';
+    public string $postmeta = 'wp_postmeta';
+    public string $options  = 'wp_options';
+
     public function prepare(string $query, mixed ...$args): string
     {
         return $query;

@@ -17,7 +17,6 @@ class PublisherImageTest extends TestCase
         // Use reflection to access the private get_featured_image method
         $reflection = new \ReflectionClass($publisher);
         $method = $reflection->getMethod('get_featured_image');
-        $method->setAccessible(true);
 
         // Create a post
         $post = new \WP_Post((object) []);
@@ -37,7 +36,6 @@ class PublisherImageTest extends TestCase
 
         $reflection = new \ReflectionClass($publisher);
         $method = $reflection->getMethod('get_featured_image');
-        $method->setAccessible(true);
 
         $post = new \WP_Post((object) []);
         $post->ID = 0;
