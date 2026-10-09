@@ -1,0 +1,17 @@
+<?php
+/**
+ * Declaraciones del nucleo de Convoca para el analizador estatico.
+ *
+ * La clase existe en tiempo de ejecucion (la aporta el plugin del nucleo, que es dependencia
+ * declarada de este plugin); aqui solo se le dice al analizador que existe y con que firma,
+ * igual que se hace con las clases de WordPress.
+ */
+namespace Convoca\Core {
+    class Mailer {
+        /**
+         * @param string|array<int, string> $to
+         * @param array<string, mixed>      $args
+         */
+        public static function send( $to, string $subject, string $body, array $args = array() ): bool {}
+    }
+}
