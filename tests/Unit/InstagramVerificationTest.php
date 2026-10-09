@@ -44,15 +44,15 @@ final class InstagramVerificationTest extends TestCase
     {
         $GLOBALS['_cp_test_options']['convoca_publisher_instagram_business_id'] = '17841470398177912';
 
-        $this->encolar(['name' => 'Centro Social Los Lugg']);
+        $this->encolar(['name' => 'Centro de ejemplo']);
         $this->encolar([
-            'instagram_business_account' => ['id' => '17841470398177912', 'username' => 'luggcentrosocial'],
+            'instagram_business_account' => ['id' => '17841470398177912', 'username' => 'ejemplocentrosocial'],
         ]);
 
         $resultado = (new Facebook())->verify_connection();
 
         $this->assertTrue($resultado['success']);
-        $this->assertStringContainsString('@luggcentrosocial', $resultado['message']);
+        $this->assertStringContainsString('@ejemplocentrosocial', $resultado['message']);
         $this->assertStringNotContainsString('❌', $resultado['message']);
     }
 
@@ -60,9 +60,9 @@ final class InstagramVerificationTest extends TestCase
     {
         $GLOBALS['_cp_test_options']['convoca_publisher_instagram_business_id'] = '31892307720360552';
 
-        $this->encolar(['name' => 'Centro Social Los Lugg']);
+        $this->encolar(['name' => 'Centro de ejemplo']);
         $this->encolar([
-            'instagram_business_account' => ['id' => '17841470398177912', 'username' => 'luggcentrosocial'],
+            'instagram_business_account' => ['id' => '17841470398177912', 'username' => 'ejemplocentrosocial'],
         ]);
 
         $resultado = (new Facebook())->verify_connection();
@@ -76,7 +76,7 @@ final class InstagramVerificationTest extends TestCase
     {
         $GLOBALS['_cp_test_options']['convoca_publisher_instagram_business_id'] = '17841470398177912';
 
-        $this->encolar(['name' => 'Centro Social Los Lugg']);
+        $this->encolar(['name' => 'Centro de ejemplo']);
         $this->encolar(['id' => '608790672316516']);
 
         $resultado = (new Facebook())->verify_connection();
@@ -89,9 +89,9 @@ final class InstagramVerificationTest extends TestCase
     {
         $GLOBALS['_cp_test_options']['convoca_publisher_instagram_business_id'] = '17841470398177912';
 
-        $this->encolar(['name' => 'Centro Social Los Lugg']);
+        $this->encolar(['name' => 'Centro de ejemplo']);
         $this->encolar([
-            'instagram_business_account' => ['id' => '17841470398177912', 'username' => 'luggcentrosocial'],
+            'instagram_business_account' => ['id' => '17841470398177912', 'username' => 'ejemplocentrosocial'],
         ]);
 
         (new Facebook())->verify_connection();
@@ -111,9 +111,9 @@ final class InstagramVerificationTest extends TestCase
     {
         $GLOBALS['_cp_test_options']['convoca_publisher_instagram_business_id'] = '17841470398177912';
 
-        $this->encolar(['name' => 'Centro Social Los Lugg']);
+        $this->encolar(['name' => 'Centro de ejemplo']);
         $this->encolar([
-            'instagram_business_account' => ['id' => '17841470398177912', 'username' => 'luggcentrosocial'],
+            'instagram_business_account' => ['id' => '17841470398177912', 'username' => 'ejemplocentrosocial'],
         ]);
 
         (new Facebook())->verify_connection();

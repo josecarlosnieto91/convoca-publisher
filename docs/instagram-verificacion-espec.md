@@ -15,7 +15,7 @@ con este token») que **tapaba la verdad** —el token estaba perfectamente— y
 saber si Instagram funcionaba o no.
 
 Y había un segundo problema, escondido detrás del primero: el identificador de Instagram que había
-configurado en Lugg (`31892307720360552`) **no corresponde a la cuenta**:
+configurado en Ejemplo (`31892307720360552`) **no corresponde a la cuenta**:
 
 ```
 GET /31892307720360552?fields=username,name  → 400 «Object with ID ... does not exist»
@@ -25,7 +25,7 @@ La cuenta real, preguntándole a la **Página** por la suya vinculada:
 
 ```
 GET /{page_id}?fields=instagram_business_account{username}  → 200
-{"instagram_business_account":{"username":"luggcentrosocial","id":"17841470398177912"},
+{"instagram_business_account":{"username":"ejemplocentrosocial","id":"17841470398177912"},
  "id":"608790672316516"}
 ```
 
@@ -49,7 +49,7 @@ publicación perdida.
 
 | Situación | Mensaje |
 |---|---|
-| Página con cuenta vinculada y ID correcto | `✅ Instagram: cuenta vinculada @luggcentrosocial (17841470398177912)` |
+| Página con cuenta vinculada y ID correcto | `✅ Instagram: cuenta vinculada @ejemplocentrosocial (17841470398177912)` |
 | Página con cuenta, ID configurado distinto | `❌ Instagram: el ID configurado (X) no es el de la cuenta vinculada a la página. El correcto es Y.` |
 | Página sin cuenta de Instagram | `⚠️ Instagram: la página no tiene ninguna cuenta de Instagram vinculada.` |
 | Meta responde error | `❌ Instagram: Meta respondió con un error (<mensaje real>)` |
@@ -63,7 +63,7 @@ publicación perdida.
 
 ## Aceptación
 
-1. Verificando con el token y la página de los Lugg, la comprobación de Instagram **no produce
+1. Verificando con el token y la página de los Ejemplo, la comprobación de Instagram **no produce
    ningún error de API** y nombra la cuenta vinculada.
 2. Con un identificador equivocado, lo dice y da el correcto.
 3. Las pruebas del repositorio siguen en verde y la verificación cubre los tres casos anteriores.
