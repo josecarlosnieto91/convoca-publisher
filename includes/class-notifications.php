@@ -99,7 +99,12 @@ class Notifications
             return false;
         }
 
-        return (bool) wp_mail($destino, $subject, $body);
+        // Sale con la identidad de Convoca. Sin copia: el destinatario ya es la asociación.
+        return (bool) \Convoca\Core\Mailer::send($destino, $subject, $body, array(
+            'plugin'   => 'convoca-publisher',
+            'template' => 'aviso_admin',
+            'copy'     => false,
+        ));
     }
 
     public static function show_alerts(): void

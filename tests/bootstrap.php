@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/StubMailer.php';
 define('ABSPATH', true);
 define('CONVOCA_PUBLISHER_PLUGIN_DIR', dirname(__DIR__) . '/');
 define('CONVOCA_PUBLISHER_VERSION', '1.4.0');

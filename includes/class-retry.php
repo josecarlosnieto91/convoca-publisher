@@ -399,7 +399,12 @@ class Retry
             $error
         );
 
-        wp_mail((string) $admin_email, $subject, $body);
+        // Sale con la identidad de Convoca. Sin copia: el destinatario ya es la asociación.
+        \Convoca\Core\Mailer::send((string) $admin_email, $subject, $body, array(
+            'plugin'   => 'convoca-publisher',
+            'template' => 'fallo_publicacion_admin',
+            'copy'     => false,
+        ));
     }
 
     /**

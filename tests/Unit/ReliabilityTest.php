@@ -216,7 +216,8 @@ namespace ConvocaPublisher\Tests {
             Notifications::ask_for_help($post_id, 5);
 
             $this->assertCount(1, $GLOBALS['_cp_test_mail']);
-            $this->assertSame('quien.administra@example.com', $GLOBALS['_cp_test_mail'][0]['to']);
+            // El Mailer entrega el destinatario como lista de correos, no como texto.
+            $this->assertSame(array('quien.administra@example.com'), $GLOBALS['_cp_test_mail'][0]['to']);
             $this->assertStringContainsString('Asamblea de socios', $GLOBALS['_cp_test_mail'][0]['message'], 'Dice de qué entrada se trata.');
             $this->assertStringContainsString('5', $GLOBALS['_cp_test_mail'][0]['message'], 'Y cuántas veces se intentó.');
         }
