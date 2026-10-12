@@ -40,7 +40,11 @@ class Retry {
 
 	private const MAX_ATTEMPTS = 5;
 
-	/** @var array<int, int> Backoff por defecto en horas (1h, 4h, 12h, 24h, 72h). */
+	/**
+	 * Backoff por defecto en horas (1h, 4h, 12h, 24h, 72h).
+	 *
+	 * @var array<int, int>
+	 */
 	private const DEFAULT_BACKOFF_HOURS = array( 1, 4, 12, 24, 72 );
 
 	public const STATUS_PENDING = 'pending';
@@ -107,7 +111,11 @@ class Retry {
 	 * @return array<int, int> Horas de espera entre reintentos.
 	 */
 	public static function get_backoff(): array {
-		/** @var mixed $backoff */
+		/**
+		 * Backoff configurable por el filtro de abajo.
+		 *
+		 * @var mixed $backoff
+		 */
 		$backoff = apply_filters( 'convoca_publisher_retry_backoff', self::DEFAULT_BACKOFF_HOURS );
 
 		$hours = array();
@@ -434,6 +442,8 @@ class Retry {
 	}
 
 	/**
+	 * Envios por estado: pendientes, en revision y fallidos.
+	 *
 	 * @return array{pending: int, pending_review: int, failed: int}
 	 */
 	public static function get_queue_stats(): array {

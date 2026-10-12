@@ -26,6 +26,8 @@ interface ChannelInterface {
 	public function is_available(): bool;
 
 	/**
+	 * Publica el contenido en la red y devuelve el resultado del envio.
+	 *
 	 * @param int    $post_id
 	 * @param string $message
 	 * @param string $url
@@ -39,11 +41,15 @@ interface ChannelInterface {
 	public function publish( int $post_id, string $message, string $url, string $image_url = '' ): array;
 
 	/**
+	 * Ajustes que necesita esta red en el panel (campos, tipo y ayuda).
+	 *
 	 * @return array<string, array{title: string, type: string, description: string}>
 	 */
 	public function get_settings_fields(): array;
 
 	/**
+	 * Comprueba que los ajustes guardados sirven para esta red.
+	 *
 	 * @param array<string, string> $settings
 	 * @return array<int, string>
 	 */

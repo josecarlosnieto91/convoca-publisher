@@ -24,12 +24,18 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Channel_Profile implements Channels\ChannelInterface {
 
-	/** @var array<string, mixed> */
+	/**
+	 * Perfil de la cuenta tal y como lo devuelve el almacen.
+	 *
+	 * @var array<string, mixed>
+	 */
 	private array $profile;
 
 	private Channels\ChannelInterface $channel;
 
 	/**
+	 * Envuelve un perfil de cuenta para presentarlo como canal.
+	 *
 	 * @param array<string, mixed> $profile Perfil tal y como lo devuelve el almacén.
 	 */
 	public function __construct( array $profile, Channels\ChannelInterface $channel ) {
@@ -66,6 +72,8 @@ final class Channel_Profile implements Channels\ChannelInterface {
 	}
 
 	/**
+	 * Perfil completo que hay detras de esta cuenta.
+	 *
 	 * @return array<string, mixed>
 	 */
 	public function get_profile(): array {

@@ -2290,6 +2290,8 @@ endif;
 	}
 
 	/**
+	 * Pinta la tabla de envios que se dejaron de reintentar.
+	 *
 	 * @param array<int, array<string, mixed>> $filas
 	 */
 	private static function render_stuck_table( array $filas, string $estado ): void {
@@ -2429,6 +2431,8 @@ endif;
 	}
 
 	/**
+	 * Pinta la tabla de la cola de publicacion.
+	 *
 	 * @param array<int, array<string, mixed>> $envios
 	 */
 	private static function render_queue_table( array $envios, bool $atascados ): void {
