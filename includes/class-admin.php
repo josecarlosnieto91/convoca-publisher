@@ -1051,6 +1051,7 @@ class Admin {
 					<h2><?php echo Icons::svg( (string) $network_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SVG propio. ?><?php echo esc_html( $network->get_name() ); ?></h2>
 					<?php if ( empty( $own ) ) : ?>
 						<?php
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.
 						echo self::status_badge(
 							array(
 								'key'   => 'missing',
@@ -1059,7 +1060,7 @@ class Admin {
 								'label' => __( 'Falta token', 'convoca-publisher' ),
 							)
 						); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. 
-						?>
+						);
 					<?php else : ?>
 						<span class="cp-status cp-status--ok">
 							<?php
@@ -1092,6 +1093,7 @@ class Admin {
 										<div class="description"><?php echo esc_html( $account->get_id() ); ?></div>
 									</td>
 									<td>
+										// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.
 										<?php echo self::status_badge( self::channel_status( $account ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. ?>
 									</td>
 									<td>
@@ -1099,7 +1101,7 @@ class Admin {
 											<?php echo esc_html__( 'Configurar', 'convoca-publisher' ); ?>
 										</a>
 										<?php echo self::verify_button( $account ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. ?>
-									</td>
+										<?php echo self::verify_button( $account ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. ?>
 								</tr>
 							<?php endforeach; ?>
 						</tbody>
