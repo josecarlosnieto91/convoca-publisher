@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.22.4 (2026-10-12)
+
+### Cambiado
+- **Estilo y conformidad con el estándar del ecosistema (sin cambios de comportamiento).**
+  El plugin era el único del ecosistema sin PHPCS en su CI. Se añade `.phpcs.xml.dist` con las
+  mismas exclusiones documentadas que el resto, se reformatea con `phpcbf` (14.638 errores de
+  formato) y se completa la descripción corta de 11 docblocks.
+- Nuevo job de **PHPCS** en el CI, sin `|| true`.
+
 ## v1.22.3 (2026-10-12)
 
 ### Arreglado
