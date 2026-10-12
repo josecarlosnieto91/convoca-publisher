@@ -431,7 +431,7 @@ class Admin
                     <div class="cp-field">
                         <label for="cuenta_nombre"><?php echo esc_html__('Nombre', 'convoca-publisher'); ?></label>
                         <input type="text" id="cuenta_nombre" name="cuenta_nombre" value="<?php echo esc_attr($nombre); ?>" class="cp-input regular-text" />
-                        <p class="description"><?php echo esc_html__('Con qué nombre la reconoces. Por ejemplo: «Telegram — Centro Social», «Facebook — Grupo».', 'convoca-publisher'); ?></p>
+                        <p class="description"><?php echo esc_html__('Con qué nombre la reconoces. Por ejemplo: «Telegram — Cuenta principal», «Facebook — Grupo».', 'convoca-publisher'); ?></p>
                     </div>
 
                     <?php if ($account) : ?>

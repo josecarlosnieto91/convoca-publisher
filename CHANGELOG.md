@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.22.3 (2026-10-12)
+
+### Arreglado
+- **El nombre de un cliente aparecia en el producto**: los ejemplos de nombre de cuenta
+  («Telegram - Centro Social») salian en el `readme.txt` que se publica en la ficha de
+  WordPress.org, en tres ficheros de `includes/` y en los catalogos de traduccion. Pasan a
+  un ejemplo generico que no nombra a nadie. Lo caza el barrido de higiene de datos.
+
 ## [1.22.2] - 2026-09-23
 
 ### Arreglado

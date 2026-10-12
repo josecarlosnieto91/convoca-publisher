@@ -42,7 +42,7 @@ namespace ConvocaPublisher\Tests {
         {
             $ids = [];
 
-            foreach (['Telegram — Centro Social', 'Telegram — Socios'] as $i => $nombre) {
+            foreach (['Telegram — Cuenta principal', 'Telegram — Socios'] as $i => $nombre) {
                 $cuenta = Profile_Store::create('telegram', $nombre, [
                     'convoca_publisher_telegram_token'   => 'TOKEN-' . $i,
                     'convoca_publisher_telegram_chat_id' => '-' . (100 + $i),
@@ -235,7 +235,7 @@ namespace ConvocaPublisher\Tests {
             $this->assertSame(5, $entradas[0]['id']);
             $this->assertSame('failed', $entradas[0]['status']);
             $this->assertSame('HTTP 500', $entradas[0]['error']);
-            $this->assertSame('Telegram — Centro Social', $entradas[0]['account_name'], 'Dice la cuenta, no solo el id.');
+            $this->assertSame('Telegram — Cuenta principal', $entradas[0]['account_name'], 'Dice la cuenta, no solo el id.');
             $this->assertGreaterThan(0, $entradas[0]['time']);
         }
 

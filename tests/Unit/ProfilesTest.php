@@ -203,12 +203,12 @@ namespace ConvocaPublisher\Tests {
 
         public function testLasCuentasSeListanPorSuRed(): void
         {
-            $this->crearCuenta('telegram', 'Telegram — Centro Social');
+            $this->crearCuenta('telegram', 'Telegram — Cuenta principal');
             $this->crearCuenta('telegram', 'Telegram — Socios');
             $this->crearCuenta('mastodon', 'Mastodon');
 
             $this->assertCount(2, Profile_Store::for_channel('telegram'));
-            $this->assertSame(['Telegram — Centro Social', 'Telegram — Socios'], array_column(Profile_Store::for_channel('telegram'), 'name'));
+            $this->assertSame(['Telegram — Cuenta principal', 'Telegram — Socios'], array_column(Profile_Store::for_channel('telegram'), 'name'));
         }
 
         // ── Plantillas ──────────────────────────────────────────────────────
@@ -239,7 +239,7 @@ namespace ConvocaPublisher\Tests {
         {
             // Telegram tiene su plantilla por defecto; una cuenta de Telegram debe usarla,
             // no la genérica (el id de la cuenta no es el de la red).
-            $cuenta = $this->crearCuenta('telegram', 'Telegram — Centro Social');
+            $cuenta = $this->crearCuenta('telegram', 'Telegram — Cuenta principal');
             $publisher = new Publisher([$cuenta['id'] => new Channel_Profile($cuenta, new Telegram())]);
 
             $message = $publisher->get_channel_message(1, $cuenta['id']);

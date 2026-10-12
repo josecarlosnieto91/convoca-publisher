@@ -44,7 +44,7 @@ namespace ConvocaPublisher\Tests {
          */
         private function escenario(int $dias = 3): array
         {
-            Profile_Store::create('telegram', 'Telegram — Centro Social', [
+            Profile_Store::create('telegram', 'Telegram — Cuenta principal', [
                 'convoca_publisher_telegram_token'   => 'TOKEN',
                 'convoca_publisher_telegram_chat_id' => '-100',
             ]);
@@ -83,7 +83,7 @@ namespace ConvocaPublisher\Tests {
             $this->assertStringContainsString('data-convoca-publisher-envio="schedule:' . $post . '"', $html);
             $this->assertStringContainsString('draggable="true"', $html, 'Lo que no ha salido se puede arrastrar.');
             $this->assertStringContainsString('Fiesta del centro', $html);
-            $this->assertStringContainsString('Telegram — Centro Social', $html);
+            $this->assertStringContainsString('Telegram — Cuenta principal', $html);
             $this->assertStringContainsString('Recolocar ahora', $html);
         }
 
@@ -104,7 +104,7 @@ namespace ConvocaPublisher\Tests {
             update_option('convoca_publisher_publish_log', [
                 [
                     'title'    => 'Ya salió',
-                    'channel'  => 'Telegram — Centro Social',
+                    'channel'  => 'Telegram — Cuenta principal',
                     'success'  => true,
                     'time'     => wp_date('Y-m-d H:i:s'),
                     'response' => 'ok',

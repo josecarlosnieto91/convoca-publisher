@@ -47,7 +47,7 @@ final class Channel_Profile implements Channels\ChannelInterface
     }
 
     /**
-     * Nombre visible de la cuenta («Telegram — Centro Social»).
+     * Nombre visible de la cuenta («Telegram — Cuenta principal»).
      */
     public function get_name(): string
     {

@@ -16,7 +16,7 @@ defined('ABSPATH') || exit;
 /**
  * Almacén de perfiles.
  *
- * Un **perfil** es una cuenta concreta de una red: «Telegram — Centro Social»,
+ * Un **perfil** es una cuenta concreta de una red: «Telegram — Cuenta principal»,
  * «Facebook — Página», «Facebook — Grupo». Cada uno guarda sus propias credenciales
  * (con los mismos nombres de ajuste que usaba la red, para que el canal los lea sin
  * enterarse de nada) y su propia plantilla de mensaje.

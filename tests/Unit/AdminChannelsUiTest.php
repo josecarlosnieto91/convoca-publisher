@@ -248,14 +248,14 @@ namespace ConvocaPublisher\Tests {
 
         public function testUnaRedConCuentasLasListaConEstadoYAcciones(): void
         {
-            Profile_Store::create('telegram', 'Telegram — Centro Social', [
+            Profile_Store::create('telegram', 'Telegram — Cuenta principal', [
                 'convoca_publisher_telegram_token'   => 'TOKEN',
                 'convoca_publisher_telegram_chat_id' => '-100',
             ]);
 
             $html = $this->render(['page' => 'convoca-publisher', 'tab' => 'channels']);
 
-            $this->assertStringContainsString('Telegram — Centro Social', $html);
+            $this->assertStringContainsString('Telegram — Cuenta principal', $html);
             $this->assertStringContainsString('1 cuenta', $html);
             $this->assertStringContainsString('Configurar', $html);
             $this->assertStringContainsString('Verificar conexión', $html);
@@ -280,7 +280,7 @@ namespace ConvocaPublisher\Tests {
 
         public function testLaPantallaDeUnaCuentaTraeTodoJunto(): void
         {
-            $cuenta = Profile_Store::create('telegram', 'Telegram — Centro Social', [
+            $cuenta = Profile_Store::create('telegram', 'Telegram — Cuenta principal', [
                 'convoca_publisher_telegram_token'   => 'TOKEN',
                 'convoca_publisher_telegram_chat_id' => '-100',
             ], '{title} propio');

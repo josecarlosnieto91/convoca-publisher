@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.22.2
+Stable tag: 1.22.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,7 +127,7 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 
 
 = 1.6.0 =
-* Varias cuentas por red: cada una con su nombre («Telegram — Centro Social», «Facebook — Grupo»), sus credenciales y su plantilla. El editor, la cola y el historial trabajan por cuenta y siguen diciendo a qué red pertenecen.
+* Varias cuentas por red: cada una con su nombre («Telegram — Cuenta principal», «Facebook — Grupo»), sus credenciales y su plantilla. El editor, la cola y el historial trabajan por cuenta y siguen diciendo a qué red pertenecen.
 * La configuración que ya existía se convierte sola en una cuenta por red, sin perder tokens ni plantillas y sin tocar nada de lo publicado. Las opciones antiguas se quedan donde estaban.
 * Las credenciales de cada cuenta se guardan cifradas (AES-256-GCM), como las de antes.
 * Límite de cinco cuentas por red y borrado de una cuenta sin tocar las demás.

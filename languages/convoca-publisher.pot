@@ -601,7 +601,7 @@ msgid "Nombre"
 msgstr ""
 
 #: includes/class-admin.php:421
-msgid "Con qué nombre la reconoces. Por ejemplo: «Telegram — Centro Social», «Facebook — Grupo»."
+msgid "Con qué nombre la reconoces. Por ejemplo: «Telegram — Cuenta principal», «Facebook — Grupo»."
 msgstr ""
 
 #. translators: %s: identificador de la cuenta

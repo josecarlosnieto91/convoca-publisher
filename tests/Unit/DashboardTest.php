@@ -28,7 +28,7 @@ namespace ConvocaPublisher\Tests {
 
         private function cuenta(): void
         {
-            $perfil = Profile_Store::create('telegram', 'Telegram — Centro Social', [
+            $perfil = Profile_Store::create('telegram', 'Telegram — Cuenta principal', [
                 'convoca_publisher_telegram_token'   => 'TOKEN',
                 'convoca_publisher_telegram_chat_id' => '-100',
             ]);
@@ -236,14 +236,14 @@ namespace ConvocaPublisher\Tests {
             update_option('convoca_publisher_publish_log', [
                 [
                     'title'    => 'Taller de huerto',
-                    'channel'  => 'Telegram — Centro Social',
+                    'channel'  => 'Telegram — Cuenta principal',
                     'success'  => true,
                     'time'     => wp_date('Y-m-d H:i:s'),
                     'response' => 'ok',
                 ],
                 [
                     'title'    => 'Fiesta del centro',
-                    'channel'  => 'Telegram — Centro Social',
+                    'channel'  => 'Telegram — Cuenta principal',
                     'success'  => false,
                     'time'     => wp_date('Y-m-d H:i:s'),
                     'response' => 'la red dijo que no',

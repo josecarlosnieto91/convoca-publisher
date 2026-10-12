@@ -98,7 +98,7 @@ final class TemplateVariablesTest extends TestCase
         // Pasó de verdad en producción: dos etiquetas del sitio daban el mismo
         // hashtag y salía repetido en el mensaje. Lo ven las etiquetas de verdad, no las
         // inventadas: basta con que dos normalicen igual.
-        $GLOBALS['_cp_test_tags'][7] = ['Centro Social de Ejemplo', 'centro social de ejemplo', 'asturias'];
+        $GLOBALS['_cp_test_tags'][7] = ['Cuenta principal de Ejemplo', 'centro social de ejemplo', 'asturias'];
 
         $mensaje = $this->sustituir('{hashtags}');
 
