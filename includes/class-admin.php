@@ -1059,8 +1059,8 @@ class Admin {
 								'icon'  => '❌',
 								'label' => __( 'Falta token', 'convoca-publisher' ),
 							)
-						); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. 
 						);
+						?>
 					<?php else : ?>
 						<span class="cp-status cp-status--ok">
 							<?php
@@ -1093,7 +1093,6 @@ class Admin {
 										<div class="description"><?php echo esc_html( $account->get_id() ); ?></div>
 									</td>
 									<td>
-										// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado.
 										<?php echo self::status_badge( self::channel_status( $account ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. ?>
 									</td>
 									<td>
@@ -1101,7 +1100,7 @@ class Admin {
 											<?php echo esc_html__( 'Configurar', 'convoca-publisher' ); ?>
 										</a>
 										<?php echo self::verify_button( $account ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. ?>
-										<?php echo self::verify_button( $account ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado. ?>
+									</td>
 								</tr>
 							<?php endforeach; ?>
 						</tbody>
