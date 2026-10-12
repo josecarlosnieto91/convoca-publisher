@@ -17,104 +17,99 @@
 
 namespace ConvocaPublisher;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
-class Crypto
-{
-    private const METHOD = 'aes-256-gcm';
-    private const KEY_OPTION = 'convoca_publisher_encryption_key';
+class Crypto {
 
-    /**
-     * Cifrar un valor con AES-256-GCM.
-     */
-    public static function encrypt(string $plaintext): string
-    {
-        $key = self::get_key();
-        $iv = random_bytes(12);
-        $tag = '';
-        $ciphertext = openssl_encrypt($plaintext, self::METHOD, $key, OPENSSL_RAW_DATA, $iv, $tag, '', 16);
+	private const METHOD     = 'aes-256-gcm';
+	private const KEY_OPTION = 'convoca_publisher_encryption_key';
 
-        if ($ciphertext === false) {
-            return $plaintext;
-        }
+	/**
+	 * Cifrar un valor con AES-256-GCM.
+	 */
+	public static function encrypt( string $plaintext ): string {
+		$key        = self::get_key();
+		$iv         = random_bytes( 12 );
+		$tag        = '';
+		$ciphertext = openssl_encrypt( $plaintext, self::METHOD, $key, OPENSSL_RAW_DATA, $iv, $tag, '', 16 );
 
-        return base64_encode($iv . $tag . $ciphertext);
-    }
+		if ( $ciphertext === false ) {
+			return $plaintext;
+		}
 
-    /**
-     * Descifrar un valor cifrado con AES-256-GCM.
-     */
-    public static function decrypt(string $ciphertext): string
-    {
-        $key = self::get_key();
-        $data = base64_decode($ciphertext, true);
-        if ($data === false || strlen($data) < 28) {
-            return $ciphertext;
-        }
+		return base64_encode( $iv . $tag . $ciphertext );
+	}
 
-        $iv = substr($data, 0, 12);
-        $tag = substr($data, 12, 16);
-        $encrypted = substr($data, 28);
+	/**
+	 * Descifrar un valor cifrado con AES-256-GCM.
+	 */
+	public static function decrypt( string $ciphertext ): string {
+		$key  = self::get_key();
+		$data = base64_decode( $ciphertext, true );
+		if ( $data === false || strlen( $data ) < 28 ) {
+			return $ciphertext;
+		}
 
-        $plaintext = openssl_decrypt($encrypted, self::METHOD, $key, OPENSSL_RAW_DATA, $iv, $tag);
-        return $plaintext !== false ? $plaintext : $ciphertext;
-    }
+		$iv        = substr( $data, 0, 12 );
+		$tag       = substr( $data, 12, 16 );
+		$encrypted = substr( $data, 28 );
 
-    /**
-     * Obtener o generar la clave de cifrado a partir de wp_salt().
-     */
-    private static function get_key(): string
-    {
-        $key = get_option(self::KEY_OPTION, '');
-        if (empty($key)) {
-            $key = wp_salt('auth') . wp_salt('secure_auth');
-            $key = hash('sha256', $key, true);
-            update_option(self::KEY_OPTION, base64_encode($key), true);
-        } else {
-            $key = base64_decode($key, true);
-        }
-        return $key;
-    }
+		$plaintext = openssl_decrypt( $encrypted, self::METHOD, $key, OPENSSL_RAW_DATA, $iv, $tag );
+		return $plaintext !== false ? $plaintext : $ciphertext;
+	}
 
-    /**
-     * Hook: cifrar tokens al guardarlos en options.
-     * pre_update_option puede pasar arrays (ej: WP-CLI activation).
-     */
-    public static function encrypt_on_save(mixed $value, string $option): mixed
-    {
-        // Solo cifrar opciones propias del plugin — no tocar '_token' de terceros.
-        if (!str_starts_with($option, 'convoca_publisher_')) {
-            return $value;
-        }
+	/**
+	 * Obtener o generar la clave de cifrado a partir de wp_salt().
+	 */
+	private static function get_key(): string {
+		$key = get_option( self::KEY_OPTION, '' );
+		if ( empty( $key ) ) {
+			$key = wp_salt( 'auth' ) . wp_salt( 'secure_auth' );
+			$key = hash( 'sha256', $key, true );
+			update_option( self::KEY_OPTION, base64_encode( $key ), true );
+		} else {
+			$key = base64_decode( $key, true );
+		}
+		return $key;
+	}
 
-        if (!is_string($value)) {
-            return $value;
-        }
+	/**
+	 * Hook: cifrar tokens al guardarlos en options.
+	 * pre_update_option puede pasar arrays (ej: WP-CLI activation).
+	 */
+	public static function encrypt_on_save( mixed $value, string $option ): mixed {
+		// Solo cifrar opciones propias del plugin — no tocar '_token' de terceros.
+		if ( ! str_starts_with( $option, 'convoca_publisher_' ) ) {
+			return $value;
+		}
 
-        if (!str_ends_with($option, '_token') && !str_ends_with($option, '_bearer_token')) {
-            return $value;
-        }
+		if ( ! is_string( $value ) ) {
+			return $value;
+		}
 
-        if (empty($value)) {
-            return $value;
-        }
+		if ( ! str_ends_with( $option, '_token' ) && ! str_ends_with( $option, '_bearer_token' ) ) {
+			return $value;
+		}
 
-        if (str_starts_with($value, 'convoca_publisher_enc:')) {
-            return $value;
-        }
+		if ( empty( $value ) ) {
+			return $value;
+		}
 
-        return 'convoca_publisher_enc:' . self::encrypt($value);
-    }
+		if ( str_starts_with( $value, 'convoca_publisher_enc:' ) ) {
+			return $value;
+		}
 
-    /**
-     * Hook: descifrar tokens al leerlos.
-     */
-    public static function decrypt_on_load($value, string $option)
-    {
-        $prefix = 'convoca_publisher_enc:';
-        if (!is_string($value) || !str_starts_with($value, $prefix)) {
-            return $value;
-        }
-        return self::decrypt(substr($value, strlen($prefix)));
-    }
+		return 'convoca_publisher_enc:' . self::encrypt( $value );
+	}
+
+	/**
+	 * Hook: descifrar tokens al leerlos.
+	 */
+	public static function decrypt_on_load( $value, string $option ) {
+		$prefix = 'convoca_publisher_enc:';
+		if ( ! is_string( $value ) || ! str_starts_with( $value, $prefix ) ) {
+			return $value;
+		}
+		return self::decrypt( substr( $value, strlen( $prefix ) ) );
+	}
 }

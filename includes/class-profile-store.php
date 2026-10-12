@@ -11,7 +11,7 @@
 
 namespace ConvocaPublisher;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Almacén de perfiles.
@@ -32,322 +32,308 @@ defined('ABSPATH') || exit;
  * y el historial apuntan a esos ids, y así siguen resolviendo sin tocar nada. Las
  * opciones antiguas **no se borran** (la marcha atrás es volver a la versión anterior).
  */
-final class Profile_Store
-{
-    /** Opción donde viven todos los perfiles. */
-    public const OPTION = 'convoca_publisher_profiles';
+final class Profile_Store {
 
-    /** Marca de migración hecha (versión del formato). */
-    public const MIGRATED_OPTION = 'convoca_publisher_profiles_migrated';
+	/** Opción donde viven todos los perfiles. */
+	public const OPTION = 'convoca_publisher_profiles';
 
-    /** Versión actual del formato de perfiles. */
-    public const FORMAT_VERSION = 1;
+	/** Marca de migración hecha (versión del formato). */
+	public const MIGRATED_OPTION = 'convoca_publisher_profiles_migrated';
 
-    /** Cuentas como máximo por red (evitar veinte sin querer). */
-    public const LIMIT_PER_NETWORK = 5;
+	/** Versión actual del formato de perfiles. */
+	public const FORMAT_VERSION = 1;
 
-    /**
-     * Todos los perfiles, con los tokens ya descifrados.
-     *
-     * @return array<int, array{id: string, channel: string, name: string, settings: array<string, string>, template: string, created: string}>
-     */
-    public static function all(): array
-    {
-        $profiles = get_option(self::OPTION, []);
+	/** Cuentas como máximo por red (evitar veinte sin querer). */
+	public const LIMIT_PER_NETWORK = 5;
 
-        if (!is_array($profiles)) {
-            return [];
-        }
+	/**
+	 * Todos los perfiles, con los tokens ya descifrados.
+	 *
+	 * @return array<int, array{id: string, channel: string, name: string, settings: array<string, string>, template: string, created: string}>
+	 */
+	public static function all(): array {
+		$profiles = get_option( self::OPTION, array() );
 
-        $limpios = [];
+		if ( ! is_array( $profiles ) ) {
+			return array();
+		}
 
-        foreach ($profiles as $profile) {
-            if (!is_array($profile) || empty($profile['id']) || empty($profile['channel'])) {
-                continue;
-            }
+		$limpios = array();
 
-            $profile['name']     = (string) ($profile['name'] ?? $profile['id']);
-            $profile['template'] = (string) ($profile['template'] ?? '');
-            $profile['created']  = (string) ($profile['created'] ?? '');
-            $profile['settings'] = self::decrypt_settings((array) ($profile['settings'] ?? []));
+		foreach ( $profiles as $profile ) {
+			if ( ! is_array( $profile ) || empty( $profile['id'] ) || empty( $profile['channel'] ) ) {
+				continue;
+			}
 
-            $limpios[] = $profile;
-        }
+			$profile['name']     = (string) ( $profile['name'] ?? $profile['id'] );
+			$profile['template'] = (string) ( $profile['template'] ?? '' );
+			$profile['created']  = (string) ( $profile['created'] ?? '' );
+			$profile['settings'] = self::decrypt_settings( (array) ( $profile['settings'] ?? array() ) );
 
-        return $limpios;
-    }
+			$limpios[] = $profile;
+		}
 
-    /**
-     * Guardar la lista completa de perfiles.
-     *
-     * @param array<int, array<string, mixed>> $profiles Perfiles sin cifrar.
-     */
-    public static function save(array $profiles): bool
-    {
-        $guardar = [];
+		return $limpios;
+	}
 
-        foreach ($profiles as $profile) {
-            $profile['settings'] = self::encrypt_settings((array) ($profile['settings'] ?? []));
-            $guardar[]           = $profile;
-        }
+	/**
+	 * Guardar la lista completa de perfiles.
+	 *
+	 * @param array<int, array<string, mixed>> $profiles Perfiles sin cifrar.
+	 */
+	public static function save( array $profiles ): bool {
+		$guardar = array();
 
-        return (bool) update_option(self::OPTION, $guardar, false);
-    }
+		foreach ( $profiles as $profile ) {
+			$profile['settings'] = self::encrypt_settings( (array) ( $profile['settings'] ?? array() ) );
+			$guardar[]           = $profile;
+		}
 
-    /**
-     * Un perfil por su id.
-     *
-     * @return array<string, mixed>|null
-     */
-    public static function find(string $profile_id): ?array
-    {
-        foreach (self::all() as $profile) {
-            if ($profile['id'] === $profile_id) {
-                return $profile;
-            }
-        }
+		return (bool) update_option( self::OPTION, $guardar, false );
+	}
 
-        return null;
-    }
+	/**
+	 * Un perfil por su id.
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	public static function find( string $profile_id ): ?array {
+		foreach ( self::all() as $profile ) {
+			if ( $profile['id'] === $profile_id ) {
+				return $profile;
+			}
+		}
 
-    /**
-     * Perfiles de una red.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    public static function for_channel(string $channel_id): array
-    {
-        return array_values(
-            array_filter(self::all(), static fn(array $profile): bool => $profile['channel'] === $channel_id)
-        );
-    }
+		return null;
+	}
 
-    /**
-     * Cuántas cuentas tiene ya una red.
-     */
-    public static function count_for_channel(string $channel_id): int
-    {
-        return count(self::for_channel($channel_id));
-    }
+	/**
+	 * Perfiles de una red.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function for_channel( string $channel_id ): array {
+		return array_values(
+			array_filter( self::all(), static fn( array $profile ): bool => $profile['channel'] === $channel_id )
+		);
+	}
 
-    /**
-     * Crear un perfil.
-     *
-     * @param array<string, string> $settings Ajustes con su nombre completo de opción.
-     *
-     * @return array<string, mixed>|false El perfil creado, o `false` si no cabe otro.
-     */
-    public static function create(string $channel_id, string $name, array $settings = [], string $template = '', string $id = ''): array|false
-    {
-        if (self::count_for_channel($channel_id) >= self::LIMIT_PER_NETWORK) {
-            return false;
-        }
+	/**
+	 * Cuántas cuentas tiene ya una red.
+	 */
+	public static function count_for_channel( string $channel_id ): int {
+		return count( self::for_channel( $channel_id ) );
+	}
 
-        $profiles = self::all();
-        $profile  = [
-            'id'       => '' !== $id ? self::unique_id($id) : self::unique_id(self::suggest_id($channel_id, $name)),
-            'channel'  => $channel_id,
-            'name'     => '' !== $name ? $name : $channel_id,
-            'settings' => $settings,
-            'template' => $template,
-            'created'  => current_time('mysql'),
-        ];
+	/**
+	 * Crear un perfil.
+	 *
+	 * @param array<string, string> $settings Ajustes con su nombre completo de opción.
+	 *
+	 * @return array<string, mixed>|false El perfil creado, o `false` si no cabe otro.
+	 */
+	public static function create( string $channel_id, string $name, array $settings = array(), string $template = '', string $id = '' ): array|false {
+		if ( self::count_for_channel( $channel_id ) >= self::LIMIT_PER_NETWORK ) {
+			return false;
+		}
 
-        $profiles[] = $profile;
-        self::save($profiles);
+		$profiles = self::all();
+		$profile  = array(
+			'id'       => '' !== $id ? self::unique_id( $id ) : self::unique_id( self::suggest_id( $channel_id, $name ) ),
+			'channel'  => $channel_id,
+			'name'     => '' !== $name ? $name : $channel_id,
+			'settings' => $settings,
+			'template' => $template,
+			'created'  => current_time( 'mysql' ),
+		);
 
-        return $profile;
-    }
+		$profiles[] = $profile;
+		self::save( $profiles );
 
-    /**
-     * Actualizar un perfil (nombre, ajustes y/o plantilla).
-     *
-     * @param array<string, mixed> $changes
-     */
-    public static function update(string $profile_id, array $changes): bool
-    {
-        $profiles = self::all();
-        $tocado   = false;
+		return $profile;
+	}
 
-        foreach ($profiles as $i => $profile) {
-            if ($profile['id'] !== $profile_id) {
-                continue;
-            }
+	/**
+	 * Actualizar un perfil (nombre, ajustes y/o plantilla).
+	 *
+	 * @param array<string, mixed> $changes
+	 */
+	public static function update( string $profile_id, array $changes ): bool {
+		$profiles = self::all();
+		$tocado   = false;
 
-            if (isset($changes['name'])) {
-                $profiles[$i]['name'] = (string) $changes['name'];
-            }
+		foreach ( $profiles as $i => $profile ) {
+			if ( $profile['id'] !== $profile_id ) {
+				continue;
+			}
 
-            if (isset($changes['template'])) {
-                $profiles[$i]['template'] = (string) $changes['template'];
-            }
+			if ( isset( $changes['name'] ) ) {
+				$profiles[ $i ]['name'] = (string) $changes['name'];
+			}
 
-            if (isset($changes['settings']) && is_array($changes['settings'])) {
-                $profiles[$i]['settings'] = array_merge($profile['settings'], $changes['settings']);
-            }
+			if ( isset( $changes['template'] ) ) {
+				$profiles[ $i ]['template'] = (string) $changes['template'];
+			}
 
-            $tocado = true;
-            break;
-        }
+			if ( isset( $changes['settings'] ) && is_array( $changes['settings'] ) ) {
+				$profiles[ $i ]['settings'] = array_merge( $profile['settings'], $changes['settings'] );
+			}
 
-        return $tocado && self::save($profiles);
-    }
+			$tocado = true;
+			break;
+		}
 
-    /**
-     * Borrar un perfil. Solo afecta a la configuración de esa cuenta: las entradas ya
-     * publicadas y el historial se quedan como están.
-     */
-    public static function delete(string $profile_id): bool
-    {
-        $profiles = self::all();
-        $quedan   = array_values(
-            array_filter($profiles, static fn(array $profile): bool => $profile['id'] !== $profile_id)
-        );
+		return $tocado && self::save( $profiles );
+	}
 
-        if (count($quedan) === count($profiles)) {
-            return false;
-        }
+	/**
+	 * Borrar un perfil. Solo afecta a la configuración de esa cuenta: las entradas ya
+	 * publicadas y el historial se quedan como están.
+	 */
+	public static function delete( string $profile_id ): bool {
+		$profiles = self::all();
+		$quedan   = array_values(
+			array_filter( $profiles, static fn( array $profile ): bool => $profile['id'] !== $profile_id )
+		);
 
-        return self::save($quedan);
-    }
+		if ( count( $quedan ) === count( $profiles ) ) {
+			return false;
+		}
 
-    /**
-     * Id libre a partir de uno propuesto (`telegram`, `telegram-2`, …).
-     */
-    public static function unique_id(string $base): string
-    {
-        $base = sanitize_title($base);
-        $base = '' !== $base ? $base : 'cuenta';
+		return self::save( $quedan );
+	}
 
-        $ids = array_column(self::all(), 'id');
+	/**
+	 * Id libre a partir de uno propuesto (`telegram`, `telegram-2`, …).
+	 */
+	public static function unique_id( string $base ): string {
+		$base = sanitize_title( $base );
+		$base = '' !== $base ? $base : 'cuenta';
 
-        if (!in_array($base, $ids, true)) {
-            return $base;
-        }
+		$ids = array_column( self::all(), 'id' );
 
-        $n = 2;
-        while (in_array($base . '-' . $n, $ids, true)) {
-            ++$n;
-        }
+		if ( ! in_array( $base, $ids, true ) ) {
+			return $base;
+		}
 
-        return $base . '-' . $n;
-    }
+		$n = 2;
+		while ( in_array( $base . '-' . $n, $ids, true ) ) {
+			++$n;
+		}
 
-    /**
-     * Id propuesto para una cuenta nueva de una red.
-     */
-    private static function suggest_id(string $channel_id, string $name): string
-    {
-        $sufijo = sanitize_title($name);
+		return $base . '-' . $n;
+	}
 
-        if ('' === $sufijo || $sufijo === sanitize_title($channel_id)) {
-            return $channel_id;
-        }
+	/**
+	 * Id propuesto para una cuenta nueva de una red.
+	 */
+	private static function suggest_id( string $channel_id, string $name ): string {
+		$sufijo = sanitize_title( $name );
 
-        return $channel_id . '-' . $sufijo;
-    }
+		if ( '' === $sufijo || $sufijo === sanitize_title( $channel_id ) ) {
+			return $channel_id;
+		}
 
-    /**
-     * Migrar la configuración antigua (un token por red) a perfiles.
-     *
-     * Se ejecuta una sola vez. Un perfil por red que tuviera algo configurado, con el
-     * **id de la red** para no romper lo ya publicado, la cola ni el historial.
-     *
-     * @param array<string, object> $channels Canales disponibles (para sacar sus campos).
-     */
-    public static function migrate(array $channels): void
-    {
-        if ((int) get_option(self::MIGRATED_OPTION, 0) >= self::FORMAT_VERSION) {
-            return;
-        }
+		return $channel_id . '-' . $sufijo;
+	}
 
-        $profiles = self::all();
+	/**
+	 * Migrar la configuración antigua (un token por red) a perfiles.
+	 *
+	 * Se ejecuta una sola vez. Un perfil por red que tuviera algo configurado, con el
+	 * **id de la red** para no romper lo ya publicado, la cola ni el historial.
+	 *
+	 * @param array<string, object> $channels Canales disponibles (para sacar sus campos).
+	 */
+	public static function migrate( array $channels ): void {
+		if ( (int) get_option( self::MIGRATED_OPTION, 0 ) >= self::FORMAT_VERSION ) {
+			return;
+		}
 
-        foreach ($channels as $channel_id => $channel) {
-            if (self::count_for_channel($channel_id) > 0) {
-                continue; // Ya tiene cuentas: no se toca.
-            }
+		$profiles = self::all();
 
-            $settings = [];
-            $template = '';
+		foreach ( $channels as $channel_id => $channel ) {
+			if ( self::count_for_channel( $channel_id ) > 0 ) {
+				continue; // Ya tiene cuentas: no se toca.
+			}
 
-            foreach ($channel->get_settings_fields() as $option => $field) {
-                $value = (string) get_option($option, '');
+			$settings = array();
+			$template = '';
 
-                if (str_ends_with($option, '_template')) {
-                    $template = $value;
+			foreach ( $channel->get_settings_fields() as $option => $field ) {
+				$value = (string) get_option( $option, '' );
 
-                    continue;
-                }
+				if ( str_ends_with( $option, '_template' ) ) {
+					$template = $value;
 
-                if ('' !== $value) {
-                    $settings[$option] = $value;
-                }
-            }
+					continue;
+				}
 
-            if ([] === $settings) {
-                continue; // Nada configurado en esta red: no se inventa una cuenta.
-            }
+				if ( '' !== $value ) {
+					$settings[ $option ] = $value;
+				}
+			}
 
-            $profiles[] = [
-                'id'       => $channel_id,
-                'channel'  => $channel_id,
-                'name'     => (string) $channel->get_name(),
-                'settings' => $settings,
-                'template' => $template,
-                'created'  => current_time('mysql'),
-            ];
-        }
+			if ( array() === $settings ) {
+				continue; // Nada configurado en esta red: no se inventa una cuenta.
+			}
 
-        self::save($profiles);
-        update_option(self::MIGRATED_OPTION, self::FORMAT_VERSION, false);
-    }
+			$profiles[] = array(
+				'id'       => $channel_id,
+				'channel'  => $channel_id,
+				'name'     => (string) $channel->get_name(),
+				'settings' => $settings,
+				'template' => $template,
+				'created'  => current_time( 'mysql' ),
+			);
+		}
 
-    /**
-     * Cifrar los ajustes que sean credenciales.
-     *
-     * @param array<string, string> $settings
-     *
-     * @return array<string, string>
-     */
-    private static function encrypt_settings(array $settings): array
-    {
-        foreach ($settings as $key => $value) {
-            if (!self::is_secret($key) || '' === $value || str_starts_with((string) $value, 'convoca_publisher_enc:')) {
-                continue;
-            }
+		self::save( $profiles );
+		update_option( self::MIGRATED_OPTION, self::FORMAT_VERSION, false );
+	}
 
-            $settings[$key] = 'convoca_publisher_enc:' . Crypto::encrypt((string) $value);
-        }
+	/**
+	 * Cifrar los ajustes que sean credenciales.
+	 *
+	 * @param array<string, string> $settings
+	 *
+	 * @return array<string, string>
+	 */
+	private static function encrypt_settings( array $settings ): array {
+		foreach ( $settings as $key => $value ) {
+			if ( ! self::is_secret( $key ) || '' === $value || str_starts_with( (string) $value, 'convoca_publisher_enc:' ) ) {
+				continue;
+			}
 
-        return $settings;
-    }
+			$settings[ $key ] = 'convoca_publisher_enc:' . Crypto::encrypt( (string) $value );
+		}
 
-    /**
-     * Descifrar los ajustes que sean credenciales.
-     *
-     * @param array<string, string> $settings
-     *
-     * @return array<string, string>
-     */
-    private static function decrypt_settings(array $settings): array
-    {
-        foreach ($settings as $key => $value) {
-            if (!self::is_secret($key)) {
-                continue;
-            }
+		return $settings;
+	}
 
-            $settings[$key] = (string) Crypto::decrypt_on_load($value, (string) $key);
-        }
+	/**
+	 * Descifrar los ajustes que sean credenciales.
+	 *
+	 * @param array<string, string> $settings
+	 *
+	 * @return array<string, string>
+	 */
+	private static function decrypt_settings( array $settings ): array {
+		foreach ( $settings as $key => $value ) {
+			if ( ! self::is_secret( $key ) ) {
+				continue;
+			}
 
-        return $settings;
-    }
+			$settings[ $key ] = (string) Crypto::decrypt_on_load( $value, (string) $key );
+		}
 
-    /**
-     * ¿Este ajuste es una credencial?
-     */
-    public static function is_secret(string $option): bool
-    {
-        return str_ends_with($option, '_token') || str_ends_with($option, '_bearer_token');
-    }
+		return $settings;
+	}
+
+	/**
+	 * ¿Este ajuste es una credencial?
+	 */
+	public static function is_secret( string $option ): bool {
+		return str_ends_with( $option, '_token' ) || str_ends_with( $option, '_bearer_token' );
+	}
 }

@@ -17,170 +17,192 @@
 
 namespace ConvocaPublisher\Channels;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
-class Twitter implements ChannelInterface
-{
-    public function get_id(): string
-    {
-        return 'twitter';
-    }
+class Twitter implements ChannelInterface {
 
-    public function get_name(): string
-    {
-        return __('Twitter / X', 'convoca-publisher');
-    }
+	public function get_id(): string {
+		return 'twitter';
+	}
 
-    public function is_available(): bool
-    {
-        $bearer = get_option('convoca_publisher_twitter_bearer_token', '');
-        return !empty($bearer);
-    }
+	public function get_name(): string {
+		return __( 'Twitter / X', 'convoca-publisher' );
+	}
 
-    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
-    {
-        $bearer = get_option('convoca_publisher_twitter_bearer_token', '');
+	public function is_available(): bool {
+		$bearer = get_option( 'convoca_publisher_twitter_bearer_token', '' );
+		return ! empty( $bearer );
+	}
 
-        if (empty($bearer)) {
-            return ['success' => false, 'error' => __('Bearer token de Twitter no configurado.', 'convoca-publisher')];
-        }
+	public function publish( int $post_id, string $message, string $url, string $image_url = '' ): array {
+		$bearer = get_option( 'convoca_publisher_twitter_bearer_token', '' );
 
-        $tweet_text = html_entity_decode(wp_trim_words($message, 25));
+		if ( empty( $bearer ) ) {
+			return array(
+				'success' => false,
+				'error'   => __( 'Bearer token de Twitter no configurado.', 'convoca-publisher' ),
+			);
+		}
 
-        // Si el mensaje ya trae el enlace, no se pega otra vez; y el recorte se calcula sobre lo
-        // que de verdad se va a mandar, no sobre un enlace que ya estaba dentro.
-        $falta = \ConvocaPublisher\Platform_Rules::url_if_missing($tweet_text, $url);
-        $cola  = '' === $falta ? '' : ' ' . $falta;
+		$tweet_text = html_entity_decode( wp_trim_words( $message, 25 ) );
 
-        if (mb_strlen($tweet_text . $cola) > 280) {
-            $tweet_text = mb_substr($tweet_text, 0, 260 - mb_strlen($cola)) . '…';
-        }
+		// Si el mensaje ya trae el enlace, no se pega otra vez; y el recorte se calcula sobre lo
+		// que de verdad se va a mandar, no sobre un enlace que ya estaba dentro.
+		$falta = \ConvocaPublisher\Platform_Rules::url_if_missing( $tweet_text, $url );
+		$cola  = '' === $falta ? '' : ' ' . $falta;
 
-        $tweet = $tweet_text . $cola;
+		if ( mb_strlen( $tweet_text . $cola ) > 280 ) {
+			$tweet_text = mb_substr( $tweet_text, 0, 260 - mb_strlen( $cola ) ) . '…';
+		}
 
-        $body = ['text' => mb_substr($tweet, 0, 280)];
+		$tweet = $tweet_text . $cola;
 
-        if (!empty($image_url)) {
-            $media_id = $this->upload_media($image_url, $bearer);
-            if ($media_id) {
-                $body['media'] = ['media_ids' => [$media_id]];
-            }
-        }
+		$body = array( 'text' => mb_substr( $tweet, 0, 280 ) );
 
-        $response = wp_remote_post('https://api.twitter.com/2/tweets', [
-            'headers' => [
-                'Authorization' => "Bearer {$bearer}",
-                'Content-Type'  => 'application/json',
-            ],
-            'body'    => wp_json_encode($body),
-            'timeout' => 30,
-        ]);
+		if ( ! empty( $image_url ) ) {
+			$media_id = $this->upload_media( $image_url, $bearer );
+			if ( $media_id ) {
+				$body['media'] = array( 'media_ids' => array( $media_id ) );
+			}
+		}
 
-        if (is_wp_error($response)) {
-            return ['success' => false, 'error' => $response->get_error_message()];
-        }
+		$response = wp_remote_post(
+			'https://api.twitter.com/2/tweets',
+			array(
+				'headers' => array(
+					'Authorization' => "Bearer {$bearer}",
+					'Content-Type'  => 'application/json',
+				),
+				'body'    => wp_json_encode( $body ),
+				'timeout' => 30,
+			)
+		);
 
-        $http_code = wp_remote_retrieve_response_code($response);
-        $resp_body = json_decode(wp_remote_retrieve_body($response), true);
+		if ( is_wp_error( $response ) ) {
+			return array(
+				'success' => false,
+				'error'   => $response->get_error_message(),
+			);
+		}
 
-        if ($http_code >= 200 && $http_code < 300 && isset($resp_body['data']['id'])) {
-            return ['success' => true, 'post_id' => $resp_body['data']['id']];
-        }
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$resp_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        $error = $resp_body['title'] ?? $resp_body['detail'] ?? __('Error desconocido de Twitter API.', 'convoca-publisher');
-        return ['success' => false, 'error' => $error];
-    }
+		if ( $http_code >= 200 && $http_code < 300 && isset( $resp_body['data']['id'] ) ) {
+			return array(
+				'success' => true,
+				'post_id' => $resp_body['data']['id'],
+			);
+		}
 
-    private function upload_media(string $image_url, string $bearer): ?string
-    {
-        $image_data = wp_remote_get($image_url, ['timeout' => 15]);
-        if (is_wp_error($image_data) || wp_remote_retrieve_response_code($image_data) !== 200) {
-            return null;
-        }
+		$error = $resp_body['title'] ?? $resp_body['detail'] ?? __( 'Error desconocido de Twitter API.', 'convoca-publisher' );
+		return array(
+			'success' => false,
+			'error'   => $error,
+		);
+	}
 
-        $boundary = wp_generate_password(24, false);
-        $body = "--{$boundary}\r\n"
-              . "Content-Disposition: form-data; name=\"media\"; filename=\"image.jpg\"\r\n"
-              . "Content-Type: image/jpeg\r\n\r\n"
-              . wp_remote_retrieve_body($image_data) . "\r\n"
-              . "--{$boundary}--";
+	private function upload_media( string $image_url, string $bearer ): ?string {
+		$image_data = wp_remote_get( $image_url, array( 'timeout' => 15 ) );
+		if ( is_wp_error( $image_data ) || wp_remote_retrieve_response_code( $image_data ) !== 200 ) {
+			return null;
+		}
 
-        $response = wp_remote_post('https://upload.twitter.com/1.1/media/upload.json', [
-            'headers' => [
-                'Authorization' => "Bearer {$bearer}",
-                'Content-Type'  => "multipart/form-data; boundary={$boundary}",
-            ],
-            'body'    => $body,
-            'timeout' => 30,
-        ]);
+		$boundary = wp_generate_password( 24, false );
+		$body     = "--{$boundary}\r\n"
+				. "Content-Disposition: form-data; name=\"media\"; filename=\"image.jpg\"\r\n"
+				. "Content-Type: image/jpeg\r\n\r\n"
+				. wp_remote_retrieve_body( $image_data ) . "\r\n"
+				. "--{$boundary}--";
 
-        if (is_wp_error($response)) {
-            return null;
-        }
+		$response = wp_remote_post(
+			'https://upload.twitter.com/1.1/media/upload.json',
+			array(
+				'headers' => array(
+					'Authorization' => "Bearer {$bearer}",
+					'Content-Type'  => "multipart/form-data; boundary={$boundary}",
+				),
+				'body'    => $body,
+				'timeout' => 30,
+			)
+		);
 
-        $result = json_decode(wp_remote_retrieve_body($response), true);
-        return $result['media_id_string'] ?? null;
-    }
+		if ( is_wp_error( $response ) ) {
+			return null;
+		}
 
-    public function get_settings_fields(): array
-    {
-        return [
-            'convoca_publisher_twitter_bearer_token' => [
-                'title'       => __('Bearer Token (OAuth 2.0)', 'convoca-publisher'),
-                'type'        => 'password',
-                'description' => __('Token OAuth 2.0 de la app de Twitter/X con permisos tweet.read y tweet.write.', 'convoca-publisher'),
-            ],
-            'convoca_publisher_twitter_template' => [
-                'title'       => __('Plantilla del tweet', 'convoca-publisher'),
-                'type'        => 'text',
-                'description' => __('{title}, {excerpt}, {url}, {hashtags}. Máximo 280 caracteres total. Por defecto: {title} {url} {hashtags}', 'convoca-publisher'),
-            ],
-        ];
-    }
+		$result = json_decode( wp_remote_retrieve_body( $response ), true );
+		return $result['media_id_string'] ?? null;
+	}
 
-    public function validate_settings(array $settings): array
-    {
-        if (empty($settings['convoca_publisher_twitter_bearer_token'])) {
-            return [__('El Bearer Token de Twitter es obligatorio.', 'convoca-publisher')];
-        }
-        return [];
-    }
+	public function get_settings_fields(): array {
+		return array(
+			'convoca_publisher_twitter_bearer_token' => array(
+				'title'       => __( 'Bearer Token (OAuth 2.0)', 'convoca-publisher' ),
+				'type'        => 'password',
+				'description' => __( 'Token OAuth 2.0 de la app de Twitter/X con permisos tweet.read y tweet.write.', 'convoca-publisher' ),
+			),
+			'convoca_publisher_twitter_template'     => array(
+				'title'       => __( 'Plantilla del tweet', 'convoca-publisher' ),
+				'type'        => 'text',
+				'description' => __( '{title}, {excerpt}, {url}, {hashtags}. Máximo 280 caracteres total. Por defecto: {title} {url} {hashtags}', 'convoca-publisher' ),
+			),
+		);
+	}
 
-    public function verify_connection(): array
-    {
-        $bearer = get_option('convoca_publisher_twitter_bearer_token', '');
+	public function validate_settings( array $settings ): array {
+		if ( empty( $settings['convoca_publisher_twitter_bearer_token'] ) ) {
+			return array( __( 'El Bearer Token de Twitter es obligatorio.', 'convoca-publisher' ) );
+		}
+		return array();
+	}
 
-        if (empty($bearer)) {
-            return ['success' => false, 'message' => __('Bearer Token de Twitter no configurado.', 'convoca-publisher')];
-        }
+	public function verify_connection(): array {
+		$bearer = get_option( 'convoca_publisher_twitter_bearer_token', '' );
 
-        $resp = wp_remote_get('https://api.twitter.com/2/users/me', [
-            'headers' => [
-                'Authorization' => "Bearer {$bearer}",
-            ],
-            'timeout' => 15,
-        ]);
+		if ( empty( $bearer ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Bearer Token de Twitter no configurado.', 'convoca-publisher' ),
+			);
+		}
 
-        if (is_wp_error($resp)) {
-            return ['success' => false, 'message' => __('Error de conexión: ', 'convoca-publisher') . $resp->get_error_message()];
-        }
+		$resp = wp_remote_get(
+			'https://api.twitter.com/2/users/me',
+			array(
+				'headers' => array(
+					'Authorization' => "Bearer {$bearer}",
+				),
+				'timeout' => 15,
+			)
+		);
 
-        $body = json_decode(wp_remote_retrieve_body($resp), true);
-        $http_code = wp_remote_retrieve_response_code($resp);
+		if ( is_wp_error( $resp ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Error de conexión: ', 'convoca-publisher' ) . $resp->get_error_message(),
+			);
+		}
 
-        if ($http_code >= 200 && $http_code < 300 && isset($body['data']['id'])) {
-            $username = $body['data']['username'] ?? 'desconocido';
-            return [
-                'success' => true,
-                'message' => sprintf(
-                    /* translators: %s: Twitter/X username */
-                    __('✅ Conexión correcta. Usuario: @%s', 'convoca-publisher'),
-                    $username
-                ),
-            ];
-        }
+		$body      = json_decode( wp_remote_retrieve_body( $resp ), true );
+		$http_code = wp_remote_retrieve_response_code( $resp );
 
-        $error_msg = $body['title'] ?? $body['detail'] ?? __('Error desconocido de Twitter API.', 'convoca-publisher');
-        return ['success' => false, 'message' => $error_msg];
-    }
+		if ( $http_code >= 200 && $http_code < 300 && isset( $body['data']['id'] ) ) {
+			$username = $body['data']['username'] ?? 'desconocido';
+			return array(
+				'success' => true,
+				'message' => sprintf(
+					/* translators: %s: Twitter/X username */
+					__( '✅ Conexión correcta. Usuario: @%s', 'convoca-publisher' ),
+					$username
+				),
+			);
+		}
+
+		$error_msg = $body['title'] ?? $body['detail'] ?? __( 'Error desconocido de Twitter API.', 'convoca-publisher' );
+		return array(
+			'success' => false,
+			'message' => $error_msg,
+		);
+	}
 }

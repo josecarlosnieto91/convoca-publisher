@@ -17,154 +17,180 @@
 
 namespace ConvocaPublisher\Channels;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
-class Googlemybusiness implements ChannelInterface
-{
-    public function get_id(): string
-    {
-        return 'googlemybusiness';
-    }
+class Googlemybusiness implements ChannelInterface {
 
-    public function get_name(): string
-    {
-        return __('Google My Business', 'convoca-publisher');
-    }
+	public function get_id(): string {
+		return 'googlemybusiness';
+	}
 
-    public function is_available(): bool
-    {
-        return !empty(get_option('convoca_publisher_gmb_token', '')) && !empty(get_option('convoca_publisher_gmb_location', ''));
-    }
+	public function get_name(): string {
+		return __( 'Google My Business', 'convoca-publisher' );
+	}
 
-    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
-    {
-        $token = get_option('convoca_publisher_gmb_token', '');
-        $location = get_option('convoca_publisher_gmb_location', '');
+	public function is_available(): bool {
+		return ! empty( get_option( 'convoca_publisher_gmb_token', '' ) ) && ! empty( get_option( 'convoca_publisher_gmb_location', '' ) );
+	}
 
-        if (empty($token) || empty($location)) {
-            return ['success' => false, 'error' => __('Token o ubicación de GMB no configurados.', 'convoca-publisher')];
-        }
+	public function publish( int $post_id, string $message, string $url, string $image_url = '' ): array {
+		$token    = get_option( 'convoca_publisher_gmb_token', '' );
+		$location = get_option( 'convoca_publisher_gmb_location', '' );
 
-        $summary = html_entity_decode(wp_trim_words($message, 50));
+		if ( empty( $token ) || empty( $location ) ) {
+			return array(
+				'success' => false,
+				'error'   => __( 'Token o ubicación de GMB no configurados.', 'convoca-publisher' ),
+			);
+		}
 
-        $body = [
-            'summary'      => mb_substr($summary, 0, 1500),
-            'callToAction' => [
-                'actionType' => 'LEARN_MORE',
-                'url'        => $url,
-            ],
-            'topicType'    => 'STANDARD',
-            'alertType'    => 'UNSPECIFIED_ALERT_TYPE',
-        ];
+		$summary = html_entity_decode( wp_trim_words( $message, 50 ) );
 
-        if (!empty($image_url)) {
-            $body['media'][] = [
-                'mediaFormat' => 'PHOTO',
-                'sourceUrl'   => $image_url,
-            ];
-        }
+		$body = array(
+			'summary'      => mb_substr( $summary, 0, 1500 ),
+			'callToAction' => array(
+				'actionType' => 'LEARN_MORE',
+				'url'        => $url,
+			),
+			'topicType'    => 'STANDARD',
+			'alertType'    => 'UNSPECIFIED_ALERT_TYPE',
+		);
 
-        $api_url = "https://mybusiness.googleapis.com/v4/{$location}/localPosts";
+		if ( ! empty( $image_url ) ) {
+			$body['media'][] = array(
+				'mediaFormat' => 'PHOTO',
+				'sourceUrl'   => $image_url,
+			);
+		}
 
-        $response = wp_remote_post($api_url, [
-            'headers' => [
-                'Authorization' => "Bearer {$token}",
-                'Content-Type'  => 'application/json',
-            ],
-            'body'    => wp_json_encode($body),
-            'timeout' => 30,
-        ]);
+		$api_url = "https://mybusiness.googleapis.com/v4/{$location}/localPosts";
 
-        if (is_wp_error($response)) {
-            return ['success' => false, 'error' => $response->get_error_message()];
-        }
+		$response = wp_remote_post(
+			$api_url,
+			array(
+				'headers' => array(
+					'Authorization' => "Bearer {$token}",
+					'Content-Type'  => 'application/json',
+				),
+				'body'    => wp_json_encode( $body ),
+				'timeout' => 30,
+			)
+		);
 
-        $http_code = wp_remote_retrieve_response_code($response);
-        $resp_body = json_decode(wp_remote_retrieve_body($response), true);
+		if ( is_wp_error( $response ) ) {
+			return array(
+				'success' => false,
+				'error'   => $response->get_error_message(),
+			);
+		}
 
-        if ($http_code >= 200 && $http_code < 300 && isset($resp_body['name'])) {
-            return ['success' => true, 'post_id' => $resp_body['name']];
-        }
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$resp_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        $error = $resp_body['error']['message'] ?? __('Error desconocido de GMB API.', 'convoca-publisher');
-        return ['success' => false, 'error' => $error];
-    }
+		if ( $http_code >= 200 && $http_code < 300 && isset( $resp_body['name'] ) ) {
+			return array(
+				'success' => true,
+				'post_id' => $resp_body['name'],
+			);
+		}
 
-    public function get_settings_fields(): array
-    {
-        return [
-            'convoca_publisher_gmb_token' => [
-                'title'       => __('Access Token (OAuth 2.0)', 'convoca-publisher'),
-                'type'        => 'password',
-                'description' => __('Token de Google con permisos https://www.googleapis.com/auth/business.manage.', 'convoca-publisher'),
-            ],
-            'convoca_publisher_gmb_location' => [
-                'title'       => __('Location ID', 'convoca-publisher'),
-                'type'        => 'text',
-                'description' => __('Formato: accounts/{accountId}/locations/{locationId}', 'convoca-publisher'),
-            ],
-            'convoca_publisher_gmb_template' => [
-                'title'       => __('Plantilla del post', 'convoca-publisher'),
-                'type'        => 'text',
-                'description' => __('{title}, {excerpt}, {url}. GMB limita a 1500 caracteres. Por defecto: {excerpt} — {url}', 'convoca-publisher'),
-            ],
-        ];
-    }
+		$error = $resp_body['error']['message'] ?? __( 'Error desconocido de GMB API.', 'convoca-publisher' );
+		return array(
+			'success' => false,
+			'error'   => $error,
+		);
+	}
 
-    public function validate_settings(array $settings): array
-    {
-        $errors = [];
-        if (empty($settings['convoca_publisher_gmb_token'])) {
-            $errors[] = __('El token de Google es obligatorio.', 'convoca-publisher');
-        }
-        if (empty($settings['convoca_publisher_gmb_location'])) {
-            $errors[] = __('El Location ID de GMB es obligatorio.', 'convoca-publisher');
-        }
-        return $errors;
-    }
+	public function get_settings_fields(): array {
+		return array(
+			'convoca_publisher_gmb_token'    => array(
+				'title'       => __( 'Access Token (OAuth 2.0)', 'convoca-publisher' ),
+				'type'        => 'password',
+				'description' => __( 'Token de Google con permisos https://www.googleapis.com/auth/business.manage.', 'convoca-publisher' ),
+			),
+			'convoca_publisher_gmb_location' => array(
+				'title'       => __( 'Location ID', 'convoca-publisher' ),
+				'type'        => 'text',
+				'description' => __( 'Formato: accounts/{accountId}/locations/{locationId}', 'convoca-publisher' ),
+			),
+			'convoca_publisher_gmb_template' => array(
+				'title'       => __( 'Plantilla del post', 'convoca-publisher' ),
+				'type'        => 'text',
+				'description' => __( '{title}, {excerpt}, {url}. GMB limita a 1500 caracteres. Por defecto: {excerpt} — {url}', 'convoca-publisher' ),
+			),
+		);
+	}
 
-    public function verify_connection(): array
-    {
-        $token = get_option('convoca_publisher_gmb_token', '');
-        $location = get_option('convoca_publisher_gmb_location', '');
+	public function validate_settings( array $settings ): array {
+		$errors = array();
+		if ( empty( $settings['convoca_publisher_gmb_token'] ) ) {
+			$errors[] = __( 'El token de Google es obligatorio.', 'convoca-publisher' );
+		}
+		if ( empty( $settings['convoca_publisher_gmb_location'] ) ) {
+			$errors[] = __( 'El Location ID de GMB es obligatorio.', 'convoca-publisher' );
+		}
+		return $errors;
+	}
 
-        if (empty($token) || empty($location)) {
-            return ['success' => false, 'message' => __('Token o Location ID de GMB no configurados.', 'convoca-publisher')];
-        }
+	public function verify_connection(): array {
+		$token    = get_option( 'convoca_publisher_gmb_token', '' );
+		$location = get_option( 'convoca_publisher_gmb_location', '' );
 
-        // Validate token format: JWT-like or Google access token
-        if (strlen($token) < 20 || strlen($token) > 4096) {
-            return ['success' => false, 'message' => __('El token de Google no tiene un formato válido.', 'convoca-publisher')];
-        }
+		if ( empty( $token ) || empty( $location ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Token o Location ID de GMB no configurados.', 'convoca-publisher' ),
+			);
+		}
 
-        // Validate location format: accounts/{id}/locations/{id}
-        if (!preg_match('#^accounts/[^/]+/locations/[^/]+$#', $location)) {
-            return ['success' => false, 'message' => __('El Location ID debe tener el formato: accounts/{accountId}/locations/{locationId}', 'convoca-publisher')];
-        }
+		// Validate token format: JWT-like or Google access token
+		if ( strlen( $token ) < 20 || strlen( $token ) > 4096 ) {
+			return array(
+				'success' => false,
+				'message' => __( 'El token de Google no tiene un formato válido.', 'convoca-publisher' ),
+			);
+		}
 
-        // Try a lightweight API call to verify the token and location
-        $resp = wp_remote_get("https://mybusiness.googleapis.com/v4/{$location}/localPosts?pageSize=1", [
-            'headers' => [
-                'Authorization' => "Bearer {$token}",
-            ],
-            'timeout' => 15,
-        ]);
+		// Validate location format: accounts/{id}/locations/{id}
+		if ( ! preg_match( '#^accounts/[^/]+/locations/[^/]+$#', $location ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'El Location ID debe tener el formato: accounts/{accountId}/locations/{locationId}', 'convoca-publisher' ),
+			);
+		}
 
-        if (is_wp_error($resp)) {
-            return ['success' => false, 'message' => __('Error de conexión: ', 'convoca-publisher') . $resp->get_error_message()];
-        }
+		// Try a lightweight API call to verify the token and location
+		$resp = wp_remote_get(
+			"https://mybusiness.googleapis.com/v4/{$location}/localPosts?pageSize=1",
+			array(
+				'headers' => array(
+					'Authorization' => "Bearer {$token}",
+				),
+				'timeout' => 15,
+			)
+		);
 
-        $http_code = wp_remote_retrieve_response_code($resp);
-        $body = json_decode(wp_remote_retrieve_body($resp), true);
+		if ( is_wp_error( $resp ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Error de conexión: ', 'convoca-publisher' ) . $resp->get_error_message(),
+			);
+		}
 
-        if ($http_code >= 200 && $http_code < 300) {
-            return [
-                'success' => true,
-                'message' => __('✅ Conexión correcta. Location ID válido y accesible.', 'convoca-publisher'),
-            ];
-        }
+		$http_code = wp_remote_retrieve_response_code( $resp );
+		$body      = json_decode( wp_remote_retrieve_body( $resp ), true );
 
-        $error_msg = $body['error']['message'] ?? __('Error desconocido de GMB API.', 'convoca-publisher');
-        return ['success' => false, 'message' => $error_msg];
-    }
+		if ( $http_code >= 200 && $http_code < 300 ) {
+			return array(
+				'success' => true,
+				'message' => __( '✅ Conexión correcta. Location ID válido y accesible.', 'convoca-publisher' ),
+			);
+		}
+
+		$error_msg = $body['error']['message'] ?? __( 'Error desconocido de GMB API.', 'convoca-publisher' );
+		return array(
+			'success' => false,
+			'message' => $error_msg,
+		);
+	}
 }
