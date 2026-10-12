@@ -17,42 +17,48 @@
 
 namespace ConvocaPublisher\Channels;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
-interface ChannelInterface
-{
-    public function get_id(): string;
-    public function get_name(): string;
-    public function is_available(): bool;
+interface ChannelInterface {
 
-    /**
-     * @param int    $post_id
-     * @param string $message
-     * @param string $url
-     * @param string $image_url
-     * `notice` es para los envíos que salen bien a medias: el muro de Facebook se publica y
-     * Instagram falla, por ejemplo. No es un fallo (reintentar duplicaría lo ya publicado),
-     * pero hay que contarlo.
-     *
-     * @return array{success: bool, post_id?: string, error?: string, networks?: string, notice?: string}
-     */
-    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array;
+	public function get_id(): string;
+	public function get_name(): string;
+	public function is_available(): bool;
 
-    /**
-     * @return array<string, array{title: string, type: string, description: string}>
-     */
-    public function get_settings_fields(): array;
+	/**
+	 * Publica el contenido en la red y devuelve el resultado del envio.
+	 *
+	 * @param int    $post_id
+	 * @param string $message
+	 * @param string $url
+	 * @param string $image_url
+	 * `notice` es para los envíos que salen bien a medias: el muro de Facebook se publica y
+	 * Instagram falla, por ejemplo. No es un fallo (reintentar duplicaría lo ya publicado),
+	 * pero hay que contarlo.
+	 *
+	 * @return array{success: bool, post_id?: string, error?: string, networks?: string, notice?: string}
+	 */
+	public function publish( int $post_id, string $message, string $url, string $image_url = '' ): array;
 
-    /**
-     * @param array<string, string> $settings
-     * @return array<int, string>
-     */
-    public function validate_settings(array $settings): array;
+	/**
+	 * Ajustes que necesita esta red en el panel (campos, tipo y ayuda).
+	 *
+	 * @return array<string, array{title: string, type: string, description: string}>
+	 */
+	public function get_settings_fields(): array;
 
-    /**
-     * Verifies the connection to the channel's API or validates stored credentials.
-     *
-     * @return array{success: bool, message: string}
-     */
-    public function verify_connection(): array;
+	/**
+	 * Comprueba que los ajustes guardados sirven para esta red.
+	 *
+	 * @param array<string, string> $settings
+	 * @return array<int, string>
+	 */
+	public function validate_settings( array $settings ): array;
+
+	/**
+	 * Verifies the connection to the channel's API or validates stored credentials.
+	 *
+	 * @return array{success: bool, message: string}
+	 */
+	public function verify_connection(): array;
 }

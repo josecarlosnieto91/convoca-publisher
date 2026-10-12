@@ -92,3 +92,25 @@ jobs:
 
       - name: PHPUnit
         run: vendor/bin/phpunit --no-coverage
+
+  phpcs:
+    name: PHPCS
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      # Sin `|| true`: con el, phpcs no podria fallar el job nunca y el check seria
+      # decorativo. El estandar y sus exclusiones (TODAS con motivo escrito dentro del
+      # fichero) viven en .phpcs.xml.dist, igual que en el resto del ecosistema.
+      - name: PHPCS (estandar del ecosistema)
+        run: vendor/bin/phpcs --standard=.phpcs.xml.dist

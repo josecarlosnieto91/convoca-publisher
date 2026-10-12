@@ -17,173 +17,197 @@
 
 namespace ConvocaPublisher\Channels;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
-class Mastodon implements ChannelInterface
-{
-    public function get_id(): string
-    {
-        return 'mastodon';
-    }
+class Mastodon implements ChannelInterface {
 
-    public function get_name(): string
-    {
-        return __('Mastodon', 'convoca-publisher');
-    }
+	public function get_id(): string {
+		return 'mastodon';
+	}
 
-    public function is_available(): bool
-    {
-        return !empty(get_option('convoca_publisher_mastodon_token', '')) && !empty(get_option('convoca_publisher_mastodon_server', ''));
-    }
+	public function get_name(): string {
+		return __( 'Mastodon', 'convoca-publisher' );
+	}
 
-    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
-    {
-        $token = get_option('convoca_publisher_mastodon_token', '');
-        $server = rtrim(get_option('convoca_publisher_mastodon_server', ''), '/');
-        $visibility = get_option('convoca_publisher_mastodon_visibility', 'public');
+	public function is_available(): bool {
+		return ! empty( get_option( 'convoca_publisher_mastodon_token', '' ) ) && ! empty( get_option( 'convoca_publisher_mastodon_server', '' ) );
+	}
 
-        if (empty($token) || empty($server)) {
-            return ['success' => false, 'error' => __('Token o servidor de Mastodon no configurados.', 'convoca-publisher')];
-        }
+	public function publish( int $post_id, string $message, string $url, string $image_url = '' ): array {
+		$token      = get_option( 'convoca_publisher_mastodon_token', '' );
+		$server     = rtrim( get_option( 'convoca_publisher_mastodon_server', '' ), '/' );
+		$visibility = get_option( 'convoca_publisher_mastodon_visibility', 'public' );
 
-        $text = html_entity_decode($message);
-        $falta = \ConvocaPublisher\Platform_Rules::url_if_missing($message, $url);
-        if ('' !== $falta) {
-            $text .= "\n\n" . $falta;
-        }
+		if ( empty( $token ) || empty( $server ) ) {
+			return array(
+				'success' => false,
+				'error'   => __( 'Token o servidor de Mastodon no configurados.', 'convoca-publisher' ),
+			);
+		}
 
-        $body = [
-            'status'     => mb_substr($text, 0, 500),
-            'visibility' => $visibility,
-        ];
+		$text  = html_entity_decode( $message );
+		$falta = \ConvocaPublisher\Platform_Rules::url_if_missing( $message, $url );
+		if ( '' !== $falta ) {
+			$text .= "\n\n" . $falta;
+		}
 
-        if (!empty($image_url)) {
-            $image_data = wp_remote_get($image_url, ['timeout' => 15]);
-            if (!is_wp_error($image_data) && wp_remote_retrieve_response_code($image_data) === 200) {
-                $boundary = wp_generate_password(24, false);
-                $media_body = "--{$boundary}\r\n"
-                    . 'Content-Disposition: form-data; name="file"; filename="image.jpg"' . "\r\n"
-                    . "Content-Type: image/jpeg\r\n\r\n"
-                    . wp_remote_retrieve_body($image_data) . "\r\n"
-                    . "--{$boundary}--";
+		$body = array(
+			'status'     => mb_substr( $text, 0, 500 ),
+			'visibility' => $visibility,
+		);
 
-                $media_resp = wp_remote_post("{$server}/api/v2/media", [
-                    'headers' => [
-                        'Authorization' => "Bearer {$token}",
-                        'Content-Type'  => "multipart/form-data; boundary={$boundary}",
-                    ],
-                    'body'    => $media_body,
-                    'timeout' => 30,
-                ]);
+		if ( ! empty( $image_url ) ) {
+			$image_data = wp_remote_get( $image_url, array( 'timeout' => 15 ) );
+			if ( ! is_wp_error( $image_data ) && wp_remote_retrieve_response_code( $image_data ) === 200 ) {
+				$boundary   = wp_generate_password( 24, false );
+				$media_body = "--{$boundary}\r\n"
+					. 'Content-Disposition: form-data; name="file"; filename="image.jpg"' . "\r\n"
+					. "Content-Type: image/jpeg\r\n\r\n"
+					. wp_remote_retrieve_body( $image_data ) . "\r\n"
+					. "--{$boundary}--";
 
-                if (!is_wp_error($media_resp)) {
-                    $media_data = json_decode(wp_remote_retrieve_body($media_resp), true);
-                    if (!empty($media_data['id'])) {
-                        $body['media_ids'] = [$media_data['id']];
-                    }
-                }
-            }
-        }
+				$media_resp = wp_remote_post(
+					"{$server}/api/v2/media",
+					array(
+						'headers' => array(
+							'Authorization' => "Bearer {$token}",
+							'Content-Type'  => "multipart/form-data; boundary={$boundary}",
+						),
+						'body'    => $media_body,
+						'timeout' => 30,
+					)
+				);
 
-        $response = wp_remote_post("{$server}/api/v1/statuses", [
-            'headers' => [
-                'Authorization' => "Bearer {$token}",
-                'Content-Type'  => 'application/json',
-                'Idempotency-Key' => wp_generate_password(32, false),
-            ],
-            'body'    => wp_json_encode($body),
-            'timeout' => 30,
-        ]);
+				if ( ! is_wp_error( $media_resp ) ) {
+					$media_data = json_decode( wp_remote_retrieve_body( $media_resp ), true );
+					if ( ! empty( $media_data['id'] ) ) {
+						$body['media_ids'] = array( $media_data['id'] );
+					}
+				}
+			}
+		}
 
-        if (is_wp_error($response)) {
-            return ['success' => false, 'error' => $response->get_error_message()];
-        }
+		$response = wp_remote_post(
+			"{$server}/api/v1/statuses",
+			array(
+				'headers' => array(
+					'Authorization'   => "Bearer {$token}",
+					'Content-Type'    => 'application/json',
+					'Idempotency-Key' => wp_generate_password( 32, false ),
+				),
+				'body'    => wp_json_encode( $body ),
+				'timeout' => 30,
+			)
+		);
 
-        $resp_body = json_decode(wp_remote_retrieve_body($response), true);
-        $http_code = wp_remote_retrieve_response_code($response);
+		if ( is_wp_error( $response ) ) {
+			return array(
+				'success' => false,
+				'error'   => $response->get_error_message(),
+			);
+		}
 
-        if ($http_code >= 200 && $http_code < 300 && isset($resp_body['id'])) {
-            return ['success' => true, 'post_id' => $resp_body['id'], 'url' => $resp_body['url'] ?? ''];
-        }
+		$resp_body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$http_code = wp_remote_retrieve_response_code( $response );
 
-        $error = $resp_body['error'] ?? __('Error desconocido de Mastodon API.', 'convoca-publisher');
-        return ['success' => false, 'error' => $error];
-    }
+		if ( $http_code >= 200 && $http_code < 300 && isset( $resp_body['id'] ) ) {
+			return array(
+				'success' => true,
+				'post_id' => $resp_body['id'],
+				'url'     => $resp_body['url'] ?? '',
+			);
+		}
 
-    public function get_settings_fields(): array
-    {
-        return [
-            'convoca_publisher_mastodon_server' => [
-                'title'       => __('Servidor', 'convoca-publisher'),
-                'type'        => 'text',
-                'description' => __('Ej: https://mastodon.social', 'convoca-publisher'),
-            ],
-            'convoca_publisher_mastodon_token' => [
-                'title'       => __('Access Token', 'convoca-publisher'),
-                'type'        => 'password',
-                'description' => __('Token de acceso de Mastodon (Desarrollo → Nuevo token → write:statuses).', 'convoca-publisher'),
-            ],
-            'convoca_publisher_mastodon_visibility' => [
-                'title'       => __('Visibilidad', 'convoca-publisher'),
-                'type'        => 'text',
-                'description' => __('public, unlisted, private, direct (por defecto public).', 'convoca-publisher'),
-            ],
-            'convoca_publisher_mastodon_template' => [
-                'title'       => __('Plantilla del mensaje', 'convoca-publisher'),
-                'type'        => 'text',
-                'description' => __('{title}, {excerpt}, {url}, {hashtags}. Máximo 500 caracteres. Por defecto: {title} — {url} {hashtags}', 'convoca-publisher'),
-            ],
-        ];
-    }
+		$error = $resp_body['error'] ?? __( 'Error desconocido de Mastodon API.', 'convoca-publisher' );
+		return array(
+			'success' => false,
+			'error'   => $error,
+		);
+	}
 
-    public function validate_settings(array $settings): array
-    {
-        $errors = [];
-        if (empty($settings['convoca_publisher_mastodon_token'])) {
-            $errors[] = __('El token de Mastodon es obligatorio.', 'convoca-publisher');
-        }
-        if (empty($settings['convoca_publisher_mastodon_server'])) {
-            $errors[] = __('El servidor de Mastodon es obligatorio.', 'convoca-publisher');
-        }
-        return $errors;
-    }
+	public function get_settings_fields(): array {
+		return array(
+			'convoca_publisher_mastodon_server'     => array(
+				'title'       => __( 'Servidor', 'convoca-publisher' ),
+				'type'        => 'text',
+				'description' => __( 'Ej: https://mastodon.social', 'convoca-publisher' ),
+			),
+			'convoca_publisher_mastodon_token'      => array(
+				'title'       => __( 'Access Token', 'convoca-publisher' ),
+				'type'        => 'password',
+				'description' => __( 'Token de acceso de Mastodon (Desarrollo → Nuevo token → write:statuses).', 'convoca-publisher' ),
+			),
+			'convoca_publisher_mastodon_visibility' => array(
+				'title'       => __( 'Visibilidad', 'convoca-publisher' ),
+				'type'        => 'text',
+				'description' => __( 'public, unlisted, private, direct (por defecto public).', 'convoca-publisher' ),
+			),
+			'convoca_publisher_mastodon_template'   => array(
+				'title'       => __( 'Plantilla del mensaje', 'convoca-publisher' ),
+				'type'        => 'text',
+				'description' => __( '{title}, {excerpt}, {url}, {hashtags}. Máximo 500 caracteres. Por defecto: {title} — {url} {hashtags}', 'convoca-publisher' ),
+			),
+		);
+	}
 
-    public function verify_connection(): array
-    {
-        $token = get_option('convoca_publisher_mastodon_token', '');
-        $server = rtrim(get_option('convoca_publisher_mastodon_server', ''), '/');
+	public function validate_settings( array $settings ): array {
+		$errors = array();
+		if ( empty( $settings['convoca_publisher_mastodon_token'] ) ) {
+			$errors[] = __( 'El token de Mastodon es obligatorio.', 'convoca-publisher' );
+		}
+		if ( empty( $settings['convoca_publisher_mastodon_server'] ) ) {
+			$errors[] = __( 'El servidor de Mastodon es obligatorio.', 'convoca-publisher' );
+		}
+		return $errors;
+	}
 
-        if (empty($token) || empty($server)) {
-            return ['success' => false, 'message' => __('Token o servidor de Mastodon no configurados.', 'convoca-publisher')];
-        }
+	public function verify_connection(): array {
+		$token  = get_option( 'convoca_publisher_mastodon_token', '' );
+		$server = rtrim( get_option( 'convoca_publisher_mastodon_server', '' ), '/' );
 
-        $resp = wp_remote_get("{$server}/api/v1/accounts/verify_credentials", [
-            'headers' => [
-                'Authorization' => "Bearer {$token}",
-            ],
-            'timeout' => 15,
-        ]);
+		if ( empty( $token ) || empty( $server ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Token o servidor de Mastodon no configurados.', 'convoca-publisher' ),
+			);
+		}
 
-        if (is_wp_error($resp)) {
-            return ['success' => false, 'message' => __('Error de conexión: ', 'convoca-publisher') . $resp->get_error_message()];
-        }
+		$resp = wp_remote_get(
+			"{$server}/api/v1/accounts/verify_credentials",
+			array(
+				'headers' => array(
+					'Authorization' => "Bearer {$token}",
+				),
+				'timeout' => 15,
+			)
+		);
 
-        $body = json_decode(wp_remote_retrieve_body($resp), true);
-        $http_code = wp_remote_retrieve_response_code($resp);
+		if ( is_wp_error( $resp ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Error de conexión: ', 'convoca-publisher' ) . $resp->get_error_message(),
+			);
+		}
 
-        if ($http_code >= 200 && $http_code < 300 && isset($body['id'])) {
-            $acct = $body['acct'] ?? $body['username'] ?? 'desconocido';
-            return [
-                'success' => true,
-                'message' => sprintf(
-                    /* translators: %s: Mastodon account handle */
-                    __('✅ Conexión correcta. Cuenta: @%s', 'convoca-publisher'),
-                    $acct
-                ),
-            ];
-        }
+		$body      = json_decode( wp_remote_retrieve_body( $resp ), true );
+		$http_code = wp_remote_retrieve_response_code( $resp );
 
-        $error_msg = $body['error'] ?? __('Error desconocido de Mastodon API.', 'convoca-publisher');
-        return ['success' => false, 'message' => $error_msg];
-    }
+		if ( $http_code >= 200 && $http_code < 300 && isset( $body['id'] ) ) {
+			$acct = $body['acct'] ?? $body['username'] ?? 'desconocido';
+			return array(
+				'success' => true,
+				'message' => sprintf(
+					/* translators: %s: Mastodon account handle */
+					__( '✅ Conexión correcta. Cuenta: @%s', 'convoca-publisher' ),
+					$acct
+				),
+			);
+		}
+
+		$error_msg = $body['error'] ?? __( 'Error desconocido de Mastodon API.', 'convoca-publisher' );
+		return array(
+			'success' => false,
+			'message' => $error_msg,
+		);
+	}
 }

@@ -17,164 +17,177 @@
 
 namespace ConvocaPublisher;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
-class Notifications
-{
-    public static function init(): void
-    {
-        add_action('admin_notices', [self::class, 'show_alerts']);
-    }
+class Notifications {
 
-    /**
-     * Pedir una mano por correo cuando un envío no sale y ya se ha insistido bastante.
-     *
-     * En pantalla el aviso solo lo ve quien entra; el correo llega aunque nadie mire, que es
-     * justo el caso en el que un envío se queda perdido.
-     */
-    public static function ask_for_help(int $post_id, int $attempts): void
-    {
-        $post = get_post($post_id);
+	public static function init(): void {
+		add_action( 'admin_notices', array( self::class, 'show_alerts' ) );
+	}
 
-        if (!$post) {
-            return;
-        }
+	/**
+	 * Pedir una mano por correo cuando un envío no sale y ya se ha insistido bastante.
+	 *
+	 * En pantalla el aviso solo lo ve quien entra; el correo llega aunque nadie mire, que es
+	 * justo el caso en el que un envío se queda perdido.
+	 */
+	public static function ask_for_help( int $post_id, int $attempts ): void {
+		$post = get_post( $post_id );
 
-        update_option(
-            'convoca_publisher_needs_help',
-            // Con `+` y no con `array_merge`: la clave es el id de la entrada (numerica), y
-            // array_merge reindexa las claves numericas — el aviso se quedaba sin saber de qué
-            // entrada hablaba. Y `true` en el slice por lo mismo.
-            array_slice(
-                [(string) $post_id => ['title' => $post->post_title, 'tries' => $attempts, 'time' => current_time('mysql')]]
-                + (array) get_option('convoca_publisher_needs_help', []),
-                0,
-                20,
-                true
-            )
-        );
+		if ( ! $post ) {
+			return;
+		}
 
-        if (!get_option('convoca_publisher_email_alerts', '1')) {
-            return;
-        }
+		update_option(
+			'convoca_publisher_needs_help',
+			// Con `+` y no con `array_merge`: la clave es el id de la entrada (numerica), y
+			// array_merge reindexa las claves numericas — el aviso se quedaba sin saber de qué
+			// entrada hablaba. Y `true` en el slice por lo mismo.
+			array_slice(
+				array(
+					(string) $post_id => array(
+						'title' => $post->post_title,
+						'tries' => $attempts,
+						'time'  => current_time( 'mysql' ),
+					),
+				)
+				+ (array) get_option( 'convoca_publisher_needs_help', array() ),
+				0,
+				20,
+				true
+			)
+		);
 
-        $resultados = get_post_meta($post_id, '_convoca_publisher_publish_results', true);
-        $motivos    = [];
+		if ( ! get_option( 'convoca_publisher_email_alerts', '1' ) ) {
+			return;
+		}
 
-        if (is_array($resultados)) {
-            foreach ($resultados as $cuenta => $envio) {
-                if ('_' === $cuenta[0] || !empty($envio['success'])) {
-                    continue;
-                }
+		$resultados = get_post_meta( $post_id, '_convoca_publisher_publish_results', true );
+		$motivos    = array();
 
-                $motivos[] = $cuenta . ': ' . (string) ($envio['error'] ?? __('sin detalle', 'convoca-publisher'));
-            }
-        }
+		if ( is_array( $resultados ) ) {
+			foreach ( $resultados as $cuenta => $envio ) {
+				if ( '_' === $cuenta[0] || ! empty( $envio['success'] ) ) {
+					continue;
+				}
 
-        self::email_admins(
-            sprintf(
-                /* translators: %s: título de la entrada */
-                __('[%s] Un envío no ha salido', 'convoca-publisher'),
-                wp_specialchars_decode((string) get_option('blogname'), ENT_QUOTES)
-            ),
-            sprintf(
-                /* translators: 1: título, 2: número de intentos, 3: URL de la entrada, 4: detalle */
-                __("La entrada «%1\$s» no ha salido después de %2\$d intentos.\n\nEntrada: %3\$s\n\nQué dijo cada red:\n%4\$s\n\nSe puede reintentar a mano desde la cola del plugin.", 'convoca-publisher'),
-                $post->post_title,
-                $attempts,
-                (string) get_permalink($post),
-                [] === $motivos ? __('(sin detalle)', 'convoca-publisher') : implode("\n", $motivos)
-            )
-        );
-    }
+				$motivos[] = $cuenta . ': ' . (string) ( $envio['error'] ?? __( 'sin detalle', 'convoca-publisher' ) );
+			}
+		}
 
-    /**
-     * Mandar un correo a quien administra el sitio.
-     */
-    public static function email_admins(string $subject, string $body): bool
-    {
-        $destino = (string) get_option('admin_email');
+		self::email_admins(
+			sprintf(
+				/* translators: %s: título de la entrada */
+				__( '[%s] Un envío no ha salido', 'convoca-publisher' ),
+				wp_specialchars_decode( (string) get_option( 'blogname' ), ENT_QUOTES )
+			),
+			sprintf(
+				/* translators: 1: título, 2: número de intentos, 3: URL de la entrada, 4: detalle */
+				__( "La entrada «%1\$s» no ha salido después de %2\$d intentos.\n\nEntrada: %3\$s\n\nQué dijo cada red:\n%4\$s\n\nSe puede reintentar a mano desde la cola del plugin.", 'convoca-publisher' ),
+				$post->post_title,
+				$attempts,
+				(string) get_permalink( $post ),
+				array() === $motivos ? __( '(sin detalle)', 'convoca-publisher' ) : implode( "\n", $motivos )
+			)
+		);
+	}
 
-        if ('' === $destino) {
-            return false;
-        }
+	/**
+	 * Mandar un correo a quien administra el sitio.
+	 */
+	public static function email_admins( string $subject, string $body ): bool {
+		$destino = (string) get_option( 'admin_email' );
 
-        // Sale con la identidad de Convoca. Sin copia: el destinatario ya es la asociación.
-        return (bool) \Convoca\Core\Mailer::send($destino, $subject, $body, array(
-            'plugin'   => 'convoca-publisher',
-            'template' => 'aviso_admin',
-            'copy'     => false,
-        ));
-    }
+		if ( '' === $destino ) {
+			return false;
+		}
 
-    public static function show_alerts(): void
-    {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+		// Sale con la identidad de Convoca. Sin copia: el destinatario ya es la asociación.
+		return (bool) \Convoca\Core\Mailer::send(
+			$destino,
+			$subject,
+			$body,
+			array(
+				'plugin'   => 'convoca-publisher',
+				'template' => 'aviso_admin',
+				'copy'     => false,
+			)
+		);
+	}
 
-        $screen = get_current_screen();
-        if (!$screen) {
-            return;
-        }
+	public static function show_alerts(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
 
-        // 1. Privacy notice reminder (only on plugin pages)
-        if (str_contains($screen->id, 'convoca-publisher') && !get_option('convoca_publisher_privacy_acknowledged', false)) {
-            echo '<div class="notice notice-warning is-dismissible cp-notice" data-key="privacy">';
-            echo '<p><strong>🔐 ' . esc_html__('Convoca Publisher — Aviso de privacidad', 'convoca-publisher') . '</strong></p>';
-            echo '<p>' . esc_html__('Este plugin envía datos a APIs de terceros. Por favor, lee y acepta el aviso de privacidad en Configuración.', 'convoca-publisher') . '</p>';
-            echo '</div>';
-        }
+		$screen = get_current_screen();
+		if ( ! $screen ) {
+			return;
+		}
 
-        // 2. Alertar sobre canales sin configurar
-        $channels = convoca_publisher()->get_channels();
-        $unconfigured = [];
-        foreach ($channels as $id => $ch) {
-            if (!$ch->is_available()) {
-                $unconfigured[] = $ch->get_name();
-            }
-        }
+		// 1. Privacy notice reminder (only on plugin pages)
+		if ( str_contains( $screen->id, 'convoca-publisher' ) && ! get_option( 'convoca_publisher_privacy_acknowledged', false ) ) {
+			echo '<div class="notice notice-warning is-dismissible cp-notice" data-key="privacy">';
+			echo '<p><strong>🔐 ' . esc_html__( 'Convoca Publisher — Aviso de privacidad', 'convoca-publisher' ) . '</strong></p>';
+			echo '<p>' . esc_html__( 'Este plugin envía datos a APIs de terceros. Por favor, lee y acepta el aviso de privacidad en Configuración.', 'convoca-publisher' ) . '</p>';
+			echo '</div>';
+		}
 
-        // El meta del descarte se sigue LEYENDO aquí (y en los demás avisos), pero ya nadie lo
-        // escribe: la acción AJAX que lo hacía se retiró por no tener ningún llamador. El aviso
-        // se oculta igual al cerrarlo (comportamiento nativo de WordPress) y reaparece en la
-        // carga siguiente. Si algún día se quiere descarte permanente, hay que reconectar el JS
-        // con una acción (ver docs/deuda-tecnica.md).
-        if (!empty($unconfigured) && !get_user_meta(get_current_user_id(), 'convoca_publisher_dismiss_unconfigured', true)) {
-            echo '<div class="notice notice-warning is-dismissible cp-notice" data-key="unconfigured">';
-            echo '<p><strong>🔌 ' . esc_html__('Convoca Publisher:', 'convoca-publisher') . '</strong> ';
-            echo esc_html(sprintf(
-                /* translators: %s: comma-separated list of unconfigured channel names */
-                __('Canales sin configurar: %s', 'convoca-publisher'),
-                implode(', ', $unconfigured)
-            ));
-            echo ' <a href="' . esc_url(admin_url('admin.php?page=convoca-publisher')) . '">' . esc_html__('Ir a Configuración', 'convoca-publisher') . '</a></p>';
-            echo '</div>';
-        }
+		// 2. Alertar sobre canales sin configurar
+		$channels     = convoca_publisher()->get_channels();
+		$unconfigured = array();
+		foreach ( $channels as $id => $ch ) {
+			if ( ! $ch->is_available() ) {
+				$unconfigured[] = $ch->get_name();
+			}
+		}
 
-        // 3. Alertar sobre reintentos pendientes
-        if (class_exists(Retry::class)) {
-            $stats = Retry::get_queue_stats();
-            if ($stats['pending'] > 0) {
-                echo '<div class="notice notice-info is-dismissible">';
-                echo '<p>🔄 <strong>' . esc_html__('Convoca Publisher:', 'convoca-publisher') . '</strong> ';
-                echo esc_html(sprintf(
-                    /* translators: %d: number of pending retry publications */
-                    __('%d publicaciones pendientes de reintentar.', 'convoca-publisher'),
-                    $stats['pending']
-                ));
-                echo '</p></div>';
-            }
-            if ($stats['failed'] > 0) {
-                echo '<div class="notice notice-error is-dismissible">';
-                echo '<p>❌ <strong>' . esc_html__('Convoca Publisher:', 'convoca-publisher') . '</strong> ';
-                echo esc_html(sprintf(
-                    /* translators: %d: number of permanently failed publications */
-                    __('%d publicaciones fallaron definitivamente. Revisa los tokens.', 'convoca-publisher'),
-                    $stats['failed']
-                ));
-                echo '</p></div>';
-            }
-        }
-    }
+		// El meta del descarte se sigue LEYENDO aquí (y en los demás avisos), pero ya nadie lo
+		// escribe: la acción AJAX que lo hacía se retiró por no tener ningún llamador. El aviso
+		// se oculta igual al cerrarlo (comportamiento nativo de WordPress) y reaparece en la
+		// carga siguiente. Si algún día se quiere descarte permanente, hay que reconectar el JS
+		// con una acción (ver docs/deuda-tecnica.md).
+		if ( ! empty( $unconfigured ) && ! get_user_meta( get_current_user_id(), 'convoca_publisher_dismiss_unconfigured', true ) ) {
+			echo '<div class="notice notice-warning is-dismissible cp-notice" data-key="unconfigured">';
+			echo '<p><strong>🔌 ' . esc_html__( 'Convoca Publisher:', 'convoca-publisher' ) . '</strong> ';
+			echo esc_html(
+				sprintf(
+				/* translators: %s: comma-separated list of unconfigured channel names */
+					__( 'Canales sin configurar: %s', 'convoca-publisher' ),
+					implode( ', ', $unconfigured )
+				)
+			);
+			echo ' <a href="' . esc_url( admin_url( 'admin.php?page=convoca-publisher' ) ) . '">' . esc_html__( 'Ir a Configuración', 'convoca-publisher' ) . '</a></p>';
+			echo '</div>';
+		}
+
+		// 3. Alertar sobre reintentos pendientes
+		if ( class_exists( Retry::class ) ) {
+			$stats = Retry::get_queue_stats();
+			if ( $stats['pending'] > 0 ) {
+				echo '<div class="notice notice-info is-dismissible">';
+				echo '<p>🔄 <strong>' . esc_html__( 'Convoca Publisher:', 'convoca-publisher' ) . '</strong> ';
+				echo esc_html(
+					sprintf(
+					/* translators: %d: number of pending retry publications */
+						__( '%d publicaciones pendientes de reintentar.', 'convoca-publisher' ),
+						$stats['pending']
+					)
+				);
+				echo '</p></div>';
+			}
+			if ( $stats['failed'] > 0 ) {
+				echo '<div class="notice notice-error is-dismissible">';
+				echo '<p>❌ <strong>' . esc_html__( 'Convoca Publisher:', 'convoca-publisher' ) . '</strong> ';
+				echo esc_html(
+					sprintf(
+					/* translators: %d: number of permanently failed publications */
+						__( '%d publicaciones fallaron definitivamente. Revisa los tokens.', 'convoca-publisher' ),
+						$stats['failed']
+					)
+				);
+				echo '</p></div>';
+			}
+		}
+	}
 }

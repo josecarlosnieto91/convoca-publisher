@@ -12,7 +12,7 @@
 
 namespace ConvocaPublisher;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Cuánto le queda a una credencial.
@@ -24,139 +24,133 @@ defined('ABSPATH') || exit;
  *
  * No inventa fechas: si nunca se ha verificado, lo dice.
  */
-class Credential_Health
-{
-    /**
-     * Días que dura la credencial de cada red **tal y como la pide este plugin**: un token que
-     * se pega a mano, sin refresco automático. 0 = no caduca por su cuenta.
-     *
-     * - **Facebook** (0): el plugin pide un **token de Página**, y un token de página de larga
-     *   duración **no caduca** (los 60 días son de los tokens de *usuario*). Lo dice Meta en su
-     *   documentación de long-lived tokens, consultada el 2026-09-11. Avisar aquí sería la falsa
-     *   alarma que esta clase quiere evitar. Si alguien pega un token de usuario, el aviso no
-     *   saldrá: por eso el campo pide expresamente el token de página.
-     * - **LinkedIn** (60): el access token. Su refresco (365 días) solo lo tienen las apps
-     *   aprobadas como partner del Marketing Developer Platform, así que aquí se cuenta con que
-     *   caduca y hay que volver a pegarlo.
-     * - **TikTok** (1): el access token dura unas 24 h; el de refresco dura un año, pero aquí
-     *   se pega el de acceso, así que al día siguiente ya no vale.
-     * - **Google My Business** (1): el access token de Google dura una hora; con un día de
-     *   margen sobra para saber que está muerto.
-     * - **Twitter/X, Telegram y Mastodon** (0): lo que se pega es un token de aplicación o de
-     *   bot, que no caduca por su cuenta. Avisar aquí sería una falsa alarma.
-     *
-     * Los plazos cortos no son un detalle: enseñan que esas dos redes piden un token que hay
-     * que renovar a mano cada poco, y es mejor saberlo por un aviso que por un envío perdido.
-     */
-    private const LIFETIME = [
-        'facebook'         => 0,
-        'linkedin'         => 60,
-        'tiktok'           => 1,
-        'googlemybusiness' => 1,
-        'twitter'          => 0,
-        'telegram'         => 0,
-        'mastodon'         => 0,
-    ];
+class Credential_Health {
 
-    /**
-     * Las redes con plazo propio (las demás no caducan; se puede comprobar).
-     *
-     * @return string[]
-     */
-    public static function networks(): array
-    {
-        return array_keys(self::LIFETIME);
-    }
+	/**
+	 * Días que dura la credencial de cada red **tal y como la pide este plugin**: un token que
+	 * se pega a mano, sin refresco automático. 0 = no caduca por su cuenta.
+	 *
+	 * - **Facebook** (0): el plugin pide un **token de Página**, y un token de página de larga
+	 *   duración **no caduca** (los 60 días son de los tokens de *usuario*). Lo dice Meta en su
+	 *   documentación de long-lived tokens, consultada el 2026-09-11. Avisar aquí sería la falsa
+	 *   alarma que esta clase quiere evitar. Si alguien pega un token de usuario, el aviso no
+	 *   saldrá: por eso el campo pide expresamente el token de página.
+	 * - **LinkedIn** (60): el access token. Su refresco (365 días) solo lo tienen las apps
+	 *   aprobadas como partner del Marketing Developer Platform, así que aquí se cuenta con que
+	 *   caduca y hay que volver a pegarlo.
+	 * - **TikTok** (1): el access token dura unas 24 h; el de refresco dura un año, pero aquí
+	 *   se pega el de acceso, así que al día siguiente ya no vale.
+	 * - **Google My Business** (1): el access token de Google dura una hora; con un día de
+	 *   margen sobra para saber que está muerto.
+	 * - **Twitter/X, Telegram y Mastodon** (0): lo que se pega es un token de aplicación o de
+	 *   bot, que no caduca por su cuenta. Avisar aquí sería una falsa alarma.
+	 *
+	 * Los plazos cortos no son un detalle: enseñan que esas dos redes piden un token que hay
+	 * que renovar a mano cada poco, y es mejor saberlo por un aviso que por un envío perdido.
+	 */
+	private const LIFETIME = array(
+		'facebook'         => 0,
+		'linkedin'         => 60,
+		'tiktok'           => 1,
+		'googlemybusiness' => 1,
+		'twitter'          => 0,
+		'telegram'         => 0,
+		'mastodon'         => 0,
+	);
 
-    /** A partir de aquí se avisa, para dar tiempo a reconectar sin prisa. */
-    public const WARN_DAYS = 45;
+	/**
+	 * Las redes con plazo propio (las demás no caducan; se puede comprobar).
+	 *
+	 * @return string[]
+	 */
+	public static function networks(): array {
+		return array_keys( self::LIFETIME );
+	}
 
-    /** Una red sin dato propio se trata como si no caducara (y no se avisa en falso). */
-    public static function lifetime(string $network): int
-    {
-        return self::LIFETIME[$network] ?? 0;
-    }
+	/** A partir de aquí se avisa, para dar tiempo a reconectar sin prisa. */
+	public const WARN_DAYS = 45;
 
-    public static function days_since(int $verified_at, ?int $now = null): int
-    {
-        if ($verified_at <= 0) {
-            return -1;
-        }
+	/** Una red sin dato propio se trata como si no caducara (y no se avisa en falso). */
+	public static function lifetime( string $network ): int {
+		return self::LIFETIME[ $network ] ?? 0;
+	}
 
-        return (int) floor((($now ?? time()) - $verified_at) / DAY_IN_SECONDS);
-    }
+	public static function days_since( int $verified_at, ?int $now = null ): int {
+		if ( $verified_at <= 0 ) {
+			return -1;
+		}
 
-    /**
-     * En qué punto está la credencial.
-     *
-     * @return string 'sin-datos' | 'sin-caducidad' | 'ok' | 'caduca-pronto' | 'caducada'
-     */
-    public static function state(string $network, int $verified_at, ?int $now = null): string
-    {
-        if ($verified_at <= 0) {
-            return 'sin-datos';
-        }
+		return (int) floor( ( ( $now ?? time() ) - $verified_at ) / DAY_IN_SECONDS );
+	}
 
-        $dias = self::lifetime($network);
+	/**
+	 * En qué punto está la credencial.
+	 *
+	 * @return string 'sin-datos' | 'sin-caducidad' | 'ok' | 'caduca-pronto' | 'caducada'
+	 */
+	public static function state( string $network, int $verified_at, ?int $now = null ): string {
+		if ( $verified_at <= 0 ) {
+			return 'sin-datos';
+		}
 
-        if ($dias <= 0) {
-            return 'sin-caducidad';
-        }
+		$dias = self::lifetime( $network );
 
-        $pasados = self::days_since($verified_at, $now);
+		if ( $dias <= 0 ) {
+			return 'sin-caducidad';
+		}
 
-        if ($pasados >= $dias) {
-            return 'caducada';
-        }
+		$pasados = self::days_since( $verified_at, $now );
 
-        return $pasados >= min(self::WARN_DAYS, $dias) ? 'caduca-pronto' : 'ok';
-    }
+		if ( $pasados >= $dias ) {
+			return 'caducada';
+		}
 
-    /**
-     * Lo que se le cuenta a quien lo lee. Cadena vacía = no hay nada que decir.
-     */
-    public static function message(string $network, int $verified_at, ?int $now = null): string
-    {
-        $dias    = self::lifetime($network);
-        $pasados = self::days_since($verified_at, $now);
+		return $pasados >= min( self::WARN_DAYS, $dias ) ? 'caduca-pronto' : 'ok';
+	}
 
-        switch (self::state($network, $verified_at, $now)) {
-            case 'sin-datos':
-                return __('Todavía no se ha comprobado que esta credencial funcione.', 'convoca-publisher');
+	/**
+	 * Lo que se le cuenta a quien lo lee. Cadena vacía = no hay nada que decir.
+	 */
+	public static function message( string $network, int $verified_at, ?int $now = null ): string {
+		$dias    = self::lifetime( $network );
+		$pasados = self::days_since( $verified_at, $now );
 
-            case 'caducada':
-                return sprintf(
-                    /* translators: 1: días desde la última comprobación, 2: días que dura el token */
-                    __('Se comprobó hace %1$d días y el token de esta red dura unos %2$d: lo más probable es que ya no valga.', 'convoca-publisher'),
-                    $pasados,
-                    $dias
-                );
+		switch ( self::state( $network, $verified_at, $now ) ) {
+			case 'sin-datos':
+				return __( 'Todavía no se ha comprobado que esta credencial funcione.', 'convoca-publisher' );
 
-            case 'caduca-pronto':
-                return sprintf(
-                    /* translators: 1: días desde la última comprobación, 2: días que dura el token */
-                    __('Se comprobó hace %1$d días; el token de esta red dura unos %2$d y conviene renovarlo.', 'convoca-publisher'),
-                    $pasados,
-                    $dias
-                );
+			case 'caducada':
+				return sprintf(
+					/* translators: 1: días desde la última comprobación, 2: días que dura el token */
+					__( 'Se comprobó hace %1$d días y el token de esta red dura unos %2$d: lo más probable es que ya no valga.', 'convoca-publisher' ),
+					$pasados,
+					$dias
+				);
 
-            case 'sin-caducidad':
-                return sprintf(
-                    /* translators: %d: días desde la última comprobación */
-                    __('Credencial de una red que no caduca por su cuenta (comprobada hace %d días).', 'convoca-publisher'),
-                    $pasados
-                );
+			case 'caduca-pronto':
+				return sprintf(
+					/* translators: 1: días desde la última comprobación, 2: días que dura el token */
+					__( 'Se comprobó hace %1$d días; el token de esta red dura unos %2$d y conviene renovarlo.', 'convoca-publisher' ),
+					$pasados,
+					$dias
+				);
 
-            default:
-                return '';
-        }
-    }
+			case 'sin-caducidad':
+				return sprintf(
+					/* translators: %d: días desde la última comprobación */
+					__( 'Credencial de una red que no caduca por su cuenta (comprobada hace %d días).', 'convoca-publisher' ),
+					$pasados
+				);
 
-    /**
-     * ¿Hay que avisar? (para no llenar la pantalla de avisos que no dicen nada)
-     */
-    public static function needs_attention(string $network, int $verified_at, ?int $now = null): bool
-    {
-        return in_array(self::state($network, $verified_at, $now), ['caducada', 'caduca-pronto'], true);
-    }
+			default:
+				return '';
+		}
+	}
+
+	/**
+	 * ¿Hay que avisar? (para no llenar la pantalla de avisos que no dicen nada)
+	 */
+	public static function needs_attention( string $network, int $verified_at, ?int $now = null ): bool {
+		return in_array( self::state( $network, $verified_at, $now ), array( 'caducada', 'caduca-pronto' ), true );
+	}
 }

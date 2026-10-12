@@ -17,151 +17,171 @@
 
 namespace ConvocaPublisher\Channels;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
-class Telegram implements ChannelInterface
-{
-    public function get_id(): string
-    {
-        return 'telegram';
-    }
+class Telegram implements ChannelInterface {
 
-    public function get_name(): string
-    {
-        return __('Telegram', 'convoca-publisher');
-    }
+	public function get_id(): string {
+		return 'telegram';
+	}
 
-    public function is_available(): bool
-    {
-        return !empty(get_option('convoca_publisher_telegram_token', '')) && !empty(get_option('convoca_publisher_telegram_chat_id', ''));
-    }
+	public function get_name(): string {
+		return __( 'Telegram', 'convoca-publisher' );
+	}
 
-    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
-    {
-        $token = get_option('convoca_publisher_telegram_token', '');
-        $chat_id = get_option('convoca_publisher_telegram_chat_id', '');
+	public function is_available(): bool {
+		return ! empty( get_option( 'convoca_publisher_telegram_token', '' ) ) && ! empty( get_option( 'convoca_publisher_telegram_chat_id', '' ) );
+	}
 
-        if (empty($token) || empty($chat_id)) {
-            return ['success' => false, 'error' => __('Token o Chat ID de Telegram no configurados.', 'convoca-publisher')];
-        }
+	public function publish( int $post_id, string $message, string $url, string $image_url = '' ): array {
+		$token   = get_option( 'convoca_publisher_telegram_token', '' );
+		$chat_id = get_option( 'convoca_publisher_telegram_chat_id', '' );
 
-        $text = html_entity_decode($message);
-        $falta = \ConvocaPublisher\Platform_Rules::url_if_missing($message, $url);
-        if ('' !== $falta) {
-            $text .= "\n\n" . $falta;
-        }
+		if ( empty( $token ) || empty( $chat_id ) ) {
+			return array(
+				'success' => false,
+				'error'   => __( 'Token o Chat ID de Telegram no configurados.', 'convoca-publisher' ),
+			);
+		}
 
-        // Ojo: `get_option($clave, 'HTML')` devuelve la cadena vacía si la opción EXISTE vacía, no
-        // el valor por defecto. Con eso, Telegram recibía `<b>` como texto y se veía la etiqueta en
-        // el mensaje. Una opción vacía aquí significa «lo de siempre», que es HTML.
-        $parse_mode = (string) get_option('convoca_publisher_telegram_parse_mode', 'HTML');
-        if ('' === $parse_mode) {
-            $parse_mode = 'HTML';
-        }
-        $body = [
-            'chat_id'                  => $chat_id,
-            'text'                     => mb_substr($text, 0, 4096),
-            'parse_mode'               => $parse_mode,
-            'disable_web_page_preview' => false,
-        ];
+		$text  = html_entity_decode( $message );
+		$falta = \ConvocaPublisher\Platform_Rules::url_if_missing( $message, $url );
+		if ( '' !== $falta ) {
+			$text .= "\n\n" . $falta;
+		}
 
-        if (!empty($image_url)) {
-            $response = wp_remote_post("https://api.telegram.org/bot{$token}/sendPhoto", [
-                'body' => [
-                    'chat_id'    => $chat_id,
-                    'photo'      => $image_url,
-                    'caption'    => mb_substr($text, 0, 1024),
-                    'parse_mode' => $parse_mode,
-                ],
-                'timeout' => 30,
-            ]);
-        } else {
-            $response = wp_remote_post("https://api.telegram.org/bot{$token}/sendMessage", [
-                'body'    => $body,
-                'timeout' => 30,
-            ]);
-        }
+		// Ojo: `get_option($clave, 'HTML')` devuelve la cadena vacía si la opción EXISTE vacía, no
+		// el valor por defecto. Con eso, Telegram recibía `<b>` como texto y se veía la etiqueta en
+		// el mensaje. Una opción vacía aquí significa «lo de siempre», que es HTML.
+		$parse_mode = (string) get_option( 'convoca_publisher_telegram_parse_mode', 'HTML' );
+		if ( '' === $parse_mode ) {
+			$parse_mode = 'HTML';
+		}
+		$body = array(
+			'chat_id'                  => $chat_id,
+			'text'                     => mb_substr( $text, 0, 4096 ),
+			'parse_mode'               => $parse_mode,
+			'disable_web_page_preview' => false,
+		);
 
-        if (is_wp_error($response)) {
-            return ['success' => false, 'error' => $response->get_error_message()];
-        }
+		if ( ! empty( $image_url ) ) {
+			$response = wp_remote_post(
+				"https://api.telegram.org/bot{$token}/sendPhoto",
+				array(
+					'body'    => array(
+						'chat_id'    => $chat_id,
+						'photo'      => $image_url,
+						'caption'    => mb_substr( $text, 0, 1024 ),
+						'parse_mode' => $parse_mode,
+					),
+					'timeout' => 30,
+				)
+			);
+		} else {
+			$response = wp_remote_post(
+				"https://api.telegram.org/bot{$token}/sendMessage",
+				array(
+					'body'    => $body,
+					'timeout' => 30,
+				)
+			);
+		}
 
-        $resp_body = json_decode(wp_remote_retrieve_body($response), true);
+		if ( is_wp_error( $response ) ) {
+			return array(
+				'success' => false,
+				'error'   => $response->get_error_message(),
+			);
+		}
 
-        if ($resp_body['ok'] ?? false) {
-            return ['success' => true, 'post_id' => $resp_body['result']['message_id']];
-        }
+		$resp_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        return ['success' => false, 'error' => $resp_body['description'] ?? __('Error desconocido de Telegram API.', 'convoca-publisher')];
-    }
+		if ( $resp_body['ok'] ?? false ) {
+			return array(
+				'success' => true,
+				'post_id' => $resp_body['result']['message_id'],
+			);
+		}
 
-    public function get_settings_fields(): array
-    {
-        return [
-            'convoca_publisher_telegram_token' => [
-                'title'       => __('Token del Bot', 'convoca-publisher'),
-                'type'        => 'password',
-                'description' => __('Token del bot de Telegram (de @BotFather).', 'convoca-publisher'),
-            ],
-            'convoca_publisher_telegram_chat_id' => [
-                'title'       => __('Chat ID', 'convoca-publisher'),
-                'type'        => 'text',
-                'description' => __('ID del canal o grupo (negativo para grupos).', 'convoca-publisher'),
-            ],
-            'convoca_publisher_telegram_parse_mode' => [
-                'title'       => __('Modo de parseo', 'convoca-publisher'),
-                'type'        => 'text',
-                'description' => __('HTML o Markdown (por defecto HTML).', 'convoca-publisher'),
-            ],
-            'convoca_publisher_telegram_template' => [
-                'title'       => __('Plantilla del mensaje', 'convoca-publisher'),
-                'type'        => 'text',
-                'description' => __('{title}, {excerpt}, {url}, {hashtags}. Por defecto: {title} — {url} {hashtags}', 'convoca-publisher'),
-            ],
-        ];
-    }
+		return array(
+			'success' => false,
+			'error'   => $resp_body['description'] ?? __( 'Error desconocido de Telegram API.', 'convoca-publisher' ),
+		);
+	}
 
-    public function validate_settings(array $settings): array
-    {
-        $errors = [];
-        if (empty($settings['convoca_publisher_telegram_token'])) {
-            $errors[] = __('El token de Telegram es obligatorio.', 'convoca-publisher');
-        }
-        if (empty($settings['convoca_publisher_telegram_chat_id'])) {
-            $errors[] = __('El Chat ID de Telegram es obligatorio.', 'convoca-publisher');
-        }
-        return $errors;
-    }
+	public function get_settings_fields(): array {
+		return array(
+			'convoca_publisher_telegram_token'      => array(
+				'title'       => __( 'Token del Bot', 'convoca-publisher' ),
+				'type'        => 'password',
+				'description' => __( 'Token del bot de Telegram (de @BotFather).', 'convoca-publisher' ),
+			),
+			'convoca_publisher_telegram_chat_id'    => array(
+				'title'       => __( 'Chat ID', 'convoca-publisher' ),
+				'type'        => 'text',
+				'description' => __( 'ID del canal o grupo (negativo para grupos).', 'convoca-publisher' ),
+			),
+			'convoca_publisher_telegram_parse_mode' => array(
+				'title'       => __( 'Modo de parseo', 'convoca-publisher' ),
+				'type'        => 'text',
+				'description' => __( 'HTML o Markdown (por defecto HTML).', 'convoca-publisher' ),
+			),
+			'convoca_publisher_telegram_template'   => array(
+				'title'       => __( 'Plantilla del mensaje', 'convoca-publisher' ),
+				'type'        => 'text',
+				'description' => __( '{title}, {excerpt}, {url}, {hashtags}. Por defecto: {title} — {url} {hashtags}', 'convoca-publisher' ),
+			),
+		);
+	}
 
-    public function verify_connection(): array
-    {
-        $token = get_option('convoca_publisher_telegram_token', '');
-        $chat_id = get_option('convoca_publisher_telegram_chat_id', '');
+	public function validate_settings( array $settings ): array {
+		$errors = array();
+		if ( empty( $settings['convoca_publisher_telegram_token'] ) ) {
+			$errors[] = __( 'El token de Telegram es obligatorio.', 'convoca-publisher' );
+		}
+		if ( empty( $settings['convoca_publisher_telegram_chat_id'] ) ) {
+			$errors[] = __( 'El Chat ID de Telegram es obligatorio.', 'convoca-publisher' );
+		}
+		return $errors;
+	}
 
-        if (empty($token) || empty($chat_id)) {
-            return ['success' => false, 'message' => __('Token o Chat ID no configurados.', 'convoca-publisher')];
-        }
+	public function verify_connection(): array {
+		$token   = get_option( 'convoca_publisher_telegram_token', '' );
+		$chat_id = get_option( 'convoca_publisher_telegram_chat_id', '' );
 
-        $resp = wp_remote_get("https://api.telegram.org/bot{$token}/getMe", ['timeout' => 15]);
+		if ( empty( $token ) || empty( $chat_id ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Token o Chat ID no configurados.', 'convoca-publisher' ),
+			);
+		}
 
-        if (is_wp_error($resp)) {
-            return ['success' => false, 'message' => __('Error de conexión: ', 'convoca-publisher') . $resp->get_error_message()];
-        }
+		$resp = wp_remote_get( "https://api.telegram.org/bot{$token}/getMe", array( 'timeout' => 15 ) );
 
-        $body = json_decode(wp_remote_retrieve_body($resp), true);
+		if ( is_wp_error( $resp ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Error de conexión: ', 'convoca-publisher' ) . $resp->get_error_message(),
+			);
+		}
 
-        if ($body['ok'] ?? false) {
-            $username = $body['result']['username'] ?? 'desconocido';
-            return [
-                'success' => true,
-                'message' => sprintf(
-                    /* translators: %s: Telegram bot username */
-                    __('✅ Conexión correcta. Bot: @%s', 'convoca-publisher'),
-                    $username
-                ),
-            ];
-        }
+		$body = json_decode( wp_remote_retrieve_body( $resp ), true );
 
-        return ['success' => false, 'message' => $body['description'] ?? __('Error desconocido', 'convoca-publisher')];
-    }
+		if ( $body['ok'] ?? false ) {
+			$username = $body['result']['username'] ?? 'desconocido';
+			return array(
+				'success' => true,
+				'message' => sprintf(
+					/* translators: %s: Telegram bot username */
+					__( '✅ Conexión correcta. Bot: @%s', 'convoca-publisher' ),
+					$username
+				),
+			);
+		}
+
+		return array(
+			'success' => false,
+			'message' => $body['description'] ?? __( 'Error desconocido', 'convoca-publisher' ),
+		);
+	}
 }

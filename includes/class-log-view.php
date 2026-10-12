@@ -14,216 +14,211 @@
 
 namespace ConvocaPublisher\Admin;
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
 /**
  * Filtros y utilidades del historial de publicaciones.
  */
-class Log_View
-{
-    /**
-     * Canales que no son envíos y por tanto no se reintentan (filas del propio plugin:
-     * validaciones, avisos internos).
-     */
-    private const NOT_A_CHANNEL = ['VALIDACIÓN', 'VALIDACION', 'SISTEMA'];
+class Log_View {
 
-    /**
-     * Filtra las filas del historial.
-     *
-     * Los filtros vacíos no filtran. Un filtro de red que no corresponde a ninguna fila
-     * deja la lista vacía, que es lo que se espera al pedir algo que no hay.
-     *
-     * @param array<int, mixed>     $entries Filas del historial (lo que haya guardado: se comprueba).
-     * @param array<string, mixed>  $filters network, account, status, networks.
-     * @return array<int, mixed>
-     */
-    public static function filter(array $entries, array $filters): array
-    {
-        $network = (string) ($filters['network'] ?? '');
-        $account = (string) ($filters['account'] ?? '');
-        $status  = (string) ($filters['status'] ?? '');
+	/**
+	 * Canales que no son envíos y por tanto no se reintentan (filas del propio plugin:
+	 * validaciones, avisos internos).
+	 */
+	private const NOT_A_CHANNEL = array( 'VALIDACIÓN', 'VALIDACION', 'SISTEMA' );
 
-        $out = [];
+	/**
+	 * Filtra las filas del historial.
+	 *
+	 * Los filtros vacíos no filtran. Un filtro de red que no corresponde a ninguna fila
+	 * deja la lista vacía, que es lo que se espera al pedir algo que no hay.
+	 *
+	 * @param array<int, mixed>    $entries Filas del historial (lo que haya guardado: se comprueba).
+	 * @param array<string, mixed> $filters network, account, status, networks.
+	 * @return array<int, mixed>
+	 */
+	public static function filter( array $entries, array $filters ): array {
+		$network = (string) ( $filters['network'] ?? '' );
+		$account = (string) ( $filters['account'] ?? '' );
+		$status  = (string) ( $filters['status'] ?? '' );
 
-        foreach ($entries as $entry) {
-            if (!is_array($entry) || !self::is_entry($entry)) {
-                continue;
-            }
+		$out = array();
 
-            if ('' !== $status && self::status($entry) !== $status) {
-                continue;
-            }
+		foreach ( $entries as $entry ) {
+			if ( ! is_array( $entry ) || ! self::is_entry( $entry ) ) {
+				continue;
+			}
 
-            if ('' !== $account && (string) ($entry['channel'] ?? '') !== $account) {
-                continue;
-            }
+			if ( '' !== $status && self::status( $entry ) !== $status ) {
+				continue;
+			}
 
-            if ('' !== $network && self::network_of((string) ($entry['channel'] ?? ''), (array) ($filters['networks'] ?? [])) !== $network) {
-                continue;
-            }
+			if ( '' !== $account && (string) ( $entry['channel'] ?? '' ) !== $account ) {
+				continue;
+			}
 
-            $out[] = $entry;
-        }
+			if ( '' !== $network && self::network_of( (string) ( $entry['channel'] ?? '' ), (array) ( $filters['networks'] ?? array() ) ) !== $network ) {
+				continue;
+			}
 
-        return $out;
-    }
+			$out[] = $entry;
+		}
 
-    /**
-     * ¿Es una fila del historial o basura pegada en la opción?
-     *
-     * Se exige un canal: sin él no hay envío que enseñar, ni cuenta que resolver, ni nada
-     * que reintentar.
-     *
-     * @param array<string, mixed> $entry Fila del historial.
-     */
-    /**
-     * Una página del historial.
-     *
-     * El historial se guarda del más viejo al más nuevo y la pantalla enseña lo último primero, así
-     * que la vuelta se da aquí: quien pide la página 1 recibe las últimas filas.
-     *
-     * @param array<int, array<string, mixed>> $entries  Filas ya filtradas.
-     * @param int                              $page      Página pedida (1..n).
-     * @param int                              $per_page  Filas por página.
-     * @return array{entries: array<int, array<string, mixed>>, page: int, pages: int, total: int}
-     */
-    public static function page(array $entries, int $page = 1, int $per_page = 25): array
-    {
-        $total  = count($entries);
-        $paginas = max(1, (int) ceil($total / max(1, $per_page)));
-        $pagina  = max(1, min($page, $paginas));
+		return $out;
+	}
 
-        return [
-            'entries' => array_slice(array_reverse($entries), ($pagina - 1) * $per_page, $per_page),
-            'page'    => $pagina,
-            'pages'   => $paginas,
-            'total'   => $total,
-        ];
-    }
+	/**
+	 * ¿Es una fila del historial o basura pegada en la opción?
+	 *
+	 * Se exige un canal: sin él no hay envío que enseñar, ni cuenta que resolver, ni nada
+	 * que reintentar.
+	 *
+	 * @param array<string, mixed> $entry Fila del historial.
+	 */
+	/**
+	 * Una página del historial.
+	 *
+	 * El historial se guarda del más viejo al más nuevo y la pantalla enseña lo último primero, así
+	 * que la vuelta se da aquí: quien pide la página 1 recibe las últimas filas.
+	 *
+	 * @param array<int, array<string, mixed>> $entries  Filas ya filtradas.
+	 * @param int                              $page      Página pedida (1..n).
+	 * @param int                              $per_page  Filas por página.
+	 * @return array{entries: array<int, array<string, mixed>>, page: int, pages: int, total: int}
+	 */
+	public static function page( array $entries, int $page = 1, int $per_page = 25 ): array {
+		$total   = count( $entries );
+		$paginas = max( 1, (int) ceil( $total / max( 1, $per_page ) ) );
+		$pagina  = max( 1, min( $page, $paginas ) );
 
-    public static function is_entry(array $entry): bool
-    {
-        $channel = (string) ($entry['channel'] ?? '');
+		return array(
+			'entries' => array_slice( array_reverse( $entries ), ( $pagina - 1 ) * $per_page, $per_page ),
+			'page'    => $pagina,
+			'pages'   => $paginas,
+			'total'   => $total,
+		);
+	}
 
-        if ('' === $channel) {
-            return false;
-        }
+	public static function is_entry( array $entry ): bool {
+		$channel = (string) ( $entry['channel'] ?? '' );
 
-        // Los avisos del propio plugin no son envíos: ni cuentan, ni se filtran por red,
-        // ni se reintentan. Salen del historial en cuanto se escribía una entrada sin
-        // imagen destacada, y teñían de rojo un envío que había salido bien.
-        return !in_array($channel, self::NOT_A_CHANNEL, true);
-    }
+		if ( '' === $channel ) {
+			return false;
+		}
 
-    /**
-     * Estado de una fila, en una palabra.
-     *
-     * @param array<string, mixed> $entry Fila del historial.
-     */
-    public static function status(array $entry): string
-    {
-        return !empty($entry['success']) ? 'ok' : 'fail';
-    }
+		// Los avisos del propio plugin no son envíos: ni cuentan, ni se filtran por red,
+		// ni se reintentan. Salen del historial en cuanto se escribía una entrada sin
+		// imagen destacada, y teñían de rojo un envío que había salido bien.
+		return ! in_array( $channel, self::NOT_A_CHANNEL, true );
+	}
 
-    /**
-     * Red a la que pertenece una fila.
-     *
-     * El historial guarda el **id de la cuenta**, no la red. La correspondencia se pasa en
-     * `$filters['networks']` (id de cuenta => id de red) porque quien llama es el único que
-     * conoce el catálogo de cuentas del sitio. Si no aparece, se usa el propio id: una cuenta
-     * borrada sigue teniendo historial, y ese historial no debe desaparecer de la vista.
-     *
-     * @param string                $channel Id de la cuenta.
-     * @param array<string, string> $networks id de cuenta => id de red.
-     */
-    public static function network_of(string $channel, array $networks): string
-    {
-        return isset($networks[$channel]) ? (string) $networks[$channel] : $channel;
-    }
+	/**
+	 * Estado de una fila, en una palabra.
+	 *
+	 * @param array<string, mixed> $entry Fila del historial.
+	 */
+	public static function status( array $entry ): string {
+		return ! empty( $entry['success'] ) ? 'ok' : 'fail';
+	}
 
-    /**
-     * Lo que se puede ofrecer en los desplegables: solo lo que hay en el historial.
-     *
-     * @param array<int, mixed>    $entries Filas del historial.
-     * @param array<string, string> $networks id de cuenta => id de red.
-     * @return array{networks: list<string>, accounts: array<string, string>, statuses: array<string, int>, total: int}
-     */
-    public static function facets(array $entries, array $networks = []): array
-    {
-        $nets     = [];
-        $accounts = [];
-        $statuses = ['ok' => 0, 'fail' => 0];
-        $total    = 0;
+	/**
+	 * Red a la que pertenece una fila.
+	 *
+	 * El historial guarda el **id de la cuenta**, no la red. La correspondencia se pasa en
+	 * `$filters['networks']` (id de cuenta => id de red) porque quien llama es el único que
+	 * conoce el catálogo de cuentas del sitio. Si no aparece, se usa el propio id: una cuenta
+	 * borrada sigue teniendo historial, y ese historial no debe desaparecer de la vista.
+	 *
+	 * @param string                $channel Id de la cuenta.
+	 * @param array<string, string> $networks id de cuenta => id de red.
+	 */
+	public static function network_of( string $channel, array $networks ): string {
+		return isset( $networks[ $channel ] ) ? (string) $networks[ $channel ] : $channel;
+	}
 
-        foreach ($entries as $entry) {
-            if (!is_array($entry) || !self::is_entry($entry)) {
-                continue;
-            }
+	/**
+	 * Lo que se puede ofrecer en los desplegables: solo lo que hay en el historial.
+	 *
+	 * @param array<int, mixed>     $entries Filas del historial.
+	 * @param array<string, string> $networks id de cuenta => id de red.
+	 * @return array{networks: list<string>, accounts: array<string, string>, statuses: array<string, int>, total: int}
+	 */
+	public static function facets( array $entries, array $networks = array() ): array {
+		$nets     = array();
+		$accounts = array();
+		$statuses = array(
+			'ok'   => 0,
+			'fail' => 0,
+		);
+		$total    = 0;
 
-            ++$total;
+		foreach ( $entries as $entry ) {
+			if ( ! is_array( $entry ) || ! self::is_entry( $entry ) ) {
+				continue;
+			}
 
-            $channel = (string) $entry['channel'];
-            $estado  = self::status($entry);
+			++$total;
 
-            $statuses[$estado] = ($statuses[$estado] ?? 0) + 1;
+			$channel = (string) $entry['channel'];
+			$estado  = self::status( $entry );
 
-            if (in_array($channel, self::NOT_A_CHANNEL, true)) {
-                continue; // Avisos del propio plugin: cuentan, pero no son red ni cuenta.
-            }
+			$statuses[ $estado ] = ( $statuses[ $estado ] ?? 0 ) + 1;
 
-            $accounts[$channel] = self::label($channel, $networks);
-            $nets[self::network_of($channel, $networks)] = true;
-        }
+			if ( in_array( $channel, self::NOT_A_CHANNEL, true ) ) {
+				continue; // Avisos del propio plugin: cuentan, pero no son red ni cuenta.
+			}
 
-        ksort($nets);
+			$accounts[ $channel ]                            = self::label( $channel, $networks );
+			$nets[ self::network_of( $channel, $networks ) ] = true;
+		}
 
-        return [
-            'networks' => array_keys($nets),
-            'accounts' => $accounts,
-            'statuses' => $statuses,
-            'total'    => $total,
-        ];
-    }
+		ksort( $nets );
 
-    /**
-     * ¿Se puede volver a intentar esta fila?
-     *
-     * Solo los envíos que fallaron, de una entrada que siga existiendo y con una cuenta
-     * identificada. Los avisos internos del plugin no son envíos y no se reintentan.
-     *
-     * @param array<string, mixed> $entry Fila del historial.
-     */
-    public static function retryable(array $entry): bool
-    {
-        if (empty($entry['success']) === false || !self::is_entry($entry)) {
-            return false; // Ya salió, o no es un envío.
-        }
+		return array(
+			'networks' => array_keys( $nets ),
+			'accounts' => $accounts,
+			'statuses' => $statuses,
+			'total'    => $total,
+		);
+	}
 
-        return ((int) ($entry['post_id'] ?? 0)) > 0;
-    }
+	/**
+	 * ¿Se puede volver a intentar esta fila?
+	 *
+	 * Solo los envíos que fallaron, de una entrada que siga existiendo y con una cuenta
+	 * identificada. Los avisos internos del plugin no son envíos y no se reintentan.
+	 *
+	 * @param array<string, mixed> $entry Fila del historial.
+	 */
+	public static function retryable( array $entry ): bool {
+		if ( empty( $entry['success'] ) === false || ! self::is_entry( $entry ) ) {
+			return false; // Ya salió, o no es un envío.
+		}
 
-    /**
-     * Nombre para enseñar de una cuenta, con su red si se conoce.
-     *
-     * @param string                $channel  Id de la cuenta.
-     * @param array<string, string> $networks id de cuenta => id de red.
-     * @param array<string, string> $names    id de cuenta => nombre visible.
-     */
-    public static function label(string $channel, array $networks = [], array $names = []): string
-    {
-        if ('' === $channel) {
-            return '';
-        }
+		return ( (int) ( $entry['post_id'] ?? 0 ) ) > 0;
+	}
 
-        $nombre = $names[$channel] ?? $channel;
-        $red    = $networks[$channel] ?? '';
+	/**
+	 * Nombre para enseñar de una cuenta, con su red si se conoce.
+	 *
+	 * @param string                $channel  Id de la cuenta.
+	 * @param array<string, string> $networks id de cuenta => id de red.
+	 * @param array<string, string> $names    id de cuenta => nombre visible.
+	 */
+	public static function label( string $channel, array $networks = array(), array $names = array() ): string {
+		if ( '' === $channel ) {
+			return '';
+		}
 
-        if ('' === $red || $nombre === $red) {
-            return $nombre;
-        }
+		$nombre = $names[ $channel ] ?? $channel;
+		$red    = $networks[ $channel ] ?? '';
 
-        return $red . ' · ' . $nombre;
-    }
+		if ( '' === $red || $nombre === $red ) {
+			return $nombre;
+		}
+
+		return $red . ' · ' . $nombre;
+	}
 }

@@ -11,7 +11,7 @@
 
 namespace ConvocaPublisher;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Perfil: una cuenta de una red, con sus credenciales y su plantilla.
@@ -22,119 +22,117 @@ defined('ABSPATH') || exit;
  * Así los canales siguen leyendo sus opciones como siempre y no hay que tocar ninguno
  * de los siete.
  */
-final class Channel_Profile implements Channels\ChannelInterface
-{
-    /** @var array<string, mixed> */
-    private array $profile;
+final class Channel_Profile implements Channels\ChannelInterface {
 
-    private Channels\ChannelInterface $channel;
+	/**
+	 * Perfil de la cuenta tal y como lo devuelve el almacen.
+	 *
+	 * @var array<string, mixed>
+	 */
+	private array $profile;
 
-    /**
-     * @param array<string, mixed> $profile Perfil tal y como lo devuelve el almacén.
-     */
-    public function __construct(array $profile, Channels\ChannelInterface $channel)
-    {
-        $this->profile = $profile;
-        $this->channel = $channel;
-    }
+	private Channels\ChannelInterface $channel;
 
-    /**
-     * Id del perfil (es el que usan la cola, el historial y el editor).
-     */
-    public function get_id(): string
-    {
-        return (string) $this->profile['id'];
-    }
+	/**
+	 * Envuelve un perfil de cuenta para presentarlo como canal.
+	 *
+	 * @param array<string, mixed> $profile Perfil tal y como lo devuelve el almacén.
+	 */
+	public function __construct( array $profile, Channels\ChannelInterface $channel ) {
+		$this->profile = $profile;
+		$this->channel = $channel;
+	}
 
-    /**
-     * Nombre visible de la cuenta («Telegram — Cuenta principal»).
-     */
-    public function get_name(): string
-    {
-        return (string) $this->profile['name'];
-    }
+	/**
+	 * Id del perfil (es el que usan la cola, el historial y el editor).
+	 */
+	public function get_id(): string {
+		return (string) $this->profile['id'];
+	}
 
-    /**
-     * Red a la que pertenece («telegram», «facebook»…).
-     */
-    public function get_channel_id(): string
-    {
-        return (string) $this->profile['channel'];
-    }
+	/**
+	 * Nombre visible de la cuenta («Telegram — Cuenta principal»).
+	 */
+	public function get_name(): string {
+		return (string) $this->profile['name'];
+	}
 
-    /**
-     * Plantilla propia de esta cuenta (vacío = usar la global).
-     */
-    public function get_template(): string
-    {
-        return (string) ($this->profile['template'] ?? '');
-    }
+	/**
+	 * Red a la que pertenece («telegram», «facebook»…).
+	 */
+	public function get_channel_id(): string {
+		return (string) $this->profile['channel'];
+	}
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function get_profile(): array
-    {
-        return $this->profile;
-    }
+	/**
+	 * Plantilla propia de esta cuenta (vacío = usar la global).
+	 */
+	public function get_template(): string {
+		return (string) ( $this->profile['template'] ?? '' );
+	}
 
-    /**
-     * Credenciales de esta cuenta (para la pantalla de administración).
-     *
-     * @return array<string, string>
-     */
-    public function get_settings(): array
-    {
-        return (array) ($this->profile['settings'] ?? []);
-    }
+	/**
+	 * Perfil completo que hay detras de esta cuenta.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function get_profile(): array {
+		return $this->profile;
+	}
 
-    public function is_available(): bool
-    {
-        return (bool) $this->with_profile_settings(fn(): bool => $this->channel->is_available());
-    }
+	/**
+	 * Credenciales de esta cuenta (para la pantalla de administración).
+	 *
+	 * @return array<string, string>
+	 */
+	public function get_settings(): array {
+		return (array) ( $this->profile['settings'] ?? array() );
+	}
 
-    public function publish(int $post_id, string $message, string $url, string $image_url = ''): array
-    {
-        return (array) $this->with_profile_settings(
-            fn(): array => $this->channel->publish($post_id, $message, $url, $image_url)
-        );
-    }
+	public function is_available(): bool {
+		return (bool) $this->with_profile_settings( fn(): bool => $this->channel->is_available() );
+	}
 
-    public function get_settings_fields(): array
-    {
-        return $this->channel->get_settings_fields();
-    }
+	public function publish( int $post_id, string $message, string $url, string $image_url = '' ): array {
+		return (array) $this->with_profile_settings(
+			fn(): array => $this->channel->publish( $post_id, $message, $url, $image_url )
+		);
+	}
 
-    public function validate_settings(array $settings): array
-    {
-        return $this->channel->validate_settings($settings);
-    }
+	public function get_settings_fields(): array {
+		return $this->channel->get_settings_fields();
+	}
 
-    public function verify_connection(): array
-    {
-        return (array) $this->with_profile_settings(fn(): array => $this->channel->verify_connection());
-    }
+	public function validate_settings( array $settings ): array {
+		return $this->channel->validate_settings( $settings );
+	}
 
-    /**
-     * Ejecutar algo del canal con los ajustes de esta cuenta en su sitio.
-     */
-    private function with_profile_settings(callable $callback): mixed
-    {
-        $ganchos = [];
+	public function verify_connection(): array {
+		return (array) $this->with_profile_settings( fn(): array => $this->channel->verify_connection() );
+	}
 
-        foreach ($this->get_settings() as $option => $value) {
-            $gancho = static fn(): string => (string) $value;
+	/**
+	 * Ejecutar algo del canal con los ajustes de esta cuenta en su sitio.
+	 */
+	private function with_profile_settings( callable $callback ): mixed {
+		$ganchos = array();
 
-            add_filter('pre_option_' . $option, $gancho, 100);
-            $ganchos[] = ['option' => $option, 'callback' => $gancho];
-        }
+		foreach ( $this->get_settings() as $option => $value ) {
+			$gancho = static fn(): string => (string) $value;
 
-        try {
-            return $callback();
-        } finally {
-            foreach ($ganchos as $gancho) {
-                remove_filter('pre_option_' . $gancho['option'], $gancho['callback'], 100);
-            }
-        }
-    }
+			add_filter( 'pre_option_' . $option, $gancho, 100 );
+			$ganchos[] = array(
+				'option'   => $option,
+				'callback' => $gancho,
+			);
+		}
+
+		try {
+			return $callback();
+		} finally {
+			foreach ( $ganchos as $gancho ) {
+				remove_filter( 'pre_option_' . $gancho['option'], $gancho['callback'], 100 );
+			}
+		}
+	}
 }
