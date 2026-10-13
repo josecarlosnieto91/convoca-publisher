@@ -105,7 +105,7 @@ class Telegram implements ChannelInterface {
 
 		return array(
 			'success' => false,
-			'error'   => $resp_body['description'] ?? __( 'Error desconocido de Telegram API.', 'convoca-publisher' ),
+			'error'   => $resp_body['description'] ?? __( 'Telegram no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' ),
 		);
 	}
 
@@ -181,7 +181,7 @@ class Telegram implements ChannelInterface {
 
 		return array(
 			'success' => false,
-			'message' => $body['description'] ?? __( 'Error desconocido', 'convoca-publisher' ),
+			'message' => $body['description'] ?? __( 'Telegram no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' ),
 		);
 	}
 }

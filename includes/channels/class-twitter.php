@@ -95,7 +95,7 @@ class Twitter implements ChannelInterface {
 			);
 		}
 
-		$error = $resp_body['title'] ?? $resp_body['detail'] ?? __( 'Error desconocido de Twitter API.', 'convoca-publisher' );
+		$error = $resp_body['title'] ?? $resp_body['detail'] ?? __( 'X (Twitter) no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' );
 		return array(
 			'success' => false,
 			'error'   => $error,
@@ -199,7 +199,7 @@ class Twitter implements ChannelInterface {
 			);
 		}
 
-		$error_msg = $body['title'] ?? $body['detail'] ?? __( 'Error desconocido de Twitter API.', 'convoca-publisher' );
+		$error_msg = $body['title'] ?? $body['detail'] ?? __( 'X (Twitter) no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' );
 		return array(
 			'success' => false,
 			'message' => $error_msg,

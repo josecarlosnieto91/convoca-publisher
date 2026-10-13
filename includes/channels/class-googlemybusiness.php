@@ -94,7 +94,7 @@ class Googlemybusiness implements ChannelInterface {
 			);
 		}
 
-		$error = $resp_body['error']['message'] ?? __( 'Error desconocido de GMB API.', 'convoca-publisher' );
+		$error = $resp_body['error']['message'] ?? __( 'Google My Business no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' );
 		return array(
 			'success' => false,
 			'error'   => $error,
@@ -187,7 +187,7 @@ class Googlemybusiness implements ChannelInterface {
 			);
 		}
 
-		$error_msg = $body['error']['message'] ?? __( 'Error desconocido de GMB API.', 'convoca-publisher' );
+		$error_msg = $body['error']['message'] ?? __( 'Google My Business no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' );
 		return array(
 			'success' => false,
 			'message' => $error_msg,

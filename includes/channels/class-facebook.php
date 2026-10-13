@@ -77,7 +77,7 @@ class Facebook implements ChannelInterface {
 		$http_code = wp_remote_retrieve_response_code( $response );
 
 		if ( $http_code < 200 || $http_code >= 300 || ! isset( $body['id'] ) ) {
-			$error_msg = $body['error']['message'] ?? __( 'Error desconocido de Meta API.', 'convoca-publisher' );
+			$error_msg = $body['error']['message'] ?? __( 'Meta no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' );
 			return array(
 				'success' => false,
 				'error'   => $error_msg,
@@ -371,7 +371,7 @@ class Facebook implements ChannelInterface {
 			);
 		}
 
-		$error_msg = $body['error']['message'] ?? __( 'Error desconocido de Meta API.', 'convoca-publisher' );
+		$error_msg = $body['error']['message'] ?? __( 'Meta no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' );
 		return array(
 			'success' => false,
 			'message' => $error_msg,

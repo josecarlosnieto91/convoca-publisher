@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.22.5 (2026-10-13)
+
+### Arreglado
+
+- **`PHP Deprecated` en el historial de publicación**: el enlace «editar» de cada fila pasaba
+  `get_edit_post_link()` directo a `esc_url()`; con una entrada borrada eso deja `ltrim( null )` en el
+  registro. Ahora, si no hay enlace, se pinta el título sin `<a>`.
+
+### Pruebas
+
+- `EnlacesDeEdicionTest` (probado en negativo: con el defecto repuesto, falla).
+
 ## 1.22.4 (2026-10-12)
 
 ### Cambiado

@@ -1271,7 +1271,7 @@ class Admin {
 							if ( $result['success'] ) {
 								echo esc_html__( 'Publicado! ID: ', 'convoca-publisher' ) . esc_html( $result['post_id'] ?? '' );
 							} else {
-								echo esc_html( $result['error'] ?? __( 'Error desconocido', 'convoca-publisher' ) );
+								echo esc_html( $result['error'] ?? __( 'La red no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' ) );
 							}
 							echo '</p>';
 						}
@@ -1624,8 +1624,15 @@ endif;
 						?>
 						<tr>
 							<td>
-								<?php if ( $post ) : ?>
-									<a href="<?php echo esc_url( get_edit_post_link( (int) $item->post_id ) ); ?>"><?php echo esc_html( $post->post_title ); ?></a>
+								<?php
+								// Puede no haber enlace de edición: `get_edit_post_link()` devuelve null para
+								// una entrada borrada y `esc_url( null )` deja un `PHP Deprecated` en el registro.
+								$convoca_enlace = $post ? get_edit_post_link( (int) $item->post_id ) : '';
+								if ( $post && $convoca_enlace ) :
+									?>
+									<a href="<?php echo esc_url( $convoca_enlace ); ?>"><?php echo esc_html( $post->post_title ); ?></a>
+								<?php elseif ( $post ) : ?>
+									<?php echo esc_html( $post->post_title ); ?>
 								<?php else : ?>
 									<?php echo esc_html__( '(entrada eliminada)', 'convoca-publisher' ) . ' #' . intval( $item->post_id ); ?>
 								<?php endif; ?>

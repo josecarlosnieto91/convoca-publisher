@@ -90,7 +90,7 @@ class Tiktok implements ChannelInterface {
 			);
 		}
 
-		$error = $resp_body['message'] ?? $resp_body['data']['error']['message'] ?? __( 'Error desconocido de TikTok API.', 'convoca-publisher' );
+		$error = $resp_body['message'] ?? $resp_body['data']['error']['message'] ?? __( 'TikTok no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' );
 		return array(
 			'success' => false,
 			'error'   => $error,

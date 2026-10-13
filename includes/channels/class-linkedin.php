@@ -99,7 +99,7 @@ class Linkedin implements ChannelInterface {
 			);
 		}
 
-		$error = $body_resp['message'] ?? __( 'Error desconocido de LinkedIn API.', 'convoca-publisher' );
+		$error = $body_resp['message'] ?? __( 'LinkedIn no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' );
 		return array(
 			'success' => false,
 			'error'   => $error,
@@ -179,7 +179,7 @@ class Linkedin implements ChannelInterface {
 			);
 		}
 
-		$error_msg = $body['message'] ?? $body['error_description'] ?? __( 'Error desconocido de LinkedIn API.', 'convoca-publisher' );
+		$error_msg = $body['message'] ?? $body['error_description'] ?? __( 'LinkedIn no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes.', 'convoca-publisher' );
 		return array(
 			'success' => false,
 			'message' => $error_msg,
