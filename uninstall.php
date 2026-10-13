@@ -100,6 +100,11 @@ wp_clear_scheduled_hook( 'convoca_publisher_retry_process' );
 // WordPress limpio (09/10/2026) seguían en la lista de cron.
 wp_clear_scheduled_hook( 'convoca_publisher_scheduled_publish' );
 wp_clear_scheduled_hook( 'convoca_publisher_apply_spacing' );
+// Faltaba el reintento de un evento concreto (`Scheduler::RETRY_EVENT_HOOK`): tras desinstalar
+// seguía en la lista de cron del WordPress limpio (13/10/2026).
+wp_clear_scheduled_hook( 'convoca_publisher_retry_event' );
+// Y el de publicación asíncrona: también lo encontró la prueba de contrato (13/10/2026).
+wp_clear_scheduled_hook( 'convoca_publisher_async_publish' );
 
 // Y los perfiles de canal, que guardan los tokens cifrados: sin esto se quedaban en la base.
 // Se borran TODAS las opciones del plugin, que casi todas guardan credenciales o ajustes suyos.
