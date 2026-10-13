@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.22.5
+Stable tag: 1.22.6
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,11 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.22.6 =
+* Desinstalación: se limpian todas las tareas programadas del plugin. Antes se
+  quedaban puestas y seguían disparándose tras borrarlo (medido en un WordPress limpio).
+* Prueba nueva: todo gancho que el plugin programa tiene que aparecer en su desinstalación.
 
 = 1.22.2 =
 * Arreglado: los botones «Limpiar historial» y «Reintentar» de la página de historial no hacían nada. Sus enlaces pedían una acción de administración que ningún handler atendía (el registro se quedó con el prefijo antiguo cuando se renombraron los enlaces).
