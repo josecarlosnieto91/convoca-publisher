@@ -25,8 +25,10 @@ defined( 'ABSPATH' ) || exit;
  * Por qué existe: desplegamos copiando ficheros, así que ni el hook de activación ni el de
  * desactivación llegan a ejecutarse nunca. Un gancho de cron que se llame distinto en una versión
  * posterior se queda agendado para siempre, porque WordPress reprograma los eventos recurrentes: en
- * Lugg y en la demo seguía corriendo cada hora `convoca_publisher_retry_process`, sin callback y sin
+ * los sitios medidos seguía corriendo cada hora `convoca_publisher_retry_process`, sin callback y sin
  * que ningún fichero del código actual lo programe (medido el 14/10/2026).
+ * (Sin nombrar los sitios a propósito: este comentario viaja dentro del plugin publicado y el guardián
+ * de higiene del ecosistema prohíbe los datos de clientes en el código. Lo cazó él, no la vista.)
  *
  * La migración va por versión guardada, no por «una vez»: así el día que renombre otro gancho basta
  * con añadirlo a la lista y las instalaciones se limpian solas al actualizar.
