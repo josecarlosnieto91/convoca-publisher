@@ -36,6 +36,7 @@ class Plugin {
 		Notifications::init();
 		Dashboard::init();
 		Rest::init();
+		Migrator::init();
 
 		// Cifrado automático de tokens (hooks cp_*)
 		$this->register_crypto_hooks();

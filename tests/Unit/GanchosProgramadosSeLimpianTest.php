@@ -33,8 +33,10 @@ class GanchosProgramadosSeLimpianTest extends TestCase {
 				foreach ( $m[1] as $args ) {
 					// El gancho es el ÚLTIMO literal entrecomillado de la llamada: los de delante son
 					// la marca de tiempo y el nombre de la recurrencia (que también puede empezar por
-					// 'convoca_', como 'convoca_weekly', y no es un gancho).
-					if ( preg_match_all( "/'([a-z0-9_]+)'/i", $args, $h ) && ! empty( $h[1] ) ) {
+					// 'convoca_', como 'convoca_weekly', y no es un gancho). Se aceptan las DOS
+					// comillas: mirando solo las simples, una programación con comillas dobles se
+					// escapaba de la guarda (probado en negativo el 14/10/2026).
+					if ( preg_match_all( '/[\'"]([a-z0-9_]+)[\'"]/i', $args, $h ) && ! empty( $h[1] ) ) {
 						$gancho = end( $h[1] );
 						if ( false !== stripos( $gancho, 'convoca' ) ) { $ganchos[ $gancho ] = true; }
 					}

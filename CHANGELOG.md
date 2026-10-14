@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.22.7 (2026-10-14)
+
+### Arreglado
+
+- **Un cron de una versión anterior seguía corriendo cada hora.** `convoca_publisher_retry_process`
+  (nombre que ya no usa ningún fichero del plugin, y que no tenía callback) seguía agendado en Lugg y
+  en la demo; WordPress reprograma los eventos recurrentes, y el único sitio que lo limpiaba era el
+  hook de desactivación, que no llega a ejecutarse nunca en un despliegue por copia de ficheros.
+  Ahora lo limpia una migración por versión enganchada en `init`, que corre también con el cron.
+
+### Pruebas
+
+- `MigradorDeGanchosHeredadosTest`: limpia al cambiar la versión; **no** repite con la versión al día;
+  y falla si alguien vuelve a programar un gancho de la lista de heredados.
+
+## 1.22.6 (2026-10-13)
+
+### Arreglado
+
+- **Desinstalación**: se limpian todas las tareas programadas del plugin (antes se quedaban puestas y
+  seguían disparándose tras borrarlo). Prueba de contrato: todo gancho programado tiene que aparecer
+  en `uninstall.php`.
+  *(Entrada recuperada del `readme.txt`: esta versión se publicó sin entrada aquí.)*
+
 ## 1.22.5 (2026-10-13)
 
 ### Arreglado

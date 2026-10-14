@@ -278,6 +278,9 @@ function get_the_title(int|WP_Post $post = 0): string
 }
 function wp_clear_scheduled_hook(string $hook, array $args = []): bool
 {
+    // Se anota lo que se limpia: sin esto, una migración que limpia ganchos heredados era
+    // invisible para las pruebas.
+    $GLOBALS['_cp_test_cleared_hooks'][] = $hook;
     return true;
 }
 function wp_schedule_event(int $timestamp, string $recurrence, string $hook, array $args = []): bool

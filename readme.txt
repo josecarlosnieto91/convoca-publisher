@@ -4,7 +4,7 @@ Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.22.6
+Stable tag: 1.22.7
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,13 @@ This plugin connects to the APIs of the configured social networks (Facebook, In
 3. Connect your social networks in Settings > Convoca Publisher
 
 == Changelog ==
+
+= 1.22.7 =
+* Migración automática al actualizar: el plugin limpia los ganchos de cron que dejaron versiones
+  anteriores (`convoca_publisher_retry_process` seguía agendado cada hora y sin callback). Antes solo
+  se limpiaban al desactivar, ruta que no se ejecuta en los despliegues por copia de ficheros.
+* Pruebas nuevas: la migración limpia una vez y no repite, y ningún gancho heredado se programa en el
+  código actual.
 
 = 1.22.6 =
 * Desinstalación: se limpian todas las tareas programadas del plugin. Antes se
