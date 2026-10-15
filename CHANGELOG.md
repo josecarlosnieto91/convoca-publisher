@@ -1,3 +1,15 @@
+## [1.22.9] — 2026-10-15
+
+### Arreglado
+- **La traducción inglesa que viajaba con el plugin era de un mes antes que su catálogo.** El `.mo` era del
+  11/09 y el `.po` se actualizó el 12/10, así que el inglés publicado no llegaba a las 451 cadenas del
+  catálogo. Regenerado con `msgfmt`. Lo destapó la comprobación nueva `CatalogoDeTraduccionTest`, que exige que
+  el `.mo` corresponda byte a byte a su `.po`: sin ella, un `.mo` viejo no se ve por ningún lado.
+
+### Añadido
+- **`CatalogoDeTraduccionTest`**: comprueba que cada `.po` y el `.pot` compilan con `msgfmt -c` y que el `.mo`
+  corresponde a su `.po`. Si falta `msgfmt`, falla diciendo el motivo en vez de saltarse.
+
 ## 1.22.8 — 2026-10-15
 
 ### Arreglado
