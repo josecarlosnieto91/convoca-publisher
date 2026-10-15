@@ -1,3 +1,16 @@
+## 1.22.8 — 2026-10-15
+
+### Arreglado
+- **El reparto gratis/PRO de las redes ya existe en el código (#core17).** La web vende «3 redes gratis
+  (Facebook, X, LinkedIn) y 7 con PRO» y el plugin **no consultaba la licencia en ningún sitio**: los ocho
+  canales publicaban siempre, con licencia o sin ella. El reparto se aplica en el único sitio por el que
+  pasan el editor, la cola, el REST y el historial, así que no queda una puerta que se olvide. Sin núcleo
+  instalado no hay forma de validar nada, así que se aplica el mismo reparto, con el filtro
+  `convoca_publisher_redes_pro` para quien gestione la licencia por otra vía.
+- **Aviso en el panel** diciendo qué cuatro redes van con la licencia, para que no parezcan un fallo.
+- Pruebas `tests/Unit/CanalesLicenciaTest.php`: sin licencia quedan Facebook (con Instagram), LinkedIn y X;
+  con licencia pasan las ocho.
+
 # Changelog
 
 ## 1.22.7 (2026-10-14)

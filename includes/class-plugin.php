@@ -65,7 +65,65 @@ class Plugin {
 
 	private function load_channels(): void {
 		// `channels` son las **cuentas** (perfiles): lo que usa el motor para publicar.
-		$this->channels = self::accounts();
+		$this->channels = self::solo_con_licencia( self::accounts() );
+	}
+
+	/**
+	 * Redes del plan gratuito, tal y como las anuncia la web de producto.
+	 */
+	public const REDES_GRATIS = array( 'facebook', 'twitter', 'linkedin' );
+
+	/**
+	 * Redes que se venden con licencia PRO (el módulo suelto, 39 €/año).
+	 */
+	public const REDES_PRO = array( 'googlemybusiness', 'mastodon', 'telegram', 'tiktok' );
+
+	/**
+	 * Deja pasar solo las redes que la licencia permite.
+	 *
+	 * La web vende «3 redes gratis (Facebook, X, LinkedIn) y 7 con PRO» y el plugin **no consultaba la
+	 * licencia en ningún sitio**: los ocho canales publicaban siempre, con licencia o sin ella (issue
+	 * core#17). El reparto se aplica aquí, que es el único sitio por el que pasan el editor, la cola, el
+	 * REST y el historial, así que no queda una puerta que se olvide.
+	 *
+	 * Si el núcleo no está instalado no hay forma de validar una licencia, así que se aplica el mismo
+	 * reparto (fail-closed) y el filtro `convoca_publisher_redes_pro` queda para quien la gestione por
+	 * otra vía.
+	 *
+	 * @param array<string, Channel_Profile> $cuentas Cuentas configuradas.
+	 * @return array<string, Channel_Profile>
+	 */
+	public static function solo_con_licencia( array $cuentas ): array {
+		if ( self::tiene_licencia_publisher() ) {
+			return $cuentas;
+		}
+
+		foreach ( $cuentas as $id => $cuenta ) {
+			$red = $cuenta->get_channel_id();
+			if ( in_array( $red, self::REDES_PRO, true ) ) {
+				unset( $cuentas[ $id ] );
+			}
+		}
+
+		return $cuentas;
+	}
+
+	/**
+	 * ¿Tiene este sitio licencia PRO del Publisher?
+	 *
+	 * @return bool
+	 */
+	public static function tiene_licencia_publisher(): bool {
+		$con_licencia = class_exists( '\Convoca\Core\License_Manager' )
+			? \Convoca\Core\License_Manager::has_pro( 'publisher' )
+			: false;
+
+		/**
+		 * Permite declarar la licencia por otra vía, o repartir de otra manera.
+		 *
+		 * @param bool $con_licencia Si el sitio tiene licencia PRO del Publisher.
+		 */
+		return (bool) apply_filters( 'convoca_publisher_redes_pro', $con_licencia );
 	}
 
 	/**

@@ -25,6 +25,7 @@ class Admin {
 		add_action( 'admin_menu', array( self::class, 'add_menu_page' ) );
 		add_action( 'admin_init', array( self::class, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue_assets' ) );
+		add_action( 'admin_notices', array( self::class, 'aviso_redes_pro' ) );
 		// Los enlaces de la página de logs apuntan a admin.php?action=convoca_publisher_*,
 		// pero estos handlers se quedaron con el prefijo cp_ en el refactor de prefijos: el
 		// navegador pedía una acción que nadie atendía y los dos botones (Limpiar historial y
@@ -2687,5 +2688,45 @@ endif;
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Avisa de las redes que deja fuera la licencia, para que no parezcan un fallo.
+	 *
+	 * Aplicado el reparto gratis/PRO (issue core#17), cuatro redes no se ofrecen sin licencia. Sin este
+	 * aviso, el administrador ve menos canales de los que anuncia la web y no sabe por qué; con él, sabe
+	 * qué le falta y dónde se activa.
+	 */
+	public static function aviso_redes_pro(): void {
+		if ( \ConvocaPublisher\Plugin::tiene_licencia_publisher() ) {
+			return;
+		}
+
+		$pantalla = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $pantalla || false === strpos( (string) $pantalla->id, 'convoca-publisher' ) ) {
+			return;
+		}
+
+		$nombres = array();
+		foreach ( \ConvocaPublisher\Plugin::networks() as $red => $canal ) {
+			if ( in_array( $red, \ConvocaPublisher\Plugin::REDES_PRO, true ) ) {
+				$nombres[] = $canal->get_name();
+			}
+		}
+
+		if ( empty( $nombres ) ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-info is-dismissible"><p>%s</p></div>',
+			esc_html(
+				sprintf(
+					/* translators: %s: lista de redes. */
+					__( 'Estas redes van con la licencia PRO del Publisher y ahora no se ofrecen: %s. Con la licencia se activan solas.', 'convoca-publisher' ),
+					implode( ', ', $nombres )
+				)
+			)
+		);
 	}
 }
