@@ -90,8 +90,8 @@ class Plugin {
 	 * reparto (fail-closed) y el filtro `convoca_publisher_redes_pro` queda para quien la gestione por
 	 * otra vía.
 	 *
-	 * @param array<string, Channel_Profile> $cuentas Cuentas configuradas.
-	 * @return array<string, Channel_Profile>
+	 * @param array<string, object> $cuentas Cuentas configuradas (necesita `get_channel_id()`).
+	 * @return array<string, object>
 	 */
 	public static function solo_con_licencia( array $cuentas ): array {
 		if ( self::tiene_licencia_publisher() ) {
@@ -99,7 +99,10 @@ class Plugin {
 		}
 
 		foreach ( $cuentas as $id => $cuenta ) {
-			$red = $cuenta->get_channel_id();
+			// Lo único que hace falta saber es de qué red es la cuenta. Se comprueba el método porque
+			// este método es estático y público: con un llamador equivocado, mejor dejar el canal fuera
+			// que reventar la pantalla.
+			$red = method_exists( $cuenta, 'get_channel_id' ) ? $cuenta->get_channel_id() : (string) $id;
 			if ( in_array( $red, self::REDES_PRO, true ) ) {
 				unset( $cuentas[ $id ] );
 			}
