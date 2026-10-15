@@ -452,6 +452,9 @@ class Admin {
 			<?php if ( ! $account || ! $account->is_available() ) : ?>
 				<div class="cp-notice cp-notice--warn">
 					<p><?php echo esc_html__( 'Mientras falten datos, esta cuenta no publicará nada. Rellénalos, guarda y usa «Verificar conexión».', 'convoca-publisher' ); ?></p>
+					<?php if ( '' !== self::token_help( (string) $network_id ) ) : ?>
+						<p><?php echo self::token_help( (string) $network_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado en token_help(). ?></p>
+					<?php endif; ?>
 				</div>
 			<?php elseif ( ! empty( $status['detail'] ) ) : ?>
 				<div class="cp-notice cp-notice--warn">
@@ -831,6 +834,49 @@ class Admin {
 	}
 
 	/**
+	 * Dónde se consigue el token de una red.
+	 *
+	 * El aviso «Falta token» era un callejón sin salida: decía qué faltaba y no de dónde sacarlo (issue #8).
+	 * Aquí va el sitio concreto donde se genera, sin describir interfaces que cambian: el nombre del panel y
+	 * su dirección. Lo que se pega en el campo es lo que dé esa herramienta.
+	 *
+	 * @param string $network_id Identificador de la red (`facebook`, `telegram`, …).
+	 * @return string Marcado **ya escapado** (se imprime sin volver a escaparlo), o cadena vacía.
+	 */
+	public static function token_help( string $network_id ): string {
+		$paneles = array(
+			'facebook'         => array( 'Meta for Developers', 'https://developers.facebook.com/apps/' ),
+			'googlemybusiness' => array( 'Google Cloud Console', 'https://console.cloud.google.com/apis/credentials' ),
+			'linkedin'         => array( 'LinkedIn Developer Portal', 'https://www.linkedin.com/developers/apps' ),
+			'mastodon'         => array( 'los ajustes de tu propia instancia (Preferencias → Desarrollo)', '' ),
+			'telegram'         => array( '@BotFather, en Telegram', 'https://t.me/BotFather' ),
+			'tiktok'           => array( 'TikTok for Developers', 'https://developers.tiktok.com/' ),
+			'twitter'          => array( 'X Developer Portal', 'https://developer.x.com/' ),
+		);
+
+		if ( ! isset( $paneles[ $network_id ] ) ) {
+			return '';
+		}
+
+		list( $panel, $url ) = $paneles[ $network_id ];
+
+		if ( '' === $url ) {
+			return sprintf(
+				/* translators: %s: nombre del sitio donde se genera el token. */
+				esc_html__( 'El token se genera en %s.', 'convoca-publisher' ),
+				esc_html( $panel )
+			);
+		}
+
+		return sprintf(
+			/* translators: 1: nombre del panel de desarrollador, 2: enlace a ese panel. */
+			esc_html__( 'El token se genera en %1$s: %2$s', 'convoca-publisher' ),
+			esc_html( $panel ),
+			'<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $url ) . '</a>'
+		);
+	}
+
+	/**
 	 * Estado de un canal, tal y como se ve en su tarjeta y en su pantalla.
 	 *
 	 * ✅ Configurado · ❌ Falta token · ⚠️ Error al verificar · 🔑 Necesita reconexión.
@@ -1078,6 +1124,9 @@ class Admin {
 
 				<?php if ( empty( $own ) ) : ?>
 					<p class="description"><?php echo esc_html__( 'Esta red no publica todavía: no tiene ninguna cuenta configurada.', 'convoca-publisher' ); ?></p>
+					<?php if ( '' !== self::token_help( (string) $network_id ) ) : ?>
+						<p class="description"><?php echo self::token_help( (string) $network_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- marcado propio, ya escapado en token_help(). ?></p>
+					<?php endif; ?>
 				<?php else : ?>
 					<table class="wp-list-table widefat striped">
 						<thead>
