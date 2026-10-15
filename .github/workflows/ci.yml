@@ -129,6 +129,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Instalar gettext (msgfmt, del contrato de traducciones)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq gettext
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
