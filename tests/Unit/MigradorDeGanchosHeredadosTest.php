@@ -3,7 +3,7 @@
 /**
  * La migración que limpia los ganchos de cron heredados, con sus dos negativos.
  *
- * Por qué existe: en Lugg y en la demo seguía agendado cada hora `convoca_publisher_retry_process`,
+ * Por qué existe: en un sitio de cliente y en la demo seguía agendado cada hora `convoca_publisher_retry_process`,
  * un nombre que ya no programa ningún fichero del plugin y que nadie atendía. El arreglo limpia al
  * cambiar de versión, así que lo que hay que vigilar es justo eso: que limpie cuando toca, que **no**
  * repita cuando la versión ya está al día, y que ningún gancho de la lista se vuelva a programar.
