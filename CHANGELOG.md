@@ -1,3 +1,15 @@
+## [1.22.10] — 2026-10-16
+
+### Arreglado
+- **`composer test` moría antes de llegar a las pruebas (issue #9).** Empezaba por `test:cs`, el formateador
+  (`php-cs-fixer` con las reglas por defecto), que salía con error en 35 de los 66 ficheros y cortaba la
+  cadena: las 266 pruebas **no se ejecutaban nunca** y el comando parecía «rojo por estilo». Ahora el paso
+  de estilo es el del proyecto (`phpcs --standard=.phpcs.xml.dist`), el mismo que exige el CI, y
+  `composer test` termina en 0.
+### Cambiado
+- El formateador queda **fuera** de `composer test` (sigue disponible en `test:cs` y `test:cs-fix`), con el
+  motivo escrito en el README: no se reformatean los 35 ficheros mientras no se decida hacerlo.
+
 ## [1.22.9] — 2026-10-15
 
 ### Arreglado
