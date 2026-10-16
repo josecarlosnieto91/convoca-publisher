@@ -1,58 +1,59 @@
 {
-    "name": "convoca/publisher",
-    "description": "WordPress plugin for auto-publishing posts to social media. Part of the Convoca ecosystem. Supports Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram and Mastodon.",
-    "type": "wordpress-plugin",
-    "license": "GPL-2.0-or-later",
-    "authors": [
-        {
-            "name": "José Carlos Nieto Ramos",
-            "homepage": "https://getconvoca.app"
-        }
-    ],
-    "require": {
-        "php": ">=8.0",
-        "ext-openssl": "*",
-        "ext-json": "*",
-        "ext-mbstring": "*"
-    },
-    "require-dev": {
-        "dealerdirect/phpcodesniffer-composer-installer": "*",
-        "friendsofphp/php-cs-fixer": "^3.0",
-        "php-stubs/wordpress-stubs": "^6.0",
-        "phpcompatibility/phpcompatibility-wp": "^2.1",
-        "phpstan/phpstan": "^2.0",
-        "phpunit/phpunit": "^10.0",
-        "squizlabs/php_codesniffer": "*",
-        "wp-coding-standards/wpcs": "^3.4",
-        "yoast/phpunit-polyfills": "*"
-    },
-    "autoload": {
-        "classmap": [
-            "includes/"
-        ]
-    },
-    "scripts": {
-        "test:stan": "php -d memory_limit=1G vendor/bin/phpstan analyse --memory-limit=1G",
-        "test:cs": "PHP_CS_FIXER_IGNORE_ENV=1 php vendor/bin/php-cs-fixer fix --dry-run --diff .",
-        "test:cs-fix": "PHP_CS_FIXER_IGNORE_ENV=1 php vendor/bin/php-cs-fixer fix .",
-        "test:unit": "phpunit",
-        "test": [
-            "@test:cs",
-            "@test:stan",
-            "@test:security",
-            "@test:unit"
-        ],
-        "test:security": "vendor/bin/phpcs --standard=WordPress --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput,WordPress.Security.SafeRedirect,WordPress.Security.PluginMenuSlug,WordPress.WP.GlobalVariablesOverride,WordPress.WP.DiscouragedFunctions --error-severity=1 -n --report=summary includes/ convoca-publisher.php"
-    },
-    "config": {
-        "allow-plugins": {
-            "composer/installers": true,
-            "dealerdirect/phpcodesniffer-composer-installer": true
-        },
-        "sort-packages": true
-    },
-    "support": {
-        "issues": "https://github.com/josecarlosnieto91/convoca-publisher/issues",
-        "source": "https://github.com/josecarlosnieto91/convoca-publisher"
+  "name": "convoca/publisher",
+  "description": "WordPress plugin for auto-publishing posts to social media. Part of the Convoca ecosystem. Supports Facebook, Instagram, LinkedIn, Twitter/X, TikTok, Google My Business, Telegram and Mastodon.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "José Carlos Nieto Ramos",
+      "homepage": "https://getconvoca.app"
     }
+  ],
+  "require": {
+    "php": ">=8.0",
+    "ext-openssl": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "*",
+    "friendsofphp/php-cs-fixer": "^3.0",
+    "php-stubs/wordpress-stubs": "^6.0",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "phpstan/phpstan": "^2.0",
+    "phpunit/phpunit": "^10.0",
+    "squizlabs/php_codesniffer": "*",
+    "wp-coding-standards/wpcs": "^3.4",
+    "yoast/phpunit-polyfills": "*"
+  },
+  "autoload": {
+    "classmap": [
+      "includes/"
+    ]
+  },
+  "scripts": {
+    "test:stan": "php -d memory_limit=1G vendor/bin/phpstan analyse --memory-limit=1G",
+    "test:cs": "PHP_CS_FIXER_IGNORE_ENV=1 php vendor/bin/php-cs-fixer fix --dry-run --diff .",
+    "test:cs-fix": "PHP_CS_FIXER_IGNORE_ENV=1 php vendor/bin/php-cs-fixer fix .",
+    "test:unit": "phpunit",
+    "test": [
+      "@test:phpcs",
+      "@test:stan",
+      "@test:security",
+      "@test:unit"
+    ],
+    "test:security": "vendor/bin/phpcs --standard=WordPress --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput,WordPress.Security.SafeRedirect,WordPress.Security.PluginMenuSlug,WordPress.WP.GlobalVariablesOverride,WordPress.WP.DiscouragedFunctions --error-severity=1 -n --report=summary includes/ convoca-publisher.php",
+    "test:phpcs": "vendor/bin/phpcs --standard=.phpcs.xml.dist"
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "sort-packages": true
+  },
+  "support": {
+    "issues": "https://github.com/josecarlosnieto91/convoca-publisher/issues",
+    "source": "https://github.com/josecarlosnieto91/convoca-publisher"
+  }
 }

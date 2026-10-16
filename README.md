@@ -167,3 +167,16 @@ Prueba Convoca sin instalar nada:
 La documentación completa (manual de usuario, API REST, hooks, instalación) vive en la wiki:
 
 👉 **[Convoca publisher](https://docs.getconvoca.app/plugins/convoca-publisher/)**
+
+## Pruebas
+
+```bash
+composer test        # la puerta: estilo del proyecto (phpcs), phpstan, seguridad, unitarias
+composer test:unit   # solo las unitarias
+```
+
+`composer test:cs` **no** entra en `composer test`: es el formateador (`php-cs-fixer`) con sus reglas por
+defecto, y este proyecto no las sigue —pide reformatear 35 de 66 ficheros por alineación de `?? ''`—.
+El estilo que se exige es `composer test:phpcs`, que es el reglamento del proyecto (`.phpcs.xml.dist`) y
+el mismo que corre el CI. Si alguien quiere pasar el formateador, `composer test:cs-fix` lo aplica, pero
+revísalo antes de comitear: es cosmético.
