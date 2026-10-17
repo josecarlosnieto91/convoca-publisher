@@ -1,3 +1,17 @@
+## [1.22.11] — 2026-10-16
+
+### Arreglado
+- **El ✅ de un canal salía sin haber comprobado nunca la credencial (issue #10).** `channel_status()`
+  sólo miraba si había token: sin ninguna verificación guardada caía en el ✅ «Configurado», y la
+  pantalla daba por buena una conexión que no había hecho ni una llamada. Ahora, si no hay verificación
+  (o si la configuración cambió y la anterior ya no vale), el estado es **⚠️ «Sin comprobar»** con el
+  mensaje que ya tenía `Credential_Health` («Todavía no se ha comprobado que esta credencial funcione»).
+  El ✅ queda para lo que de verdad se ha verificado.
+
+### Pruebas
+- El test que daba por bueno el ✅ sin verificar se ha reescrito (codificaba el defecto) y se añade el
+  caso contrario: un canal verificado sigue viéndose «Configurado». 267 tests, 1024 aserciones.
+
 ## [1.22.10] — 2026-10-16
 
 ### Arreglado

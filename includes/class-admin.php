@@ -945,6 +945,18 @@ class Admin {
 			);
 		}
 
+		// Nunca comprobada (publisher#10): tener el token guardado no es que funcione. Antes caía en el
+		// ✅ «Configurado» sin haber hecho ni una llamada, que es justo lo que no puede decir la pantalla.
+		if ( 0 === $verificado_en ) {
+			return array(
+				'key'    => 'unverified',
+				'class'  => 'cp-status--warn',
+				'icon'   => '⚠️',
+				'label'  => __( 'Sin comprobar', 'convoca-publisher' ),
+				'detail' => Credential_Health::message( $red, 0 ),
+			);
+		}
+
 		return array(
 			'key'   => 'ok',
 			'class' => 'cp-status--ok',

@@ -154,9 +154,34 @@ namespace ConvocaPublisher\Tests {
             $this->assertSame('Falta token', $status['label']);
         }
 
-        public function testUnCanalConfiguradoSinVerificarSeVeConfigurado(): void
+        /**
+         * publisher#10: tener el token guardado NO es que funcione. Antes esta prueba daba por bueno el
+         * ✅ sin haber hecho ni una llamada, que es exactamente lo que engañaba en la pantalla.
+         */
+        public function testUnCanalConfiguradoSinVerificarSeVeSinComprobar(): void
         {
             $status = Admin::channel_status($this->telegramConfigurado());
+
+            $this->assertSame('unverified', $status['key']);
+            $this->assertSame('⚠️', $status['icon']);
+            $this->assertSame('Sin comprobar', $status['label']);
+            $this->assertNotEmpty($status['detail'] ?? '', 'Debe explicar que no se ha comprobado todavía.');
+        }
+
+        public function testUnCanalVerificadoSeVeConfigurado(): void
+        {
+            $channel = $this->telegramConfigurado();
+
+            update_option('convoca_publisher_verify_status', [
+                'telegram' => [
+                    'success'     => true,
+                    'message'     => '✅ Conexión correcta. Bot: @ConvocaTestBot',
+                    'time'        => current_time('mysql'),
+                    'fingerprint' => Admin::channel_fingerprint($channel),
+                ],
+            ]);
+
+            $status = Admin::channel_status($channel);
 
             $this->assertSame('ok', $status['key']);
             $this->assertSame('✅', $status['icon']);
@@ -214,10 +239,13 @@ namespace ConvocaPublisher\Tests {
 
             $this->assertSame('reconnect', Admin::channel_status($channel)['key']);
 
-            // Token nuevo: la verificación anterior ya no dice nada de esta configuración.
+            // Token nuevo: la verificación anterior ya no dice nada de esta configuración, así que el
+            // canal queda SIN COMPROBAR (publisher#10: antes se pintaba ✅ «Configurado»).
             update_option('convoca_publisher_telegram_token', 'OTRO-TOKEN');
 
-            $this->assertSame('ok', Admin::channel_status($channel)['key']);
+            $status = Admin::channel_status($channel);
+            $this->assertSame('unverified', $status['key']);
+            $this->assertSame('⚠️', $status['icon']);
         }
 
         public function testDetectaLosErroresQueSuenanACredencial(): void
