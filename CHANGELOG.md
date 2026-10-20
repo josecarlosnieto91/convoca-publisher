@@ -1,3 +1,14 @@
+## [1.22.12] — 2026-10-20
+
+### Arreglado
+
+- **El plugin seguía cargándose sin el núcleo.** El aviso existía, pero colgado de `plugins_loaded` y
+  sin parar el arranque: cualquier gancho suyo que tocara una clase de Convoca Core reventaba con
+  «class not found» en front, en un cron o en una petición REST, donde el aviso del escritorio no lo
+  ve nadie. Ahora hay guarda de arranque, como en las otras ocho extensiones.
+- La comprobación pasa a ser por clase (`Convoca\Core\Utils`) y no por la constante
+  `CONVOCA_COMMON_VERSION`, que es del nombre anterior del núcleo.
+
 ## [1.22.11] — 2026-10-16
 
 ### Arreglado

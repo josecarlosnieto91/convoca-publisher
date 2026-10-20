@@ -4,7 +4,7 @@
  * Plugin Name:       Convoca Publisher
  * Plugin URI:        https://getconvoca.app
  * Description:       Publish WordPress posts to social media channels with customizable templates.
- * Version: 1.22.11
+ * Version: 1.22.12
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Tested up to:      7.1
@@ -52,30 +52,34 @@ add_action(
 	}
 );
 
-/**
- * Ensure convoca-core is active.
+/*
+ * ── Guarda de arranque: sin el núcleo no se sigue cargando ─────────────────────
+ *
+ * Antes solo se avisaba en un `admin_notices` colgado de `plugins_loaded` y el plugin SEGUÍA
+ * cargando: cualquier gancho suyo que tocara una clase del núcleo (`Utils`, `Logger`,
+ * `Pantalla_Admin`…) reventaba con «class not found» en cuanto corría en front, en un cron o en
+ * una petición REST — donde el aviso del escritorio no lo ve nadie. Es la única de las nueve
+ * extensiones que no paraba.
+ *
+ * Se comprueba la clase y no una constante: `CONVOCA_COMMON_VERSION` es del nombre anterior del
+ * núcleo y podría desaparecer sin que el núcleo hubiera dejado de estar.
  */
-add_action(
-	'plugins_loaded',
-	function () {
-		if ( ! defined( 'CONVOCA_COMMON_VERSION' ) && ! function_exists( 'convoca_core_is_active' ) ) {
-			add_action(
-				'admin_notices',
-				function () {
-					printf(
-						'<div class="notice notice-error"><p><strong>%s:</strong> %s <strong>%s</strong> %s</p></div>',
-						esc_html__( 'Convoca Publisher', 'convoca-publisher' ),
-						esc_html__( 'Este plugin requiere el plugin', 'convoca-publisher' ),
-						esc_html__( 'Convoca Core', 'convoca-publisher' ),
-						esc_html__( 'activo.', 'convoca-publisher' )
-					);
-				}
+if ( ! class_exists( '\Convoca\Core\Utils' ) ) {
+	add_action(
+		'admin_notices',
+		function () {
+			printf(
+				'<div class="notice notice-error"><p><strong>%s:</strong> %s <strong>%s</strong> %s</p></div>',
+				esc_html__( 'Convoca Publisher', 'convoca-publisher' ),
+				esc_html__( 'Este plugin requiere el plugin', 'convoca-publisher' ),
+				esc_html__( 'Convoca Core', 'convoca-publisher' ),
+				esc_html__( 'activo.', 'convoca-publisher' )
 			);
-			return;
 		}
-	},
-	5
-);
+	);
+
+	return;
+}
 
 // Cache-buster de los assets y version del endpoint REST. Debe seguir la version
 // del plugin: si se queda fija, la CDN sirve JS/CSS viejos para esa misma URL.
