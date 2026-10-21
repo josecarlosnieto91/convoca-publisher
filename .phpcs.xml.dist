@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ruleset name="Convoca">
   <description>WordPress Coding Standards for Convoca plugins</description>
-  
+
   <file>.</file>
   <exclude-pattern>*/vendor/*</exclude-pattern>
   <exclude-pattern>*/node_modules/*</exclude-pattern>
@@ -73,11 +73,11 @@
       <property name="text_domain" type="array">
         <element value="convoca"/>
         <element value="convoca-core"/>
-        
+
         <element value="convoca-publisher"/>
-        
-        
-        
+
+
+
       </property>
     </properties>
   </rule>

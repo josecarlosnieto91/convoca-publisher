@@ -620,7 +620,7 @@ class Admin {
 					</label>
 				</p>
 			</div>
-			
+
 			<div class="cp-section">
 				<h2><?php echo esc_html__( 'Configuración general', 'convoca-publisher' ); ?></h2>
 				<table class="form-table">
@@ -674,7 +674,7 @@ class Admin {
 					</tr>
 				</table>
 			</div>
-			
+
 			<div class="cp-notice">
 				<p>
 					<?php echo esc_html__( 'Los datos y las plantillas de cada red viven en su propia pantalla.', 'convoca-publisher' ); ?>
@@ -758,7 +758,7 @@ class Admin {
 		?>
 		<div class="cp-section">
 			<h2><?php echo esc_html__( 'Plantillas de mensaje', 'convoca-publisher' ); ?></h2>
-			
+
 			<div class="cp-help">
 				<p><strong><?php echo esc_html__( 'Variables disponibles:', 'convoca-publisher' ); ?></strong></p>
 				<p>
@@ -782,10 +782,10 @@ class Admin {
 				<p><?php echo esc_html__( 'Pulsa una variable para insertarla donde tengas el cursor. La vista previa se actualiza sola y te dice si el mensaje cabe en esa red o si se recortará.', 'convoca-publisher' ); ?></p>
 				<p><?php echo esc_html__( 'Se usa la primera que esté puesta, de lo más concreto a lo más general: lo que se escribe para un envío concreto, lo de esa entrada, la plantilla de la cuenta (en su pantalla), la de su red y la global. Si no hay ninguna, la de fábrica de cada red, que se ve bajo cada campo.', 'convoca-publisher' ); ?></p>
 			</div>
-			
+
 			<form method="post" action="options.php">
 				<?php settings_fields( 'convoca_publisher_settings' ); ?>
-				
+
 				<h3><?php echo esc_html__( 'Plantilla global', 'convoca-publisher' ); ?></h3>
 				<table class="form-table">
 					<tr>
@@ -797,7 +797,7 @@ class Admin {
 						</td>
 					</tr>
 				</table>
-				
+
 				<h3><?php echo esc_html__( 'Plantillas por red', 'convoca-publisher' ); ?></h3>
 				<p><?php echo esc_html__( 'Déjalo vacío para usar la plantilla global. Cada cuenta puede tener la suya propia en su pantalla.', 'convoca-publisher' ); ?></p>
 
@@ -826,7 +826,7 @@ class Admin {
 					</p>
 				</div>
 				<?php endforeach; ?>
-				
+
 				<?php submit_button(); ?>
 			</form>
 		</div>
@@ -1274,7 +1274,7 @@ class Admin {
 				</table>
 				<?php submit_button( __( 'Guardar canal de pruebas', 'convoca-publisher' ), 'secondary' ); ?>
 			</form>
-			
+
 			<form method="post">
 				<?php wp_nonce_field( 'convoca_publisher_test_publish', 'convoca_publisher_test_nonce' ); ?>
 				<table class="form-table">
@@ -1314,7 +1314,7 @@ class Admin {
 					<?php endif; ?>
 				</p>
 			</form>
-			
+
 			<?php
 			if ( isset( $_POST['convoca_publisher_do_test'] ) && check_admin_referer( 'convoca_publisher_test_publish', 'convoca_publisher_test_nonce' ) ) {
 				$post_id = isset( $_POST['convoca_publisher_test_post_id'] ) ? intval( $_POST['convoca_publisher_test_post_id'] ) : 0;
