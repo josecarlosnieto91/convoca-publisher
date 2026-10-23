@@ -216,8 +216,24 @@ final class AdminLogicaTest extends TestCase
 
     public function test_reconoce_los_errores_de_credenciales(): void
     {
-        foreach (['The access token is invalid', '401 Unauthorized', 'token caducado', 'Forbidden', 'oauth error'] as $mensaje) {
-            $this->assertTrue(Admin::looks_like_auth_error($mensaje), "«{$mensaje}» es de credenciales");
+        // Un mensaje por aguja y SIN las demás: si un mensaje lleva «token» e «invalid» a la vez,
+        // la prueba pasa aunque se rompa la mitad de la lista (lo destapó la verificación en
+        // negativo, con dos mensajes que tenían dos agujas cada uno).
+        $casos = [
+            'falta el token' => 'token',
+            'HTTP 401' => '401',
+            'HTTP 403' => '403',
+            'the grant is expired' => 'expired',
+            'la clave está caducada' => 'caduc',
+            'the value is invalid' => 'invalid',
+            'unauthorized request' => 'unauthorized',
+            'permission denied' => 'permission',
+            'forbidden resource' => 'forbidden',
+            'fallo de oauth' => 'oauth',
+        ];
+
+        foreach ($casos as $mensaje => $aguja) {
+            $this->assertTrue(Admin::looks_like_auth_error($mensaje), "«{$mensaje}» tiene que reconocerse por «{$aguja}»");
         }
     }
 

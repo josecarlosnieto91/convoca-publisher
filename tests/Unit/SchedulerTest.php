@@ -121,6 +121,9 @@ final class SchedulerTest extends TestCase
         $canal = new FakeChannel('fb', 'facebook', 'Facebook');
         $this->conPublisher($canal);
         $GLOBALS['_cp_test_status'][10] = 'draft';
+        // La marca TIENE que existir antes: si no, borrarla o no borrarla da lo mismo y la
+        // prueba no podría caer nunca (lo destapó la verificación en negativo).
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_schedule_time'] = time() - 60;
         $this->conFilas([(object) ['post_id' => 10, 'meta_value' => (string) (time() - 60)]]);
 
         Scheduler::publish_scheduled();
