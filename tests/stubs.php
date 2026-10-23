@@ -154,11 +154,21 @@ function get_post(int|\WP_Post $post = null, ?string $output = null, string $fil
     if ($post === null || $post === 0) {
         return null;
     }
+    // Un ID que la prueba marque como ausente devuelve null, como WordPress.
+    if (in_array((int) $post, (array) ($GLOBALS['_cp_test_missing'] ?? []), true)) {
+        return null;
+    }
+
     $p = new \WP_Post((object) ['ID' => $post]);
 
     // El título que haya fijado la prueba (los canales lo usan para armar el mensaje).
     if (isset($GLOBALS['_cp_test_titles'][$post])) {
         $p->post_title = (string) $GLOBALS['_cp_test_titles'][$post];
+    }
+
+    // El estado también: sin esto TODA entrada salía "publish" y no se podía probar un rechazo.
+    if (isset($GLOBALS['_cp_test_status'][$post])) {
+        $p->post_status = (string) $GLOBALS['_cp_test_status'][$post];
     }
 
     return $p;
@@ -778,4 +788,54 @@ function sanitize_textarea_field(string $text): string
 {
     // Como el del core: quita etiquetas, conserva los saltos de línea y recorta.
     return trim(strip_tags(str_replace("\0", '', $text)));
+}
+
+// --- REST (lo que usa includes/class-rest.php) -------------------------------------------
+//
+// Sin estos dobles la clase Rest no se puede ni tocar en el arnés: sus firmas tipan contra
+// clases de WordPress y ninguna existía aquí, así que el fichero entero estaba a 0 % de
+// cobertura (192 statements) sin ningún motivo escrito.
+
+class WP_REST_Request
+{
+    public function __construct(private array $params = [])
+    {
+    }
+
+    public function get_param(string $key): mixed
+    {
+        return $this->params[$key] ?? null;
+    }
+
+    public function set_param(string $key, mixed $value): void
+    {
+        $this->params[$key] = $value;
+    }
+}
+
+class WP_REST_Response
+{
+    public function __construct(private mixed $data = null, private int $status = 200)
+    {
+    }
+
+    public function get_data(): mixed
+    {
+        return $this->data;
+    }
+
+    public function get_status(): int
+    {
+        return $this->status;
+    }
+}
+
+/**
+ * Registro de rutas: guarda lo que el plugin declara para poder afirmarlo en las pruebas.
+ */
+function register_rest_route(string $namespace, string $route, array $args = []): bool
+{
+    $GLOBALS['_cp_rest_routes'][$namespace . $route] = $args;
+
+    return true;
 }
