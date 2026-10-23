@@ -597,6 +597,7 @@ class wpdb
 
     public function insert(string $table, array $data, array|string $format = null): int|false
     {
+        $GLOBALS['_cp_test_db']['calls'][] = 'insert';
         $this->insert_id++;
         $row = $data;
         $row['id'] = $this->insert_id;
@@ -607,28 +608,42 @@ class wpdb
 
     public function get_results(string $query = null, string $output = 'OBJECT'): array
     {
+        $GLOBALS['_cp_test_db']['calls'][] = 'get_results';
         // La prueba puede dejar filas en `_cp_test_db['results']` (cola de reintentos).
         return $GLOBALS['_cp_test_db']['results'] ?? [];
     }
 
     public function get_row(string $query = null, string $output = 'OBJECT', int $y = 0): object|array|null
     {
-        return null;
+        $GLOBALS['_cp_test_db']['calls'][] = 'get_row';
+
+        // La fila que la prueba quiera devolver (cola de reintentos, entrada de moderación...).
+        return $GLOBALS['_cp_test_db']['row'] ?? null;
     }
 
     public function get_var(string $query = null, int $x = 0, int $y = 0): mixed
     {
-        return null;
+        $GLOBALS['_cp_test_db']['calls'][] = 'get_var';
+
+        // Contadores de la cola: la prueba decide qué devuelve cada consulta.
+        return $GLOBALS['_cp_test_db']['var'] ?? null;
     }
 
     public function update(string $table, array $data, array $where, array|string $format = null, array|string $where_format = null): int|false
     {
-        return 1;
+        $GLOBALS['_cp_test_db']['calls'][] = 'update';
+        $GLOBALS['_cp_test_db']['updates'][] = ['data' => $data, 'where' => $where];
+
+        // 0 = nadie reclamó la fila (otro cron se la llevó), false = error de base de datos.
+        return $GLOBALS['_cp_test_db']['update_rc'] ?? 1;
     }
 
     public function delete(string $table, array $where, array|string $where_format = null): int|false
     {
-        return 1;
+        $GLOBALS['_cp_test_db']['calls'][] = 'delete';
+        $GLOBALS['_cp_test_db']['deletes'][] = $where;
+
+        return $GLOBALS['_cp_test_db']['delete_rc'] ?? 1;
     }
 
     public function get_charset_collate(): string
