@@ -152,7 +152,10 @@ function get_post(int|\WP_Post $post = null, ?string $output = null, string $fil
         return $post;
     }
     if ($post === null || $post === 0) {
-        return null;
+        // En el editor (admin_enqueue_scripts) get_post() va sin argumentos y devuelve la
+        // entrada que se está editando. Sin esto, la carga de scripts del editor no se puede
+        // probar de ninguna manera.
+        return $GLOBALS['_cp_test_current_post'] ?? null;
     }
     // Un ID que la prueba marque como ausente devuelve null, como WordPress.
     if (in_array((int) $post, (array) ($GLOBALS['_cp_test_missing'] ?? []), true)) {
@@ -409,7 +412,14 @@ function wp_create_nonce(string $action = '-1'): string
 }
 function wp_nonce_field(string $action = '-1', string $name = '_wpnonce', bool $referer = true, bool $display = true): string
 {
-    return '<input type="hidden" />';
+    $campo = '<input type="hidden" name="' . $name . '" value="test_nonce_value" />';
+    $GLOBALS['_cp_test_nonce_fields'][] = ['action' => $action, 'name' => $name];
+
+    if ($display) {
+        echo $campo;
+    }
+
+    return $campo;
 }
 function wp_send_json(mixed $response, int $status_code = 200): void
 {
@@ -853,4 +863,20 @@ function register_rest_route(string $namespace, string $route, array $args = [])
     $GLOBALS['_cp_rest_routes'][$namespace . $route] = $args;
 
     return true;
+}
+
+// --- Editor: metabox -------------------------------------------------------------------------
+function add_meta_box(string $id, string $title, callable $callback, string|array $screen = 'post', string $context = 'advanced', string $priority = 'default'): void
+{
+    // Se apunta: una prueba tiene que poder decir en qué sitio del editor sale la caja.
+    $GLOBALS['_cp_test_metaboxes'][$id] = compact('title', 'screen', 'context', 'priority');
+}
+function wp_enqueue_script(string $handle, string $src = '', array $deps = [], string|bool|null $ver = false, bool $in_footer = false): void
+{
+    $GLOBALS['_cp_test_scripts'][$handle] = compact('src', 'deps', 'ver', 'in_footer');
+}
+function wp_send_json_error(mixed $value = null, int $status_code = 200): void
+{
+    $GLOBALS['_cp_test_json'] = ['ok' => false, 'value' => $value, 'status' => $status_code];
+    throw new \RuntimeException('wp_send_json_error:' . $status_code);
 }
