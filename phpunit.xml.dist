@@ -9,6 +9,7 @@
     <include>
       <directory>includes</directory>
       <file>convoca-publisher.php</file>
+      <file>uninstall.php</file>
     </include>
   </source>
 </phpunit>

@@ -599,6 +599,32 @@ class wpdb
     public string $posts    = 'wp_posts';
     public string $postmeta = 'wp_postmeta';
     public string $options  = 'wp_options';
+    public string $usermeta = 'wp_usermeta';
+
+    /**
+     * Consulta suelta: se apunta para poder afirmar qué se ejecutó.
+     *
+     * @param string $query SQL.
+     * @return int
+     */
+    public function query(string $query = ''): int
+    {
+        $GLOBALS['_cp_test_db']['queries'][] = $query;
+        return 1;
+    }
+
+    /**
+     * Columna de resultados: la prueba decide qué devuelve.
+     *
+     * @param string $query SQL.
+     * @return array
+     */
+    public function get_col(string $query = null, int $x = 0): array
+    {
+        $GLOBALS['_cp_test_db']['calls'][] = 'get_col';
+        unset($query, $x);
+        return $GLOBALS['__pub_col'] ?? [];
+    }
 
     public function prepare(string $query, mixed ...$args): string
     {
