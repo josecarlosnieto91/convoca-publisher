@@ -26,6 +26,31 @@ class Plugin {
 
 	private array $channels = array();
 
+	/**
+	 * El contenedor único del plugin.
+	 *
+	 * Vive aquí, como **propiedad estática de la clase**, y no en un `static` local de función: un `static` local no
+	 * se alcanza desde fuera —ni por reflexión, ni con un setter— así que el contenedor quedaba pegado al proceso
+	 * para siempre y no había forma de probar el arranque (publisher#13). Como propiedad de clase se puede reiniciar,
+	 * y en producción el comportamiento es idéntico: una sola instancia por petición.
+	 *
+	 * @var Plugin|null
+	 */
+	private static ?Plugin $instance = null;
+
+	/**
+	 * Devuelve el contenedor, construyéndolo la primera vez.
+	 *
+	 * @return Plugin
+	 */
+	public static function instance(): Plugin {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+
+		return self::$instance;
+	}
+
 	public function __construct() {
 		$this->load_channels();
 		Admin::init();

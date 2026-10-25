@@ -163,11 +163,8 @@ function convoca_publisher_privacy_notice(): void {
 }
 
 function convoca_publisher(): \ConvocaPublisher\Plugin {
-	static $instance = null;
-	if ( null === $instance ) {
-		$instance = new \ConvocaPublisher\Plugin();
-	}
-	return $instance;
+	// El contenedor se guarda en `Plugin::$instance`, no en un `static` local: ver el docblock de la clase.
+	return \ConvocaPublisher\Plugin::instance();
 }
 
 // El contenedor se construye en `plugins_loaded`, no al cargar el fichero.
