@@ -3,10 +3,17 @@
 require_once __DIR__ . '/StubMailer.php';
 define('ABSPATH', true);
 define('CONVOCA_PUBLISHER_PLUGIN_DIR', dirname(__DIR__) . '/');
-define('CONVOCA_PUBLISHER_VERSION', '1.4.0');
+// La versión del plugin sale de su CABECERA, no de un número escrito a mano aquí: con un valor fijo
+// (era 1.4.0 con el plugin en 1.22.x) cualquier prueba sobre el cache-buster de los assets estaba
+// midiendo el número del arnés y no el del producto.
+$_cp_cabecera = (string) file_get_contents( __DIR__ . '/../convoca-publisher.php' );
+preg_match( '/^ \* Version: (.+)$/m', $_cp_cabecera, $_cp_m );
+define( 'CONVOCA_PUBLISHER_VERSION', trim( $_cp_m[1] ?? '0.0.0' ) );
+unset( $_cp_cabecera, $_cp_m );
 
 
 // Load WordPress function stubs
+require_once __DIR__ . '/StubCoreUtils.php';
 require_once __DIR__ . '/stubs.php';
 
 // Global $wpdb usado por la cola de reintentos/moderación.

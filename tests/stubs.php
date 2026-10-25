@@ -334,7 +334,12 @@ function sanitize_title(string $title): string
 }
 
 // --- Hooks ---
-function add_action(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): void {}
+function add_action(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): void
+{
+    // Los enganches se APUNTAN: con un no-op, ni una sola prueba podía afirmar qué queda enganchado.
+    unset($accepted_args);
+    $GLOBALS['_cp_test_actions'][$hook_name][(int) $priority][] = $callback;
+}
 $GLOBALS['_cp_test_filters'] = [];
 
 function add_filter(string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1): bool
@@ -392,7 +397,10 @@ function current_user_can(string $capability, mixed ...$args): bool
 }
 function wp_die(string|WP_Error $message = '', string $title = '', array $args = []): void
 {
-    exit;
+    // En WordPress esto MATA la petición; aquí se apunta y se corta con una excepción para poder medirlo.
+    unset($title, $args);
+    $GLOBALS['_cp_test_wp_die'] = is_string($message) ? $message : '';
+    throw new \RuntimeException('wp_die: ' . $GLOBALS['_cp_test_wp_die']);
 }
 function check_admin_referer(string $action = '-1', string $query_arg = '_wpnonce'): int|false
 {
@@ -492,7 +500,12 @@ function wp_dropdown_pages(array $args = []): void
 }
 function checked(mixed $checked, mixed $current = true, bool $echo = false): string
 {
-    return 'checked';
+    // Como WordPress: devuelve el atributo SOLO si coinciden.
+    $atributo = ((string) $checked === (string) $current || (true === $checked && true === $current)) ? " checked='checked'" : '';
+    if ($echo) {
+        echo $atributo;
+    }
+    return $atributo;
 }
 function submit_button(string $text = '', string $type = 'primary', string $name = 'submit', bool $wrap = true, array|string $other_attributes = []): void
 {
@@ -905,4 +918,49 @@ function wp_send_json_error(mixed $value = null, int $status_code = 200): void
 {
     $GLOBALS['_cp_test_json'] = ['ok' => false, 'value' => $value, 'status' => $status_code];
     throw new \RuntimeException('wp_send_json_error:' . $status_code);
+}
+
+// ─── Arranque del plugin (hooks de activación y cabecera) ──────────
+function register_activation_hook(string $file, callable $callback): void
+{
+    unset($file);
+    $GLOBALS['_cp_test_activacion'] = $callback;
+}
+
+function register_deactivation_hook(string $file, callable $callback): void
+{
+    unset($file);
+    $GLOBALS['_cp_test_desactivacion'] = $callback;
+}
+
+function get_file_data(string $file, array $headers = [], string $context = ''): array
+{
+    unset($context);
+    $salida = [];
+    if (array_key_exists('Version', $headers)) {
+        $contenido = (string) file_get_contents($file);
+        preg_match('/^ \* Version: (.+)$/m', $contenido, $m);
+        $salida['Version'] = trim($m[1] ?? '');
+    }
+    return $salida;
+}
+
+function load_plugin_textdomain(string $domain, bool $deprecated = false, string $path = ''): bool
+{
+    unset($deprecated, $path);
+    $GLOBALS['_cp_test_textdomains'][] = $domain;
+    return true;
+}
+
+function deactivate_plugins(string|array $plugins, bool $silent = false, bool $network = false): void
+{
+    unset($silent, $network);
+    foreach ((array) $plugins as $plugin) {
+        $GLOBALS['_cp_test_desactivados'][] = $plugin;
+    }
+}
+
+function plugin_basename(string $file): string
+{
+    return 'convoca-publisher/' . basename($file);
 }
