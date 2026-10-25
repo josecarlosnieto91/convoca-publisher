@@ -84,11 +84,23 @@ if ( ! class_exists( '\Convoca\Core\Utils' ) ) {
 // Cache-buster de los assets y version del endpoint REST. Debe seguir la version
 // del plugin: si se queda fija, la CDN sirve JS/CSS viejos para esa misma URL.
 $convoca_publisher_header = get_file_data( __FILE__, array( 'Version' => 'Version' ), 'plugin' );
-define( 'CONVOCA_PUBLISHER_VERSION', ! empty( $convoca_publisher_header['Version'] ) ? $convoca_publisher_header['Version'] : '1.4.2' );
-define( 'CONVOCA_PUBLISHER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'CONVOCA_PUBLISHER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'CONVOCA_PUBLISHER_MIN_PHP', '8.0' );
-define( 'CONVOCA_PUBLISHER_MIN_WP', '6.0' );
+// Con guarda: si ya están definidas (el arnés de pruebas las aporta), definirlas otra vez avisa en PHP 8 y
+// es un error en PHP 9. En producción no cambia nada: aquí no las define nadie más.
+if ( ! defined( 'CONVOCA_PUBLISHER_VERSION' ) ) {
+	define( 'CONVOCA_PUBLISHER_VERSION', ! empty( $convoca_publisher_header['Version'] ) ? $convoca_publisher_header['Version'] : '1.4.2' );
+}
+if ( ! defined( 'CONVOCA_PUBLISHER_PLUGIN_DIR' ) ) {
+	define( 'CONVOCA_PUBLISHER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+}
+if ( ! defined( 'CONVOCA_PUBLISHER_PLUGIN_URL' ) ) {
+	define( 'CONVOCA_PUBLISHER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+}
+if ( ! defined( 'CONVOCA_PUBLISHER_MIN_PHP' ) ) {
+	define( 'CONVOCA_PUBLISHER_MIN_PHP', '8.0' );
+}
+if ( ! defined( 'CONVOCA_PUBLISHER_MIN_WP' ) ) {
+	define( 'CONVOCA_PUBLISHER_MIN_WP', '6.0' );
+}
 
 // Comprobación de requisitos al activar
 register_activation_hook( __FILE__, 'ConvocaPublisher\\convoca_publisher_activation_check' );
@@ -158,4 +170,10 @@ function convoca_publisher(): \ConvocaPublisher\Plugin {
 	return $instance;
 }
 
-convoca_publisher();
+// El contenedor se construye en `plugins_loaded`, no al cargar el fichero.
+//
+// Todos los módulos del plugin enganchan en `init` o más tarde (`admin_*`, `rest_api_init`, `save_post`,
+// ganchos de cron), así que diferirlo un paso no pierde nada; y así el arranque se puede cargar en las
+// pruebas —constantes, guarda de dependencia, traducciones, activación y desactivación— sin montar el
+// plugin entero, que es lo que impedía medirlo (publisher#12).
+add_action( 'plugins_loaded', 'ConvocaPublisher\\convoca_publisher' );
