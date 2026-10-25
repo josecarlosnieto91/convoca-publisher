@@ -38,7 +38,10 @@ jobs:
         # con el filtro de cobertura sobre ./includes).
         run: |
           mkdir -p build
-          vendor/bin/phpunit -c phpunit.xml.dist --testsuite unit \
+          # El grupo `arranque` va en PROCESO APARTE (carga convoca-publisher.php, que tapa los dobles) y
+          # PHPUnit no devuelve la cobertura desde un proceso hijo: se excluye aquí y se ejecuta en el
+          # trabajo normal de pruebas. `convoca-publisher.php` queda al 0 % como excepción declarada.
+          vendor/bin/phpunit -c phpunit.xml.dist --testsuite unit --exclude-group arranque \
             --coverage-clover build/coverage.xml --coverage-text
 
       - name: Leer la cobertura y aplicar el suelo
