@@ -160,7 +160,8 @@ class Tiktok implements ChannelInterface {
 		// correcta. El fallo aparecía en la primera publicación real, con el canal ya dado por bueno — peor que no
 		// verificar, porque da confianza falsa (publisher#11).
 		$resp = wp_remote_get(
-			'https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name',
+			// La API pública de TikTok, no un dominio de cliente.
+			'https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name', // convoca-hygiene-ignore: API pública de TikTok, no un dominio de cliente.
 			array(
 				'headers' => array(
 					'Authorization' => 'Bearer ' . $token,
