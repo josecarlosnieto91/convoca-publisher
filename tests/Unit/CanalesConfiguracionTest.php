@@ -172,7 +172,10 @@ final class CanalesConfiguracionTest extends TestCase
                 'username' => 'convoca',
                 'ok' => true,
                 'result' => ['id' => 1, 'username' => 'convoca'],
-                'data' => ['id' => '1', 'username' => 'convoca', 'display_name' => 'Convoca'],
+                'data' => ['id' => '1', 'username' => 'convoca', 'display_name' => 'Convoca',
+                    // TikTok lee `data.user.open_id` y `error.code`: sin esto su verificación no puede dar OK.
+                    'user' => ['open_id' => 'open-id-123456', 'display_name' => 'Convoca']],
+                'error' => ['code' => 'ok', 'message' => ''],
             ])],
             ['response' => ['code' => 200], 'body' => json_encode(['ok' => true, 'result' => ['id' => 1]])],
         ];
@@ -203,15 +206,45 @@ final class CanalesConfiguracionTest extends TestCase
      * 40 caracteres. No se cambia el comportamiento desde una prueba: se deja afirmado para que
      * quede a la vista, y la incidencia está abierta en el repo.
      */
-    public function test_tiktok_verificar_conexion_no_consulta_la_red(): void
+    public function test_tiktok_verificar_conexion_pregunta_a_la_api(): void
     {
         $GLOBALS['_cp_test_options']['convoca_publisher_tiktok_token'] = str_repeat('t', 40);
         $GLOBALS['_cp_test_options']['convoca_publisher_tiktok_open_id'] = 'open-id-123456';
 
+        // Token y open_id con el formato correcto pero **sin** respuesta de la API: antes esto daba ✅. Un
+        // token inventado de 40 caracteres no es una credencial, y darlo por bueno es peor que no verificar
+        // (publisher#11).
+        $GLOBALS['_cp_test_http_queue'] = [];
+
         $resultado = (new TikTok())->verify_connection();
 
-        $this->assertTrue($resultado['success']);
-        $this->assertSame([], $GLOBALS['_cp_test_http'], 'no ha habido ninguna petición: no se ha verificado nada');
+        $this->assertFalse($resultado['success'], 'sin respuesta de la API no se puede dar por conectado');
+        $this->assertNotSame([], $GLOBALS['_cp_test_http'], 'tiene que haber preguntado a la API');
+        $this->assertStringContainsString('open.tiktokapis.com', (string) ($GLOBALS['_cp_test_http'][0]['url'] ?? ''));
+    }
+
+    /**
+     * Y si la API responde con un open_id de **otra** cuenta, tampoco: el canal publicaría en la cuenta
+     * equivocada y el error solo se vería al publicar.
+     *
+     * @return void
+     */
+    public function test_tiktok_rechaza_un_token_de_otra_cuenta(): void
+    {
+        $GLOBALS['_cp_test_options']['convoca_publisher_tiktok_token'] = str_repeat('t', 40);
+        $GLOBALS['_cp_test_options']['convoca_publisher_tiktok_open_id'] = 'open-id-123456';
+
+        $GLOBALS['_cp_test_http_queue'] = [
+            ['response' => ['code' => 200], 'body' => json_encode([
+                'data'  => ['user' => ['open_id' => 'otra-cuenta-999', 'display_name' => 'Otra']],
+                'error' => ['code' => 'ok', 'message' => ''],
+            ])],
+        ];
+
+        $resultado = (new TikTok())->verify_connection();
+
+        $this->assertFalse($resultado['success']);
+        $this->assertStringContainsString('otra cuenta', (string) $resultado['message']);
     }
 
     /**

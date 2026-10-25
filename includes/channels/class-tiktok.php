@@ -155,9 +155,60 @@ class Tiktok implements ChannelInterface {
 			);
 		}
 
+		// El formato se valida antes de gastar una petición, pero **no sustituye** a preguntar a la API: un token
+		// inventado de 40 caracteres y un open_id de 14 pasaban por buenos y la pantalla daba ✅ de conexión
+		// correcta. El fallo aparecía en la primera publicación real, con el canal ya dado por bueno — peor que no
+		// verificar, porque da confianza falsa (publisher#11).
+		$resp = wp_remote_get(
+			'https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name',
+			array(
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $token,
+				),
+				'timeout' => 15,
+			)
+		);
+
+		if ( is_wp_error( $resp ) ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Error de conexión con TikTok: ', 'convoca-publisher' ) . $resp->get_error_message(),
+			);
+		}
+
+		$body        = json_decode( (string) wp_remote_retrieve_body( $resp ), true );
+		$http_code   = (int) wp_remote_retrieve_response_code( $resp );
+		$codigo      = isset( $body['error']['code'] ) ? (string) $body['error']['code'] : '';
+		$open_id_api = isset( $body['data']['user']['open_id'] ) ? (string) $body['data']['user']['open_id'] : '';
+
+		if ( $http_code >= 200 && $http_code < 300 && 'ok' === $codigo && '' !== $open_id_api ) {
+			// El token tiene que ser del **mismo** usuario que se configuró: si no, el canal publicaría en la
+			// cuenta de otro y el error solo se vería al publicar.
+			if ( $open_id_api !== (string) $open_id ) {
+				return array(
+					'success' => false,
+					'message' => __( 'El token de TikTok pertenece a otra cuenta distinta del Open ID configurado.', 'convoca-publisher' ),
+				);
+			}
+
+			$nombre = isset( $body['data']['user']['display_name'] ) ? (string) $body['data']['user']['display_name'] : '';
+
+			return array(
+				'success' => true,
+				'message' => '' !== $nombre
+					/* translators: %s: TikTok display name. */
+					? sprintf( __( 'Conexión correcta con TikTok (%s).', 'convoca-publisher' ), $nombre )
+					: __( 'Conexión correcta con TikTok.', 'convoca-publisher' ),
+			);
+		}
+
+		$detalle = isset( $body['error']['message'] ) && '' !== (string) $body['error']['message']
+			? (string) $body['error']['message']
+			: sprintf( /* translators: %d: HTTP status code. */ __( 'respuesta HTTP %d', 'convoca-publisher' ), $http_code );
+
 		return array(
-			'success' => true,
-			'message' => __( '✅ Formato de credenciales válido. Nota: TikTok no permite verificación de conexión sin publicar. Verifica manualmente desde el Developer Portal.', 'convoca-publisher' ),
+			'success' => false,
+			'message' => __( 'TikTok rechazó la conexión: ', 'convoca-publisher' ) . $detalle,
 		);
 	}
 }
