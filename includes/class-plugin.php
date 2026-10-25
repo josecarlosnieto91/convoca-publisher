@@ -51,6 +51,22 @@ class Plugin {
 		return self::$instance;
 	}
 
+	/**
+	 * Suelta el contenedor para que la siguiente llamada construya uno nuevo.
+	 *
+	 * Existe porque el contenedor estaba en un `static` **local** de `convoca_publisher()` y no había forma de
+	 * soltarlo: una vez construido en una prueba, todas las siguientes veían el de la primera (publisher#13). Ahora
+	 * es una propiedad de clase y esto lo reinicia.
+	 *
+	 * **Solo para pruebas.** En producción el ciclo es una petición y el contenedor se construye una vez en
+	 * `plugins_loaded`; llamar a esto en marcha dejaría los ganchos registrados por partida doble.
+	 *
+	 * @return void
+	 */
+	public static function reset(): void {
+		self::$instance = null;
+	}
+
 	public function __construct() {
 		$this->load_channels();
 		Admin::init();

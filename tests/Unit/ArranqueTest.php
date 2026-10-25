@@ -94,6 +94,21 @@ class ArranqueTest extends TestCase {
 	}
 
 	/**
+	 * Y se puede soltar: es lo que faltaba para poder probar el arranque (publisher#13).
+	 */
+	#[RunInSeparateProcess]
+	#[PreserveGlobalState(false)]
+	public function test_el_contenedor_se_puede_soltar(): void {
+		$this->cargar();
+
+		$primero = \ConvocaPublisher\convoca_publisher();
+		\ConvocaPublisher\Plugin::reset();
+		$segundo = \ConvocaPublisher\convoca_publisher();
+
+		$this->assertNotSame( $primero, $segundo, 'tras reset() se construye uno nuevo: no queda cacheado para siempre' );
+	}
+
+	/**
 	 * Los dos ganchos del ciclo de vida quedan registrados.
 	 */
 	#[RunInSeparateProcess]
