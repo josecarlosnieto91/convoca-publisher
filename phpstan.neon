@@ -1,8 +1,8 @@
-# includes:
-#     - phpstan-baseline.neon (comentado durante limpieza de deuda)
+includes:
+	- phpstan-baseline.neon
 
 parameters:
-	level: 5
+	level: 8
 	reportUnmatchedIgnoredErrors: false
 	paths:
 		- includes
