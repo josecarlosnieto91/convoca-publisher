@@ -2165,14 +2165,14 @@ endif;
 	 * @param array<int, \DateTimeImmutable> $dias
 	 */
 	private static function render_queue_grid( array $dias, array $porDia ): void {
-		$hoy = wp_date( 'Y-m-d' );
+		$hoy = (string) wp_date( 'Y-m-d' );
 		?>
 		<table class="cp-cal">
 			<thead>
 				<tr>
 					<?php foreach ( $dias as $indice => $dia ) : ?>
 						<?php if ( $indice < 7 ) : ?>
-							<th scope="col"><?php echo esc_html( wp_date( 'D', $dia->getTimestamp() ) ); ?></th>
+							<th scope="col"><?php echo esc_html( (string) wp_date( 'D', $dia->getTimestamp() ) ); ?></th>
 						<?php endif; ?>
 					<?php endforeach; ?>
 				</tr>
@@ -2285,8 +2285,9 @@ endif;
 
 	private static function queue_month_name( int $year, int $month ): string {
 		$fecha = new \DateTimeImmutable( sprintf( '%04d-%02d-01', $year, $month ), wp_timezone() );
+		$mes   = wp_date( 'F Y', $fecha->getTimestamp() );
 
-		return wp_date( 'F Y', $fecha->getTimestamp() );
+		return false === $mes ? gmdate( 'F Y', $fecha->getTimestamp() ) : $mes;
 	}
 
 	/**

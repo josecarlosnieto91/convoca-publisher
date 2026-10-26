@@ -241,7 +241,7 @@ class Publisher {
 					// Instagram falla): el aviso va con la respuesta para que el historial lo cuente.
 					'response' => trim(
 						(string) ( $result['post_id'] ?? $result['error'] ?? '' )
-						. ( '' !== (string) ( $result['notice'] ?? '' ) ? ' — ' . $result['notice'] : '' )
+						. ( '' !== (string) ( $result['notice'] ?? '' ) ? ' — ' . (string) $result['notice'] : '' )
 					),
 				)
 			);

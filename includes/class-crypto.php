@@ -68,7 +68,12 @@ class Crypto {
 			$key = hash( 'sha256', $key, true );
 			update_option( self::KEY_OPTION, base64_encode( $key ), true );
 		} else {
-			$key = base64_decode( $key, true );
+			$decodificada = base64_decode( (string) $key, true );
+			if ( false === $decodificada ) {
+				// Una clave corrupta no puede producir tokens que luego nadie podrá descifrar.
+				throw new \RuntimeException( 'La clave de cifrado de tokens está corrupta.' );
+			}
+			$key = $decodificada;
 		}
 		return $key;
 	}
