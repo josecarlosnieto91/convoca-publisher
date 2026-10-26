@@ -1,3 +1,11 @@
+## [1.22.13] — 2026-10-26
+
+### Cambiado
+
+- **contenedor y arnes de pruebas**
+- El contenedor se puede soltar para probar el arranque.
+- Los tres dobles del arnes copian el contrato real.
+
 ## [1.22.12] — 2026-10-20
 
 ### Arreglado
