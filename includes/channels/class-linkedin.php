@@ -76,7 +76,7 @@ class Linkedin implements ChannelInterface {
 					'Content-Type'              => 'application/json',
 					'X-Restli-Protocol-Version' => '2.0.0',
 				),
-				'body'    => wp_json_encode( $body ),
+				'body'    => (string) wp_json_encode( $body ),
 				'timeout' => 30,
 			)
 		);

@@ -373,7 +373,7 @@ class Retry {
 	/**
 	 * Notificar al administrador un fallo definitivo de reintentos.
 	 *
-	 * @param object $item  Fila de la cola.
+	 * @param object{post_id: int|string, channel: string} $item Fila de la cola.
 	 * @param string $error Último error registrado.
 	 */
 	private static function notify_failed( object $item, string $error ): void {

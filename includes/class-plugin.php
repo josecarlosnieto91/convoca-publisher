@@ -24,6 +24,11 @@ defined( 'ABSPATH' ) || exit;
 
 class Plugin {
 
+	/**
+	 * Canales cargados en esta instancia (las cuentas configuradas).
+	 *
+	 * @var array<string, \ConvocaPublisher\Channels\ChannelInterface>
+	 */
 	private array $channels = array();
 
 	/**
@@ -131,8 +136,8 @@ class Plugin {
 	 * reparto (fail-closed) y el filtro `convoca_publisher_redes_pro` queda para quien la gestione por
 	 * otra vía.
 	 *
-	 * @param array<string, object> $cuentas Cuentas configuradas (necesita `get_channel_id()`).
-	 * @return array<string, object>
+	 * @param array<string, \ConvocaPublisher\Channels\ChannelInterface> $cuentas Cuentas configuradas (necesita `get_channel_id()`).
+	 * @return array<string, \ConvocaPublisher\Channels\ChannelInterface>
 	 */
 	public static function solo_con_licencia( array $cuentas ): array {
 		if ( self::tiene_licencia_publisher() ) {
@@ -274,6 +279,11 @@ class Plugin {
 		return $channels;
 	}
 
+	/**
+	 * Canales con los que publica el plugin.
+	 *
+	 * @return array<string, \ConvocaPublisher\Channels\ChannelInterface>
+	 */
 	public function get_channels(): array {
 		return $this->channels;
 	}

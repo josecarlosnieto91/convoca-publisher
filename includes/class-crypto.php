@@ -109,8 +109,12 @@ class Crypto {
 
 	/**
 	 * Hook: descifrar tokens al leerlos.
+	 *
+	 * @param mixed  $value  Valor guardado en la opción.
+	 * @param string $option Nombre de la opción (no se usa; lo exige el filtro).
+	 * @return mixed Valor descifrado o el original si no está cifrado.
 	 */
-	public static function decrypt_on_load( $value, string $option ) {
+	public static function decrypt_on_load( $value, string $option ): mixed {
 		$prefix = 'convoca_publisher_enc:';
 		if ( ! is_string( $value ) || ! str_starts_with( $value, $prefix ) ) {
 			return $value;

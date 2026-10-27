@@ -101,6 +101,11 @@ class Log_View {
 		);
 	}
 
+	/**
+	 * Comprueba si una entrada del registro tiene la forma esperada.
+	 *
+	 * @param array<string, mixed> $entry Entrada a validar.
+	 */
 	public static function is_entry( array $entry ): bool {
 		$channel = (string) ( $entry['channel'] ?? '' );
 

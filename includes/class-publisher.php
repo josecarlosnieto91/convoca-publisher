@@ -22,13 +22,24 @@ defined( 'ABSPATH' ) || exit;
 class Publisher {
 
 	private static ?Publisher $instance = null;
-	private array $channels             = array();
+
+	/**
+	 * Cuentas con las que publica esta instancia.
+	 *
+	 * @var array<string, \ConvocaPublisher\Channels\ChannelInterface>
+	 */
+	private array $channels = array();
 
 	/**
 	 * El mensaje propio de esta entrada (meta), por delante de la plantilla de la cuenta.
 	 */
 	public const MESSAGE_META = '_convoca_publisher_message';
 
+	/**
+	 * Arranca el motor con las cuentas indicadas.
+	 *
+	 * @param array<string, \ConvocaPublisher\Channels\ChannelInterface> $channels Cuentas.
+	 */
 	public static function init( array $channels ): void {
 		if ( null === self::$instance ) {
 			self::$instance = new self( $channels );
@@ -43,6 +54,11 @@ class Publisher {
 		return self::$instance;
 	}
 
+	/**
+	 * Construye el motor con las cuentas indicadas.
+	 *
+	 * @param array<string, \ConvocaPublisher\Channels\ChannelInterface> $channels Cuentas.
+	 */
 	public function __construct( array $channels ) {
 		$this->channels = $channels;
 	}
@@ -126,7 +142,7 @@ class Publisher {
 	 * @param int  $post_id
 	 * @param bool $force    Ignorar si ya fue publicado
 	 * @param bool $approved Si es true, se salta la moderación previa (envío aprobado).
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public function publish_post( int $post_id, bool $force = false, bool $approved = false ): array {
 		return $this->publish_to_accounts( $post_id, array(), $force, $approved );
@@ -140,6 +156,7 @@ class Publisher {
 	 * envío normal, o se queda sin el registro, sin el reintento y sin el recorte por red.
 	 *
 	 * @param string[] $account_ids Cuentas destino (ids de cuenta); vacío = las de la entrada.
+	 * @return array<string, mixed>
 	 */
 	public function publish_to_accounts( int $post_id, array $account_ids = array(), bool $force = false, bool $approved = false, string $message_override = '' ): array {
 		$post = get_post( $post_id );
@@ -241,7 +258,7 @@ class Publisher {
 					// Instagram falla): el aviso va con la respuesta para que el historial lo cuente.
 					'response' => trim(
 						(string) ( $result['post_id'] ?? $result['error'] ?? '' )
-						. ( '' !== (string) ( $result['notice'] ?? '' ) ? ' — ' . (string) $result['notice'] : '' )
+						. ( '' !== (string) ( $result['notice'] ?? '' ) ? ' — ' . (string) ( $result['notice'] ?? '' ) : '' )
 					),
 				)
 			);
@@ -363,7 +380,7 @@ class Publisher {
 	 * suelto es ya la red. Preguntar por el envoltorio en cada sitio invita a que uno se olvide
 	 * y acabe aplicando las reglas de otra red (o de ninguna).
 	 */
-	private function network_of( object $channel ): string {
+	private function network_of( \ConvocaPublisher\Channels\ChannelInterface $channel ): string {
 		if ( method_exists( $channel, 'get_channel_id' ) ) {
 			return (string) $channel->get_channel_id();
 		}
@@ -423,7 +440,7 @@ class Publisher {
 	/**
 	 * Construir mensaje específico para un canal usando su plantilla.
 	 */
-	private function build_channel_message( \WP_Post $post, object $channel, string $url, string $hashtags, string $override = '' ): string {
+	private function build_channel_message( \WP_Post $post, \ConvocaPublisher\Channels\ChannelInterface $channel, string $url, string $hashtags, string $override = '' ): string {
 		// Con cuentas (perfiles), el id del canal es el de la cuenta: la red va aparte.
 		$network_id   = $this->network_of( $channel );
 		$template_key = 'convoca_publisher_' . $network_id . '_template';
@@ -626,6 +643,11 @@ class Publisher {
 		return $image ? $image[0] : '';
 	}
 
+	/**
+	 * Guarda una entrada en el historial de envíos.
+	 *
+	 * @param array<string, mixed> $entry Entrada del historial.
+	 */
 	private function log_publish( array $entry ): void {
 		$logs   = get_option( 'convoca_publisher_publish_log', array() );
 		$logs[] = $entry;

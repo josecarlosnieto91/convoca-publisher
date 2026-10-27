@@ -150,7 +150,7 @@ class Metabox {
 		$schedule_val = $schedule_ts ? wp_date( 'Y-m-d\TH:i', $schedule_ts ) : '';
 		echo '<hr><p><strong>' . esc_html__( 'Programar publicación:', 'convoca-publisher' ) . '</strong></p>';
 		echo '<label class="cp-meta__label">';
-		echo '<input type="datetime-local" name="convoca_publisher_schedule_time" value="' . esc_attr( $schedule_val ) . '" class="cp-meta__input">';
+		echo '<input type="datetime-local" name="convoca_publisher_schedule_time" value="' . esc_attr( (string) $schedule_val ) . '" class="cp-meta__input">';
 		echo '<p class="description cp-meta__help">' . esc_html__( 'Déjalo vacío para publicar al guardar el post.', 'convoca-publisher' ) . '</p>';
 		echo '</label>';
 

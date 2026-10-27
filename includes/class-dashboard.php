@@ -120,7 +120,7 @@ class Dashboard {
 				<ul>
 					<?php foreach ( array_slice( $parados, 0, self::STUCK_SHOWN ) as $parado ) : ?>
 						<li>
-							<?php echo esc_html( wp_date( 'd/m/Y H:i', (int) ( $parado['time'] ?? 0 ) ) ); ?> —
+							<?php echo esc_html( (string) wp_date( 'd/m/Y H:i', (int) ( $parado['time'] ?? 0 ) ) ); ?> —
 							<?php echo esc_html( (string) ( $parado['title'] ?? '' ) ); ?>
 						</li>
 					<?php endforeach; ?>
@@ -140,7 +140,7 @@ class Dashboard {
 			<ul>
 				<?php foreach ( $proximos as $proximo ) : ?>
 					<li>
-						<?php echo esc_html( wp_date( 'd/m/Y H:i', (int) ( $proximo['time'] ?? 0 ) ) ); ?> —
+						<?php echo esc_html( (string) wp_date( 'd/m/Y H:i', (int) ( $proximo['time'] ?? 0 ) ) ); ?> —
 						<?php echo esc_html( (string) ( $proximo['title'] ?? '' ) ); ?>
 						<?php if ( ! empty( $proximo['account_name'] ) ) : ?>
 							<span class="description">(<?php echo esc_html( (string) $proximo['account_name'] ); ?>)</span>

@@ -72,7 +72,7 @@ class Googlemybusiness implements ChannelInterface {
 					'Authorization' => "Bearer {$token}",
 					'Content-Type'  => 'application/json',
 				),
-				'body'    => wp_json_encode( $body ),
+				'body'    => (string) wp_json_encode( $body ),
 				'timeout' => 30,
 			)
 		);

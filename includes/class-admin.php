@@ -201,6 +201,9 @@ class Admin {
 	 */
 	/**
 	 * Casilla de ajustes: '1' o '' según venga marcada.
+	 *
+	 * @param mixed $value
+	 * @return string
 	 */
 	public static function sanitize_checkbox( $value ): string {
 		return empty( $value ) ? '' : '1';
@@ -208,6 +211,9 @@ class Admin {
 
 	/**
 	 * Ajuste: cada cuánto como mínimo entre envíos (en segundos; 0 = sin espaciado).
+	 *
+	 * @param mixed $value
+	 * @return int
 	 */
 	public static function sanitize_queue_interval( $value ): int {
 		// OJO: un saneador NO escribe la opción que está saneando.
@@ -220,6 +226,12 @@ class Admin {
 		return Queue::clamp_interval( (int) $value );
 	}
 
+	/**
+	 * Sanitiza el modo de moderación.
+	 *
+	 * @param mixed $value Valor recibido.
+	 * @return string
+	 */
 	public static function sanitize_moderation_mode( $value ): string {
 		$value = (string) $value;
 
@@ -397,6 +409,8 @@ class Admin {
 
 	/**
 	 * URL de una pestaña del panel (una sola forma de construirla en todo el plugin).
+	 *
+	 * @param array<string, mixed> $extra
 	 */
 	public static function tab_url( string $tab, array $extra = array() ): string {
 		return add_query_arg(
@@ -415,7 +429,7 @@ class Admin {
 	 * Pantalla de un canal: estado, campos, verificación, plantilla y su guía, todo
 	 * junto. Es el sitio único de un canal: no hay que ir a otra pestaña a buscar nada.
 	 */
-	private static function render_channel_screen( object $channel ): void {
+	private static function render_channel_screen( \ConvocaPublisher\Channels\ChannelInterface $channel ): void {
 		$account      = $channel instanceof Channel_Profile ? $channel : null;
 		$networks     = Plugin::networks();
 		$network_id   = $account ? $account->get_channel_id() : $channel->get_id();
@@ -501,11 +515,11 @@ class Admin {
 						<?php endif; ?>
 
 						<?php
-						$type  = ( $field['type'] ?? 'text' ) === 'password' ? 'password' : 'text';
+						$type  = 'password' === $field['type'] ? 'password' : 'text';
 						$value = (string) ( $settings[ $key ] ?? '' );
 						?>
 						<div class="cp-field">
-							<label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $field['title'] ?? $key ); ?></label>
+							<label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $field['title'] ); ?></label>
 
 							<input
 								type="<?php echo esc_attr( $type ); ?>"
@@ -885,7 +899,7 @@ class Admin {
 	 *
 	 * @return array{key: string, class: string, icon: string, label: string, detail?: string}
 	 */
-	public static function channel_status( object $channel ): array {
+	public static function channel_status( \ConvocaPublisher\Channels\ChannelInterface $channel ): array {
 		$channel_id = $channel->get_id();
 
 		if ( ! $channel->is_available() ) {
@@ -969,7 +983,7 @@ class Admin {
 	 * Huella de la configuración de un canal: sirve para saber si el resultado de una
 	 * verificación sigue siendo válido.
 	 */
-	public static function channel_fingerprint( object $channel ): string {
+	public static function channel_fingerprint( \ConvocaPublisher\Channels\ChannelInterface $channel ): string {
 		if ( $channel instanceof Channel_Profile ) {
 			return md5( (string) wp_json_encode( $channel->get_settings() ) );
 		}
@@ -977,7 +991,7 @@ class Admin {
 		$valores = array();
 
 		foreach ( array_keys( $channel->get_settings_fields() ) as $key ) {
-			$valores[ $key ] = (string) get_option( $key, '' );
+			$valores[ $key ] = (string) get_option( (string) $key, '' );
 		}
 
 		return md5( (string) wp_json_encode( $valores ) );
@@ -1000,6 +1014,8 @@ class Admin {
 
 	/**
 	 * Etiqueta de estado (marcado ya escapado: no volver a escaparla).
+	 *
+	 * @param array<string, mixed> $status
 	 */
 	public static function status_badge( array $status ): string {
 		return sprintf(
@@ -1013,7 +1029,7 @@ class Admin {
 	/**
 	 * Botón de «Verificar conexión» de un canal (llama a su API y guarda el resultado).
 	 */
-	public static function verify_button( object $channel ): string {
+	public static function verify_button( \ConvocaPublisher\Channels\ChannelInterface $channel ): string {
 		$url = wp_nonce_url(
 			admin_url( 'admin-post.php?action=convoca_publisher_verify_channel&channel=' . $channel->get_id() ),
 			'convoca_publisher_verify_channel'
@@ -1651,6 +1667,11 @@ endif;
 	 * Render the moderation queue tab: listado de pendientes con Aprobar/Rechazar.
 	 */
 	private static function render_moderation_tab(): void {
+		/**
+		 * Filas de la cola de revisión.
+		 *
+		 * @var array<int, object{id: int|string, post_id: int|string, channel: string, created_at?: string}> $items
+		 */
 		$items = Retry::get_review_items();
 
 		$notice = get_transient( 'convoca_publisher_review_notice' );
@@ -2125,7 +2146,7 @@ endif;
 	/**
 	 * Envíos de un rango de días, agrupados por día natural del sitio.
 	 *
-	 * @return array<string, array<int, array<string, mixed>>>
+	 * @return array<string, array<int, array<string, mixed>>> array<int, array<string, mixed>>>
 	 */
 	private static function queue_by_day( int $from, int $to ): array {
 		$entradas = Queue::scheduled_entries( $from, $to );
@@ -2153,7 +2174,8 @@ endif;
 		$porDia = array();
 
 		foreach ( $entradas as $entrada ) {
-			$porDia[ wp_date( 'Y-m-d', (int) $entrada['time'] ) ][] = $entrada;
+			$dia                                    = wp_date( 'Y-m-d', (int) $entrada['time'] );
+			$porDia[ false === $dia ? '' : $dia ][] = $entrada;
 		}
 
 		return $porDia;
@@ -2163,6 +2185,7 @@ endif;
 	 * Rejilla del calendario (la usan la vista de mes y la de semana).
 	 *
 	 * @param array<int, \DateTimeImmutable> $dias
+	 * @param array<string, array<int, array<string, mixed>>> $porDia
 	 */
 	private static function render_queue_grid( array $dias, array $porDia ): void {
 		$hoy = (string) wp_date( 'Y-m-d' );
@@ -2380,7 +2403,7 @@ endif;
 			<tbody>
 				<?php foreach ( $filas as $fila ) : ?>
 					<tr>
-						<td><?php echo esc_html( wp_date( 'd/m/Y H:i', (int) $fila['time'] ) ); ?></td>
+						<td><?php echo esc_html( (string) wp_date( 'd/m/Y H:i', (int) $fila['time'] ) ); ?></td>
 						<td><?php echo esc_html( (string) $fila['title'] ); ?></td>
 						<td><?php echo esc_html( sprintf( '%d / %d', (int) ( $fila['attempts'] ?? 0 ), Queue::MAX_ATTEMPTS ) ); ?></td>
 						<td>
@@ -2533,7 +2556,7 @@ endif;
 					?>
 					<tr>
 						<td>
-							<?php echo esc_html( wp_date( 'd/m/Y H:i', (int) ( $envio['time'] ?? 0 ) ) ); ?>
+							<?php echo esc_html( (string) wp_date( 'd/m/Y H:i', (int) ( $envio['time'] ?? 0 ) ) ); ?>
 							<?php if ( $atascados ) : ?>
 								<div class="description"><?php echo esc_html( (string) ( $envio['error'] ?? '' ) ); ?></div>
 							<?php endif; ?>
@@ -2545,7 +2568,7 @@ endif;
 								<input type="hidden" name="action" value="convoca_publisher_queue_reschedule" />
 								<input type="hidden" name="convoca_publisher_envio" value="<?php echo esc_attr( $ref ); ?>" />
 								<?php wp_nonce_field( 'convoca_publisher_queue_reschedule' ); ?>
-								<input type="datetime-local" name="convoca_publisher_cuando" value="<?php echo esc_attr( wp_date( 'Y-m-d\TH:i', (int) ( $envio['time'] ?? 0 ) ) ); ?>" />
+								<input type="datetime-local" name="convoca_publisher_cuando" value="<?php echo esc_attr( (string) wp_date( 'Y-m-d\TH:i', (int) ( $envio['time'] ?? 0 ) ) ); ?>" />
 								<button type="submit" class="button"><?php echo esc_html__( 'Mover', 'convoca-publisher' ); ?></button>
 							</form>
 							<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="cp-acciones">

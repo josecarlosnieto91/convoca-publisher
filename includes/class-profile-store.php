@@ -243,7 +243,7 @@ final class Profile_Store {
 	 * Se ejecuta una sola vez. Un perfil por red que tuviera algo configurado, con el
 	 * **id de la red** para no romper lo ya publicado, la cola ni el historial.
 	 *
-	 * @param array<string, object> $channels Canales disponibles (para sacar sus campos).
+	 * @param array<string, \ConvocaPublisher\Channels\ChannelInterface> $channels Canales disponibles (para sacar sus campos).
 	 */
 	public static function migrate( array $channels ): void {
 		if ( (int) get_option( self::MIGRATED_OPTION, 0 ) >= self::FORMAT_VERSION ) {

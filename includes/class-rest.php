@@ -226,7 +226,7 @@ class Rest {
 					$template = get_option( $tkey, get_option( 'convoca_publisher_message_template', '{title} — {url}' ) );
 					$message  = str_replace(
 						array( '{title}', '{url}', '{excerpt}', '{hashtags}', '{date}', '{author}' ),
-						array( $post->post_title, $url, wp_trim_words( $post->post_excerpt ?: $post->post_title, 20 ), $hashtags, get_the_date( '', $post ), get_the_author_meta( 'display_name', (int) $post->post_author ) ),
+						array( $post->post_title, $url, wp_trim_words( $post->post_excerpt ?: $post->post_title, 20 ), $hashtags, (string) get_the_date( '', $post ), get_the_author_meta( 'display_name', (int) $post->post_author ) ),
 						$template
 					);
 
@@ -253,6 +253,9 @@ class Rest {
 
 	private static function get_hashtags( \WP_Post $post ): string {
 		$tags = wp_get_post_tags( $post->ID, array( 'fields' => 'names' ) );
+		if ( ! is_array( $tags ) ) {
+			return '';
+		}
 		if ( empty( $tags ) ) {
 			return '';
 		}

@@ -68,7 +68,7 @@ class Tiktok implements ChannelInterface {
 			'https://open-api.tiktok.com/share/video/publish/',
 			array(
 				'headers' => array( 'Content-Type' => 'application/json' ),
-				'body'    => wp_json_encode( $body ),
+				'body'    => (string) wp_json_encode( $body ),
 				'timeout' => 30,
 			)
 		);

@@ -49,6 +49,12 @@ class Scheduler {
 		}
 	}
 
+	/**
+	 * Registra el intervalo de cinco minutos de la cola.
+	 *
+	 * @param array<string, array{interval: int, display: string}> $schedules Programaciones.
+	 * @return array<string, array{interval: int, display: string}>
+	 */
 	public static function add_cron_interval( array $schedules ): array {
 		$schedules['every_15min'] = array(
 			'interval' => 900,

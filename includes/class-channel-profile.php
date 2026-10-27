@@ -94,9 +94,15 @@ final class Channel_Profile implements Channels\ChannelInterface {
 	}
 
 	public function publish( int $post_id, string $message, string $url, string $image_url = '' ): array {
-		return (array) $this->with_profile_settings(
+		/**
+		 * Resultado con la forma que declara el canal.
+		 *
+		 * @var array{success: bool, post_id?: string, error?: string, networks?: string, notice?: string} $resultado
+		 */
+		$resultado = (array) $this->with_profile_settings(
 			fn(): array => $this->channel->publish( $post_id, $message, $url, $image_url )
 		);
+		return $resultado;
 	}
 
 	public function get_settings_fields(): array {
@@ -108,7 +114,13 @@ final class Channel_Profile implements Channels\ChannelInterface {
 	}
 
 	public function verify_connection(): array {
-		return (array) $this->with_profile_settings( fn(): array => $this->channel->verify_connection() );
+		/**
+		 * Resultado con la forma que declara el canal.
+		 *
+		 * @var array{success: bool, message: string} $resultado
+		 */
+		$resultado = (array) $this->with_profile_settings( fn(): array => $this->channel->verify_connection() );
+		return $resultado;
 	}
 
 	/**

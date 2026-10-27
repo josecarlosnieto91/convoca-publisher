@@ -95,7 +95,7 @@ class Mastodon implements ChannelInterface {
 					'Content-Type'    => 'application/json',
 					'Idempotency-Key' => wp_generate_password( 32, false ),
 				),
-				'body'    => wp_json_encode( $body ),
+				'body'    => (string) wp_json_encode( $body ),
 				'timeout' => 30,
 			)
 		);
