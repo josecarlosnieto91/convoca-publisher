@@ -71,6 +71,13 @@ class Platform_Rules {
 			'hashtags'   => 0,
 			'urls'       => 0,
 		),
+		// Instagram comparte canal con Facebook pero tiene su propio tope: 2.200 caracteres y 30 etiquetas.
+		'instagram'        => array(
+			'chars'      => 2200,
+			'url_weight' => 0,
+			'hashtags'   => 30,
+			'urls'       => 0,
+		),
 		'googlemybusiness' => array(
 			'chars'      => 1500,
 			'url_weight' => 0,
