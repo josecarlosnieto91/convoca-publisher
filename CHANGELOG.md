@@ -1,3 +1,11 @@
+## [1.22.18] — 2026-11-02
+
+### Cambiado
+
+- **la pestaña de plantillas sale a `Vista_Plantillas`**, con sus dos ayudantes (`herramientas`
+  y `candidatas`): 146 líneas menos. `class-admin.php` queda en **2.272** (eran 2.817).
+  `Admin::test_candidates()` sigue pública como delegada: la usan las pruebas.
+
 ## [1.22.17] — 2026-11-02
 
 ### Cambiado
