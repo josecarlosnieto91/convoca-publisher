@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Convoca Publisher 1.22.13\n"
+"Project-Id-Version: Convoca Publisher 1.22.14\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/convoca-publisher\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-26T05:35:16+00:00\n"
+"POT-Creation-Date: 2026-11-01T06:52:02+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: convoca-publisher\n"
@@ -19,8 +19,8 @@ msgstr ""
 #: convoca-publisher.php:73
 #: includes/class-admin.php:51
 #: includes/class-admin.php:52
-#: includes/class-admin.php:358
-#: includes/class-admin.php:1585
+#: includes/class-admin.php:370
+#: includes/class-admin.php:1601
 #: includes/class-dashboard.php:41
 msgid "Convoca Publisher"
 msgstr ""
@@ -74,12 +74,12 @@ msgid "Este plugin envía datos (título, extracto, URL, imagen destacada y etiq
 msgstr ""
 
 #: convoca-publisher.php:161
-#: includes/class-admin.php:619
+#: includes/class-admin.php:633
 msgid "He leído y acepto este aviso"
 msgstr ""
 
 #: includes/channels/class-facebook.php:29
-#: includes/class-admin.php:1786
+#: includes/class-admin.php:1807
 msgid "Facebook / Instagram"
 msgstr ""
 
@@ -202,7 +202,7 @@ msgid "✅ Conexión correcta. Página: %s"
 msgstr ""
 
 #: includes/channels/class-googlemybusiness.php:29
-#: includes/class-admin.php:1881
+#: includes/class-admin.php:1902
 msgid "Google My Business"
 msgstr ""
 
@@ -265,7 +265,7 @@ msgid "✅ Conexión correcta. Location ID válido y accesible."
 msgstr ""
 
 #: includes/channels/class-linkedin.php:29
-#: includes/class-admin.php:1811
+#: includes/class-admin.php:1832
 msgid "LinkedIn"
 msgstr ""
 
@@ -313,8 +313,8 @@ msgid "✅ Conexión correcta. Perfil: %s"
 msgstr ""
 
 #: includes/channels/class-mastodon.php:29
-#: includes/class-admin.php:1066
-#: includes/class-admin.php:1923
+#: includes/class-admin.php:1082
+#: includes/class-admin.php:1944
 msgid "Mastodon"
 msgstr ""
 
@@ -372,8 +372,8 @@ msgid "✅ Conexión correcta. Cuenta: @%s"
 msgstr ""
 
 #: includes/channels/class-telegram.php:29
-#: includes/class-admin.php:1062
-#: includes/class-admin.php:1905
+#: includes/class-admin.php:1078
+#: includes/class-admin.php:1926
 msgid "Telegram"
 msgstr ""
 
@@ -433,7 +433,7 @@ msgid "✅ Conexión correcta. Bot: @%s"
 msgstr ""
 
 #: includes/channels/class-tiktok.php:29
-#: includes/class-admin.php:1858
+#: includes/class-admin.php:1879
 msgid "TikTok"
 msgstr ""
 
@@ -511,7 +511,7 @@ msgid "TikTok rechazó la conexión: "
 msgstr ""
 
 #: includes/channels/class-twitter.php:29
-#: includes/class-admin.php:1835
+#: includes/class-admin.php:1856
 msgid "Twitter / X"
 msgstr ""
 
@@ -525,7 +525,7 @@ msgid "X (Twitter) no ha explicado el fallo. Reintenta la publicacion; si se rep
 msgstr ""
 
 #: includes/channels/class-twitter.php:141
-#: includes/class-admin.php:1852
+#: includes/class-admin.php:1873
 msgid "Bearer Token (OAuth 2.0)"
 msgstr ""
 
@@ -566,1172 +566,1172 @@ msgid "Acerca de"
 msgstr ""
 
 #. translators: %s: número de caracteres que quedan.
-#: includes/class-admin.php:311
+#: includes/class-admin.php:323
 #, php-format
 msgid "Quedan %s caracteres"
 msgstr ""
 
 #. translators: %s: número de caracteres de más.
-#: includes/class-admin.php:313
+#: includes/class-admin.php:325
 #, php-format
 msgid "Te pasas por %s caracteres: se recortará antes de enviar. Esto es lo que se mandaría:"
 msgstr ""
 
-#: includes/class-admin.php:314
+#: includes/class-admin.php:326
 msgid "No se pudo generar la vista previa."
 msgstr ""
 
-#: includes/class-admin.php:348
+#: includes/class-admin.php:360
 msgid "Canales"
 msgstr ""
 
-#: includes/class-admin.php:349
+#: includes/class-admin.php:361
 msgid "Cola"
 msgstr ""
 
-#: includes/class-admin.php:350
+#: includes/class-admin.php:362
 msgid "Configuración"
 msgstr ""
 
-#: includes/class-admin.php:351
+#: includes/class-admin.php:363
 msgid "Plantillas"
 msgstr ""
 
-#: includes/class-admin.php:352
+#: includes/class-admin.php:364
 msgid "Probar"
 msgstr ""
 
-#: includes/class-admin.php:353
+#: includes/class-admin.php:365
 msgid "Moderación"
 msgstr ""
 
-#: includes/class-admin.php:354
+#: includes/class-admin.php:366
 msgid "Guía"
 msgstr ""
 
 #. translators: %s: nombre de la red
-#: includes/class-admin.php:434
+#: includes/class-admin.php:448
 #, php-format
 msgid "%s — cuenta nueva"
 msgstr ""
 
-#: includes/class-admin.php:445
+#: includes/class-admin.php:459
 msgid "Todos los canales"
 msgstr ""
 
-#: includes/class-admin.php:449
+#: includes/class-admin.php:463
 msgid "Cuenta guardada."
 msgstr ""
 
-#: includes/class-admin.php:454
+#: includes/class-admin.php:468
 msgid "Mientras falten datos, esta cuenta no publicará nada. Rellénalos, guarda y usa «Verificar conexión»."
 msgstr ""
 
-#: includes/class-admin.php:472
+#: includes/class-admin.php:486
 msgid "Esta cuenta"
 msgstr ""
 
-#: includes/class-admin.php:474
+#: includes/class-admin.php:488
 msgid "Nombre"
 msgstr ""
 
-#: includes/class-admin.php:476
+#: includes/class-admin.php:490
 msgid "Con qué nombre la reconoces. Por ejemplo: «Telegram — Cuenta principal», «Facebook — Grupo»."
 msgstr ""
 
 #. translators: %s: identificador de la cuenta
-#: includes/class-admin.php:484
+#: includes/class-admin.php:498
 #, php-format
 msgid "Identificador: %s (es el que usan la cola y el historial)."
 msgstr ""
 
-#: includes/class-admin.php:493
+#: includes/class-admin.php:507
 msgid "Credenciales y datos"
 msgstr ""
 
-#: includes/class-admin.php:495
+#: includes/class-admin.php:509
 msgid "Esta red no necesita configuración."
 msgstr ""
 
-#: includes/class-admin.php:523
-#: includes/class-admin.php:526
+#: includes/class-admin.php:537
+#: includes/class-admin.php:540
 msgid "Mostrar"
 msgstr ""
 
-#: includes/class-admin.php:524
+#: includes/class-admin.php:538
 msgid "Ocultar"
 msgstr ""
 
-#: includes/class-admin.php:539
+#: includes/class-admin.php:553
 msgid "Plantilla de esta cuenta"
 msgstr ""
 
-#: includes/class-admin.php:541
+#: includes/class-admin.php:555
 msgid "Mensaje"
 msgstr ""
 
-#: includes/class-admin.php:547
+#: includes/class-admin.php:561
 msgid "Usar la plantilla de la red"
 msgstr ""
 
-#: includes/class-admin.php:550
+#: includes/class-admin.php:564
 msgid "Déjalo vacío para usar la plantilla de la red (pestaña Plantillas). Variables: {title}, {excerpt}, {url}, {hashtags}, {date}, {author}."
 msgstr ""
 
-#: includes/class-admin.php:556
+#: includes/class-admin.php:570
 msgid "Crear cuenta"
 msgstr ""
 
-#: includes/class-admin.php:556
+#: includes/class-admin.php:570
 msgid "Guardar cambios"
 msgstr ""
 
-#: includes/class-admin.php:561
+#: includes/class-admin.php:575
 msgid "Verificar la conexión"
 msgstr ""
 
-#: includes/class-admin.php:562
+#: includes/class-admin.php:576
 msgid "Pregunta a la red si la credencial de esta cuenta sigue sirviendo. No publica nada ni gasta cuota de envío."
 msgstr ""
 
-#: includes/class-admin.php:568
+#: includes/class-admin.php:582
 msgid "Cómo conseguir estas credenciales"
 msgstr ""
 
 #. translators: %s: nombre de la red social
-#: includes/class-admin.php:574
+#: includes/class-admin.php:588
 #, php-format
 msgid "Guía paso a paso de %s"
 msgstr ""
 
-#: includes/class-admin.php:584
+#: includes/class-admin.php:598
 msgid "Borrar esta cuenta"
 msgstr ""
 
-#: includes/class-admin.php:585
+#: includes/class-admin.php:599
 msgid "Se borra su configuración. Las entradas ya publicadas y el historial se quedan como están."
 msgstr ""
 
-#: includes/class-admin.php:593
+#: includes/class-admin.php:607
 msgid "¿Borrar esta cuenta?"
 msgstr ""
 
-#: includes/class-admin.php:594
+#: includes/class-admin.php:608
 msgid "Borrar cuenta"
 msgstr ""
 
-#: includes/class-admin.php:605
+#: includes/class-admin.php:619
 msgid "Cambios guardados."
 msgstr ""
 
-#: includes/class-admin.php:613
+#: includes/class-admin.php:627
 msgid "🔐 Aviso de privacidad"
 msgstr ""
 
-#: includes/class-admin.php:614
+#: includes/class-admin.php:628
 msgid "Este plugin envía el título, extracto, URL, imagen destacada y etiquetas de tus entradas a APIs de terceros (Meta, LinkedIn, Twitter/X, TikTok, Google, Telegram, Mastodon). Los tokens de acceso se almacenan cifrados en la base de datos de WordPress (AES-256-GCM)."
 msgstr ""
 
-#: includes/class-admin.php:625
+#: includes/class-admin.php:639
 msgid "Configuración general"
 msgstr ""
 
-#: includes/class-admin.php:628
+#: includes/class-admin.php:642
 msgid "Publicación automática"
 msgstr ""
 
-#: includes/class-admin.php:632
+#: includes/class-admin.php:646
 msgid "Publicar automáticamente al publicar una entrada"
 msgstr ""
 
-#: includes/class-admin.php:637
+#: includes/class-admin.php:651
 msgid "Avisos por correo"
 msgstr ""
 
-#: includes/class-admin.php:641
+#: includes/class-admin.php:655
 msgid "Escribir a quien administra el sitio cuando un envío no salga tras varios intentos"
 msgstr ""
 
-#: includes/class-admin.php:643
+#: includes/class-admin.php:657
 msgid "En pantalla el aviso solo lo ve quien entra a mirar; el correo llega aunque nadie entre."
 msgstr ""
 
-#: includes/class-admin.php:647
+#: includes/class-admin.php:661
 msgid "Espaciado entre envíos"
 msgstr ""
 
-#: includes/class-admin.php:652
+#: includes/class-admin.php:666
 msgid "Sin espaciado"
 msgstr ""
 
-#: includes/class-admin.php:653
+#: includes/class-admin.php:667
 msgid "15 minutos"
 msgstr ""
 
-#: includes/class-admin.php:654
+#: includes/class-admin.php:668
 msgid "30 minutos"
 msgstr ""
 
-#: includes/class-admin.php:655
+#: includes/class-admin.php:669
 msgid "1 hora"
 msgstr ""
 
-#: includes/class-admin.php:656
+#: includes/class-admin.php:670
 msgid "2 horas"
 msgstr ""
 
-#: includes/class-admin.php:662
+#: includes/class-admin.php:676
 msgid "Cuánto tiene que pasar, como mínimo, entre dos publicaciones, para no soltar varias de golpe. Lo que caiga dentro se recoloca solo."
 msgstr ""
 
-#: includes/class-admin.php:666
+#: includes/class-admin.php:680
 msgid "Programación"
 msgstr ""
 
-#: includes/class-admin.php:670
+#: includes/class-admin.php:684
 msgid "Activar programación de entradas"
 msgstr ""
 
-#: includes/class-admin.php:672
+#: includes/class-admin.php:686
 msgid "Publica automáticamente las entradas programadas cuando se publican."
 msgstr ""
 
-#: includes/class-admin.php:680
+#: includes/class-admin.php:694
 msgid "Los datos y las plantillas de cada red viven en su propia pantalla."
 msgstr ""
 
-#: includes/class-admin.php:681
+#: includes/class-admin.php:695
 msgid "Ir a Canales"
 msgstr ""
 
-#: includes/class-admin.php:686
+#: includes/class-admin.php:700
 msgid "Moderación previa"
 msgstr ""
 
-#: includes/class-admin.php:689
+#: includes/class-admin.php:703
 msgid "Modo de moderación"
 msgstr ""
 
-#: includes/class-admin.php:692
+#: includes/class-admin.php:706
 msgid "Desactivada (publicación automática)"
 msgstr ""
 
-#: includes/class-admin.php:693
+#: includes/class-admin.php:707
 msgid "Todas las publicaciones requieren revisión"
 msgstr ""
 
-#: includes/class-admin.php:694
+#: includes/class-admin.php:708
 msgid "Solo canales seleccionados"
 msgstr ""
 
-#: includes/class-admin.php:696
+#: includes/class-admin.php:710
 msgid "Cuando está activa, las publicaciones quedan pendientes de revisión en la pestaña Moderación antes de enviarse a las redes."
 msgstr ""
 
-#: includes/class-admin.php:700
+#: includes/class-admin.php:714
 msgid "Canales con moderación"
 msgstr ""
 
-#: includes/class-admin.php:709
+#: includes/class-admin.php:723
 msgid "Se aplican cuando el modo es \"Solo canales seleccionados\"."
 msgstr ""
 
-#: includes/class-admin.php:745
+#: includes/class-admin.php:759
 msgid "Volver a la de fábrica"
 msgstr ""
 
-#: includes/class-admin.php:760
+#: includes/class-admin.php:774
 msgid "Plantillas de mensaje"
 msgstr ""
 
-#: includes/class-admin.php:763
+#: includes/class-admin.php:777
 msgid "Variables disponibles:"
 msgstr ""
 
-#: includes/class-admin.php:773
+#: includes/class-admin.php:787
 msgid "Ver con la entrada"
 msgstr ""
 
-#: includes/class-admin.php:779
+#: includes/class-admin.php:793
 msgid "La vista previa y el contador de cada plantilla usan esta entrada."
 msgstr ""
 
-#: includes/class-admin.php:782
+#: includes/class-admin.php:796
 msgid "Pulsa una variable para insertarla donde tengas el cursor. La vista previa se actualiza sola y te dice si el mensaje cabe en esa red o si se recortará."
 msgstr ""
 
-#: includes/class-admin.php:783
+#: includes/class-admin.php:797
 msgid "Se usa la primera que esté puesta, de lo más concreto a lo más general: lo que se escribe para un envío concreto, lo de esa entrada, la plantilla de la cuenta (en su pantalla), la de su red y la global. Si no hay ninguna, la de fábrica de cada red, que se ve bajo cada campo."
 msgstr ""
 
-#: includes/class-admin.php:789
+#: includes/class-admin.php:803
 msgid "Plantilla global"
 msgstr ""
 
-#: includes/class-admin.php:792
+#: includes/class-admin.php:806
 msgid "Mensaje por defecto"
 msgstr ""
 
-#: includes/class-admin.php:796
+#: includes/class-admin.php:810
 msgid "Se usa cuando un canal no tiene su propia plantilla."
 msgstr ""
 
-#: includes/class-admin.php:801
+#: includes/class-admin.php:815
 msgid "Plantillas por red"
 msgstr ""
 
-#: includes/class-admin.php:802
+#: includes/class-admin.php:816
 msgid "Déjalo vacío para usar la plantilla global. Cada cuenta puede tener la suya propia en su pantalla."
 msgstr ""
 
-#: includes/class-admin.php:811
+#: includes/class-admin.php:825
 msgid "Usar plantilla global"
 msgstr ""
 
-#: includes/class-admin.php:821
+#: includes/class-admin.php:835
 msgid "Ahora mismo se usa la de fábrica para esta red:"
 msgstr ""
 
-#: includes/class-admin.php:823
+#: includes/class-admin.php:837
 msgid "Se usa esta en vez de la global. La de fábrica para esta red es:"
 msgstr ""
 
 #. translators: %s: nombre del sitio donde se genera el token.
-#: includes/class-admin.php:866
+#: includes/class-admin.php:880
 #, php-format
 msgid "El token se genera en %s."
 msgstr ""
 
 #. translators: 1: nombre del panel de desarrollador, 2: enlace a ese panel.
-#: includes/class-admin.php:873
+#: includes/class-admin.php:887
 #, php-format
 msgid "El token se genera en %1$s: %2$s"
 msgstr ""
 
-#: includes/class-admin.php:896
-#: includes/class-admin.php:1119
+#: includes/class-admin.php:910
+#: includes/class-admin.php:1135
 msgid "Falta token"
 msgstr ""
 
-#: includes/class-admin.php:916
+#: includes/class-admin.php:930
 msgid "Necesita reconexión"
 msgstr ""
 
-#: includes/class-admin.php:917
+#: includes/class-admin.php:931
 msgid "Error al verificar"
 msgstr ""
 
-#: includes/class-admin.php:942
+#: includes/class-admin.php:956
 msgid "Puede haber caducado"
 msgstr ""
 
-#: includes/class-admin.php:943
+#: includes/class-admin.php:957
 msgid "Caduca pronto"
 msgstr ""
 
-#: includes/class-admin.php:955
+#: includes/class-admin.php:969
 msgid "Sin comprobar"
 msgstr ""
 
-#: includes/class-admin.php:964
+#: includes/class-admin.php:978
 msgid "Configurado"
 msgstr ""
 
-#: includes/class-admin.php:1026
+#: includes/class-admin.php:1042
 msgid "Verificar conexión"
 msgstr ""
 
-#: includes/class-admin.php:1048
+#: includes/class-admin.php:1064
 msgid "No se ha cargado ninguna red. Es un fallo del plugin, no de tu configuración: revisa que la carpeta includes/channels esté completa."
 msgstr ""
 
-#: includes/class-admin.php:1058
+#: includes/class-admin.php:1074
 msgid "Por dónde empezar"
 msgstr ""
 
-#: includes/class-admin.php:1059
+#: includes/class-admin.php:1075
 msgid "Todavía no hay ninguna cuenta configurada: mientras no la haya, el plugin no publica en ninguna red. El orden que menos guerra da:"
 msgstr ""
 
-#: includes/class-admin.php:1063
+#: includes/class-admin.php:1079
 msgid "un bot con BotFather y el identificador del chat. Dos minutos y se verifica en un clic."
 msgstr ""
 
-#: includes/class-admin.php:1067
+#: includes/class-admin.php:1083
 msgid "la dirección de tu instancia y un token de acceso. No caduca por sí solo."
 msgstr ""
 
-#: includes/class-admin.php:1070
+#: includes/class-admin.php:1086
 msgid "El resto"
 msgstr ""
 
-#: includes/class-admin.php:1071
+#: includes/class-admin.php:1087
 msgid "Facebook, LinkedIn, Twitter/X, TikTok y Google piden cuenta de desarrollador y tokens que caducan cada cierto tiempo."
 msgstr ""
 
-#: includes/class-admin.php:1087
+#: includes/class-admin.php:1103
 msgid "Empezar por Telegram"
 msgstr ""
 
-#: includes/class-admin.php:1095
+#: includes/class-admin.php:1111
 msgid "Una cuenta es una cuenta: puedes tener varias de la misma red (la página y el grupo de Facebook, dos canales de Telegram) cada una con sus credenciales y su plantilla."
 msgstr ""
 
 #. translators: %d: número de cuentas de esa red
-#: includes/class-admin.php:1129
+#: includes/class-admin.php:1145
 #, php-format
 msgid "%d cuenta"
 msgid_plural "%d cuentas"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-admin.php:1138
+#: includes/class-admin.php:1154
 msgid "Esta red no publica todavía: no tiene ninguna cuenta configurada."
 msgstr ""
 
-#: includes/class-admin.php:1146
-#: includes/class-admin.php:1410
-#: includes/class-admin.php:2479
-#: includes/class-admin.php:2522
+#: includes/class-admin.php:1162
+#: includes/class-admin.php:1426
+#: includes/class-admin.php:2503
+#: includes/class-admin.php:2546
 msgid "Cuenta"
 msgstr ""
 
-#: includes/class-admin.php:1147
+#: includes/class-admin.php:1163
 msgid "Estado"
 msgstr ""
 
-#: includes/class-admin.php:1148
-#: includes/class-admin.php:1676
+#: includes/class-admin.php:1164
+#: includes/class-admin.php:1697
 msgid "Acciones"
 msgstr ""
 
-#: includes/class-admin.php:1163
+#: includes/class-admin.php:1179
 msgid "Configurar"
 msgstr ""
 
-#: includes/class-admin.php:1188
+#: includes/class-admin.php:1204
 msgid "Añadir cuenta"
 msgstr ""
 
 #. translators: %d: límite de cuentas por red
-#: includes/class-admin.php:1196
+#: includes/class-admin.php:1212
 #, php-format
 msgid "Límite alcanzado: %d cuentas por red. Borra una para añadir otra."
 msgstr ""
 
-#: includes/class-admin.php:1251
+#: includes/class-admin.php:1267
 msgid "Prueba de publicación"
 msgstr ""
 
-#: includes/class-admin.php:1252
+#: includes/class-admin.php:1268
 msgid "Selecciona una entrada reciente y haz clic en \"Publicar en redes\" para probar la integración."
 msgstr ""
 
-#: includes/class-admin.php:1259
+#: includes/class-admin.php:1275
 msgid "Canal de pruebas"
 msgstr ""
 
-#: includes/class-admin.php:1262
+#: includes/class-admin.php:1278
 msgid "Ninguno: prueba en las redes configuradas"
 msgstr ""
 
-#: includes/class-admin.php:1270
+#: includes/class-admin.php:1286
 msgid "Si eliges uno, el botón de abajo publica SOLO ahí: es la forma de probar sin que la entrada salga en las redes de verdad. Elige un canal que no sea público (por ejemplo tu Telegram)."
 msgstr ""
 
-#: includes/class-admin.php:1275
+#: includes/class-admin.php:1291
 msgid "Guardar canal de pruebas"
 msgstr ""
 
-#: includes/class-admin.php:1282
-#: includes/class-admin.php:1467
-#: includes/class-admin.php:1673
-#: includes/class-admin.php:2374
-#: includes/class-admin.php:2480
-#: includes/class-admin.php:2523
+#: includes/class-admin.php:1298
+#: includes/class-admin.php:1483
+#: includes/class-admin.php:1694
+#: includes/class-admin.php:2398
+#: includes/class-admin.php:2504
+#: includes/class-admin.php:2547
 msgid "Entrada"
 msgstr ""
 
-#: includes/class-admin.php:1290
+#: includes/class-admin.php:1306
 msgid "Seleccionar entrada..."
 msgstr ""
 
-#: includes/class-admin.php:1298
+#: includes/class-admin.php:1314
 msgid "No hay entradas publicadas que probar todavía: publica una y vuelve a esta pestaña."
 msgstr ""
 
-#: includes/class-admin.php:1308
+#: includes/class-admin.php:1324
 msgid "🚀 Publicar solo en el canal de pruebas"
 msgstr ""
 
-#: includes/class-admin.php:1309
+#: includes/class-admin.php:1325
 msgid "🚀 Publicar en redes"
 msgstr ""
 
-#: includes/class-admin.php:1313
+#: includes/class-admin.php:1329
 msgid "Sin canal de pruebas, esto publica en las redes configuradas."
 msgstr ""
 
-#: includes/class-admin.php:1322
+#: includes/class-admin.php:1338
 msgid "Resultado:"
 msgstr ""
 
-#: includes/class-admin.php:1334
+#: includes/class-admin.php:1350
 msgid "Publicado! ID: "
 msgstr ""
 
-#: includes/class-admin.php:1336
+#: includes/class-admin.php:1352
 msgid "La red no ha explicado el fallo. Reintenta la publicacion; si se repite, revisa las credenciales del canal en Ajustes."
 msgstr ""
 
-#: includes/class-admin.php:1390
+#: includes/class-admin.php:1406
 msgid "Historial de publicaciones"
 msgstr ""
 
-#: includes/class-admin.php:1398
+#: includes/class-admin.php:1414
 msgid "No hay publicaciones registradas todavía."
 msgstr ""
 
-#: includes/class-admin.php:1402
+#: includes/class-admin.php:1418
 msgid "Red"
 msgstr ""
 
-#: includes/class-admin.php:1404
-#: includes/class-admin.php:1412
+#: includes/class-admin.php:1420
+#: includes/class-admin.php:1428
 msgid "Todas"
 msgstr ""
 
-#: includes/class-admin.php:1418
-#: includes/class-admin.php:2481
+#: includes/class-admin.php:1434
+#: includes/class-admin.php:2505
 msgid "Resultado"
 msgstr ""
 
-#: includes/class-admin.php:1420
+#: includes/class-admin.php:1436
 msgid "Todos"
 msgstr ""
 
-#: includes/class-admin.php:1421
+#: includes/class-admin.php:1437
 msgid "Salió"
 msgstr ""
 
-#: includes/class-admin.php:1422
+#: includes/class-admin.php:1438
 msgid "Falló"
 msgstr ""
 
-#: includes/class-admin.php:1425
+#: includes/class-admin.php:1441
 msgid "Filtrar"
 msgstr ""
 
-#: includes/class-admin.php:1427
+#: includes/class-admin.php:1443
 msgid "Quitar filtros"
 msgstr ""
 
 #. translators: 1: primera fila que se ve, 2: última, 3: total, 4: página, 5: páginas.
-#: includes/class-admin.php:1439
+#: includes/class-admin.php:1455
 #, php-format
 msgid "Mostrando %1$d-%2$d de %3$d (página %4$d de %5$d)."
 msgstr ""
 
-#: includes/class-admin.php:1447
+#: includes/class-admin.php:1463
 msgid "¿Borrar todo el historial?"
 msgstr ""
 
-#: includes/class-admin.php:1448
+#: includes/class-admin.php:1464
 msgid "Limpiar historial"
 msgstr ""
 
-#: includes/class-admin.php:1453
+#: includes/class-admin.php:1469
 msgid "Con esos filtros no hay nada."
 msgstr ""
 
-#: includes/class-admin.php:1465
+#: includes/class-admin.php:1481
 msgid "prueba"
 msgstr ""
 
-#: includes/class-admin.php:1478
+#: includes/class-admin.php:1494
 msgid "Reintentar"
 msgstr ""
 
-#: includes/class-admin.php:1505
+#: includes/class-admin.php:1521
 msgid "Anterior"
 msgstr ""
 
 #. translators: 1: página actual, 2: total de páginas.
-#: includes/class-admin.php:1511
+#: includes/class-admin.php:1527
 #, php-format
 msgid "Página %1$d de %2$d"
 msgstr ""
 
-#: includes/class-admin.php:1518
+#: includes/class-admin.php:1534
 msgid "Siguiente"
 msgstr ""
 
-#: includes/class-admin.php:1531
+#: includes/class-admin.php:1547
 msgid "Cola de reintentos"
 msgstr ""
 
-#: includes/class-admin.php:1532
+#: includes/class-admin.php:1548
 msgid "Pendientes: "
 msgstr ""
 
-#: includes/class-admin.php:1533
+#: includes/class-admin.php:1549
 msgid "Fallidos: "
 msgstr ""
 
-#: includes/class-admin.php:1551
-#: includes/class-admin.php:1609
-#: includes/class-admin.php:1622
-#: includes/class-admin.php:1722
-#: includes/class-admin.php:1746
-#: includes/class-admin.php:1945
-#: includes/class-admin.php:2009
-#: includes/class-admin.php:2405
-#: includes/class-admin.php:2600
-#: includes/class-admin.php:2638
-#: includes/class-admin.php:2663
-#: includes/class-admin.php:2681
+#: includes/class-admin.php:1567
+#: includes/class-admin.php:1625
+#: includes/class-admin.php:1638
+#: includes/class-admin.php:1743
+#: includes/class-admin.php:1767
+#: includes/class-admin.php:1966
+#: includes/class-admin.php:2030
+#: includes/class-admin.php:2429
+#: includes/class-admin.php:2624
+#: includes/class-admin.php:2662
+#: includes/class-admin.php:2687
+#: includes/class-admin.php:2705
 msgid "No tienes permisos."
 msgstr ""
 
 #. translators: %s: nombre de la cuenta.
-#: includes/class-admin.php:1571
+#: includes/class-admin.php:1587
 #, php-format
 msgid "Reenviado a %s."
 msgstr ""
 
 #. translators: %s: nombre de la cuenta.
-#: includes/class-admin.php:1573
+#: includes/class-admin.php:1589
 #, php-format
 msgid "No se pudo reenviar a %s. El motivo está en el historial."
 msgstr ""
 
-#: includes/class-admin.php:1583
+#: includes/class-admin.php:1599
 msgid "Acerca de Convoca Publisher"
 msgstr ""
 
-#: includes/class-admin.php:1586
+#: includes/class-admin.php:1602
 msgid "Plugin de publicación automática en redes sociales para WordPress."
 msgstr ""
 
-#: includes/class-admin.php:1587
+#: includes/class-admin.php:1603
 msgid "Parte del ecosistema Convoca."
 msgstr ""
 
-#: includes/class-admin.php:1592
+#: includes/class-admin.php:1608
 msgid "Canales disponibles"
 msgstr ""
 
-#: includes/class-admin.php:1628
+#: includes/class-admin.php:1644
 msgid "Canal no encontrado."
 msgstr ""
 
-#: includes/class-admin.php:1666
+#: includes/class-admin.php:1687
 msgid "Cola de moderación"
 msgstr ""
 
-#: includes/class-admin.php:1668
+#: includes/class-admin.php:1689
 msgid "No hay publicaciones pendientes de revisión."
 msgstr ""
 
-#: includes/class-admin.php:1674
+#: includes/class-admin.php:1695
 msgid "Canal"
 msgstr ""
 
-#: includes/class-admin.php:1675
+#: includes/class-admin.php:1696
 msgid "Fecha"
 msgstr ""
 
-#: includes/class-admin.php:1699
+#: includes/class-admin.php:1720
 msgid "(entrada eliminada)"
 msgstr ""
 
-#: includes/class-admin.php:1705
+#: includes/class-admin.php:1726
 msgid "Aprobar"
 msgstr ""
 
-#: includes/class-admin.php:1706
+#: includes/class-admin.php:1727
 msgid "Rechazar"
 msgstr ""
 
-#: includes/class-admin.php:1732
+#: includes/class-admin.php:1753
 msgid "Publicación aprobada y enviada."
 msgstr ""
 
-#: includes/class-admin.php:1732
+#: includes/class-admin.php:1753
 msgid "No se pudo publicar."
 msgstr ""
 
-#: includes/class-admin.php:1756
+#: includes/class-admin.php:1777
 msgid "Publicación rechazada."
 msgstr ""
 
-#: includes/class-admin.php:1771
+#: includes/class-admin.php:1792
 msgid "📖 Cómo funciona esto"
 msgstr ""
 
-#: includes/class-admin.php:1773
+#: includes/class-admin.php:1794
 msgid "Una red puede tener varias cuentas."
 msgstr ""
 
-#: includes/class-admin.php:1773
+#: includes/class-admin.php:1794
 msgid "La página y el grupo de Facebook son dos cuentas, cada una con sus credenciales y su plantilla. Se les puede poner nombre para reconocerlas (hasta 5 por red)."
 msgstr ""
 
-#: includes/class-admin.php:1774
+#: includes/class-admin.php:1795
 msgid "El mensaje se decide de lo concreto a lo general:"
 msgstr ""
 
-#: includes/class-admin.php:1774
+#: includes/class-admin.php:1795
 msgid "lo que escribas para un envío, el mensaje de esa entrada, la plantilla de la cuenta, la de la red y la global. En el editor ves cómo queda y cuánto ocupa para cada red."
 msgstr ""
 
-#: includes/class-admin.php:1775
+#: includes/class-admin.php:1796
 msgid "Lo que admite cada red se comprueba antes de enviar:"
 msgstr ""
 
-#: includes/class-admin.php:1775
+#: includes/class-admin.php:1796
 msgid "si el mensaje no cabe, se recorta conservando el enlace y se te dice; no falla al enviar en silencio."
 msgstr ""
 
-#: includes/class-admin.php:1776
+#: includes/class-admin.php:1797
 msgid "La pestaña Cola es donde se ve todo lo que va a salir:"
 msgstr ""
 
-#: includes/class-admin.php:1776
+#: includes/class-admin.php:1797
 msgid "calendario de mes y semana (arrastra un envío para reprogramarlo), lo que espera turno, lo que se quedó atrás y lo último que salió."
 msgstr ""
 
-#: includes/class-admin.php:1777
+#: includes/class-admin.php:1798
 msgid "Puedes compartir a mano en una sola cuenta"
 msgstr ""
 
-#: includes/class-admin.php:1777
+#: includes/class-admin.php:1798
 msgid "desde el editor (un botón por cuenta) o desde el listado de entradas, sin tocar las demás."
 msgstr ""
 
-#: includes/class-admin.php:1778
+#: includes/class-admin.php:1799
 msgid "Si algo falla, no se pierde en silencio:"
 msgstr ""
 
-#: includes/class-admin.php:1778
+#: includes/class-admin.php:1799
 msgid "se reintenta con espera creciente, y si se agotan los intentos se te avisa por correo y queda a la vista en la cola para darle salida a mano."
 msgstr ""
 
-#: includes/class-admin.php:1780
+#: includes/class-admin.php:1801
 msgid "📖 Guía de configuración"
 msgstr ""
 
-#: includes/class-admin.php:1781
+#: includes/class-admin.php:1802
 msgid "Sigue estos pasos para configurar cada red social. Necesitarás una cuenta de desarrollador en cada plataforma para obtener los tokens de acceso."
 msgstr ""
 
-#: includes/class-admin.php:1787
-#: includes/class-admin.php:1812
-#: includes/class-admin.php:1836
-#: includes/class-admin.php:1859
-#: includes/class-admin.php:1882
-#: includes/class-admin.php:1906
-#: includes/class-admin.php:1924
+#: includes/class-admin.php:1808
+#: includes/class-admin.php:1833
+#: includes/class-admin.php:1857
+#: includes/class-admin.php:1880
+#: includes/class-admin.php:1903
+#: includes/class-admin.php:1927
+#: includes/class-admin.php:1945
 msgid "Requiere:"
 msgstr ""
 
-#: includes/class-admin.php:1787
+#: includes/class-admin.php:1808
 msgid "Página de Facebook, App de Facebook Developer"
 msgstr ""
 
 #. translators: %s: URL/link to the developer portal
-#: includes/class-admin.php:1793
-#: includes/class-admin.php:1818
-#: includes/class-admin.php:1842
-#: includes/class-admin.php:1865
-#: includes/class-admin.php:1888
+#: includes/class-admin.php:1814
+#: includes/class-admin.php:1839
+#: includes/class-admin.php:1863
+#: includes/class-admin.php:1886
+#: includes/class-admin.php:1909
 #, php-format
 msgid "Ve a %s"
 msgstr ""
 
-#: includes/class-admin.php:1798
+#: includes/class-admin.php:1819
 msgid "Crea una app tipo \"Business\" o \"Sin integración\""
 msgstr ""
 
-#: includes/class-admin.php:1799
+#: includes/class-admin.php:1820
 msgid "En Productos, añade \"Facebook Login\" y \"Instagram Graph API\""
 msgstr ""
 
-#: includes/class-admin.php:1800
+#: includes/class-admin.php:1821
 msgid "Ve a Herramientas → \"Generar token de página\""
 msgstr ""
 
-#: includes/class-admin.php:1801
+#: includes/class-admin.php:1822
 msgid "Selecciona tu página y copia el token"
 msgstr ""
 
-#: includes/class-admin.php:1802
+#: includes/class-admin.php:1823
 msgid "Copia también el ID de página (Page ID)"
 msgstr ""
 
-#: includes/class-admin.php:1803
+#: includes/class-admin.php:1824
 msgid "Pega ambos en la pantalla del canal: Canales → Facebook / Instagram"
 msgstr ""
 
-#: includes/class-admin.php:1805
-#: includes/class-admin.php:1829
-#: includes/class-admin.php:1852
-#: includes/class-admin.php:1875
-#: includes/class-admin.php:1899
-#: includes/class-admin.php:1917
-#: includes/class-admin.php:1934
+#: includes/class-admin.php:1826
+#: includes/class-admin.php:1850
+#: includes/class-admin.php:1873
+#: includes/class-admin.php:1896
+#: includes/class-admin.php:1920
+#: includes/class-admin.php:1938
+#: includes/class-admin.php:1955
 msgid "Campos necesarios:"
 msgstr ""
 
-#: includes/class-admin.php:1805
+#: includes/class-admin.php:1826
 msgid "Page Access Token, Page ID, Instagram Business ID (opcional)"
 msgstr ""
 
-#: includes/class-admin.php:1806
+#: includes/class-admin.php:1827
 msgid "Documentación oficial de Meta"
 msgstr ""
 
-#: includes/class-admin.php:1812
+#: includes/class-admin.php:1833
 msgid "Cuenta de LinkedIn, App de LinkedIn Developer"
 msgstr ""
 
-#: includes/class-admin.php:1823
+#: includes/class-admin.php:1844
 msgid "Crea una nueva app"
 msgstr ""
 
-#: includes/class-admin.php:1824
+#: includes/class-admin.php:1845
 msgid "Solicita los permisos (products): \"Share on LinkedIn\" y \"Sign In with LinkedIn\""
 msgstr ""
 
-#: includes/class-admin.php:1825
+#: includes/class-admin.php:1846
 msgid "Ve a la pestaña Auth y genera un Access Token de prueba (OAuth 2.0)"
 msgstr ""
 
-#: includes/class-admin.php:1826
+#: includes/class-admin.php:1847
 msgid "Copia el token y pégalo en la pantalla del canal: Canales → LinkedIn"
 msgstr ""
 
-#: includes/class-admin.php:1827
+#: includes/class-admin.php:1848
 msgid "Para la URN: usa tu perfil (urn:li:person:...) o página de empresa (urn:li:organization:...)"
 msgstr ""
 
-#: includes/class-admin.php:1829
+#: includes/class-admin.php:1850
 msgid "Access Token (OAuth 2.0), URN de perfil/página"
 msgstr ""
 
-#: includes/class-admin.php:1830
+#: includes/class-admin.php:1851
 msgid "Documentación oficial de LinkedIn"
 msgstr ""
 
-#: includes/class-admin.php:1836
+#: includes/class-admin.php:1857
 msgid "Cuenta de desarrollador de X (antes Twitter), Proyecto en Developer Portal"
 msgstr ""
 
-#: includes/class-admin.php:1847
+#: includes/class-admin.php:1868
 msgid "Crea un proyecto y una app (OAuth 2.0)"
 msgstr ""
 
-#: includes/class-admin.php:1848
+#: includes/class-admin.php:1869
 msgid "En \"Keys and Tokens\", genera un Bearer Token (OAuth 2.0)"
 msgstr ""
 
-#: includes/class-admin.php:1849
+#: includes/class-admin.php:1870
 msgid "Asegúrate de que la app tenga permisos tweet.read y tweet.write"
 msgstr ""
 
-#: includes/class-admin.php:1850
+#: includes/class-admin.php:1871
 msgid "Copia el Bearer Token y pégalo en la pantalla del canal: Canales → Twitter / X"
 msgstr ""
 
-#: includes/class-admin.php:1853
+#: includes/class-admin.php:1874
 msgid "Documentación oficial de X API"
 msgstr ""
 
-#: includes/class-admin.php:1859
+#: includes/class-admin.php:1880
 msgid "Cuenta de desarrollador de TikTok, App en TikTok Developer Portal"
 msgstr ""
 
-#: includes/class-admin.php:1870
+#: includes/class-admin.php:1891
 msgid "Crea una app y selecciona los permisos \"video.publish\" y \"user.info.basic\""
 msgstr ""
 
-#: includes/class-admin.php:1871
+#: includes/class-admin.php:1892
 msgid "Completa el flujo OAuth para obtener un Access Token"
 msgstr ""
 
-#: includes/class-admin.php:1872
+#: includes/class-admin.php:1893
 msgid "Anota el Open ID (identificador único del usuario)"
 msgstr ""
 
-#: includes/class-admin.php:1873
+#: includes/class-admin.php:1894
 msgid "Pega ambos en la pantalla del canal: Canales → TikTok"
 msgstr ""
 
-#: includes/class-admin.php:1875
+#: includes/class-admin.php:1896
 msgid "Access Token, Open ID"
 msgstr ""
 
-#: includes/class-admin.php:1876
+#: includes/class-admin.php:1897
 msgid "Documentación oficial de TikTok"
 msgstr ""
 
-#: includes/class-admin.php:1882
+#: includes/class-admin.php:1903
 msgid "Cuenta de Google, Proyecto en Google Cloud Console, Perfil de empresa en Google"
 msgstr ""
 
-#: includes/class-admin.php:1893
+#: includes/class-admin.php:1914
 msgid "Crea un proyecto y habilita la API \"Google My Business API\""
 msgstr ""
 
-#: includes/class-admin.php:1894
+#: includes/class-admin.php:1915
 msgid "Crea credenciales OAuth 2.0 y obtén un token de acceso"
 msgstr ""
 
-#: includes/class-admin.php:1895
+#: includes/class-admin.php:1916
 msgid "Para obtener el Location ID: usa la API de GMB o la herramienta de administración de Google"
 msgstr ""
 
-#: includes/class-admin.php:1896
+#: includes/class-admin.php:1917
 msgid "El formato del Location ID es: accounts/{accountId}/locations/{locationId}"
 msgstr ""
 
-#: includes/class-admin.php:1897
+#: includes/class-admin.php:1918
 msgid "Pega ambos en la pantalla del canal: Canales → Google My Business"
 msgstr ""
 
-#: includes/class-admin.php:1899
+#: includes/class-admin.php:1920
 msgid "Access Token (OAuth 2.0), Location ID"
 msgstr ""
 
-#: includes/class-admin.php:1900
+#: includes/class-admin.php:1921
 msgid "Documentación oficial de GMB API"
 msgstr ""
 
-#: includes/class-admin.php:1906
+#: includes/class-admin.php:1927
 msgid "Un bot de Telegram"
 msgstr ""
 
-#: includes/class-admin.php:1908
+#: includes/class-admin.php:1929
 msgid "Abre Telegram y busca @BotFather"
 msgstr ""
 
-#: includes/class-admin.php:1909
+#: includes/class-admin.php:1930
 msgid "Envía /newbot y sigue las instrucciones"
 msgstr ""
 
-#: includes/class-admin.php:1910
+#: includes/class-admin.php:1931
 msgid "Copia el token HTTP API que te da BotFather"
 msgstr ""
 
-#: includes/class-admin.php:1911
+#: includes/class-admin.php:1932
 msgid "Envía /setprivacy y selecciona Disabled"
 msgstr ""
 
-#: includes/class-admin.php:1912
+#: includes/class-admin.php:1933
 msgid "Para obtener el Chat ID: envía un mensaje a tu bot, luego visita:"
 msgstr ""
 
-#: includes/class-admin.php:1914
+#: includes/class-admin.php:1935
 msgid "Copia el \"chat\":{\"id\":...} que aparece en la respuesta"
 msgstr ""
 
-#: includes/class-admin.php:1915
+#: includes/class-admin.php:1936
 msgid "Pega token y chat ID en la pantalla del canal: Canales → Telegram"
 msgstr ""
 
-#: includes/class-admin.php:1917
+#: includes/class-admin.php:1938
 msgid "Token del Bot, Chat ID"
 msgstr ""
 
-#: includes/class-admin.php:1918
+#: includes/class-admin.php:1939
 msgid "Documentación oficial de Telegram Bot API"
 msgstr ""
 
-#: includes/class-admin.php:1924
+#: includes/class-admin.php:1945
 msgid "Cuenta en un servidor de Mastodon"
 msgstr ""
 
-#: includes/class-admin.php:1926
+#: includes/class-admin.php:1947
 msgid "Inicia sesión en tu instancia de Mastodon (ej: mastodon.social)"
 msgstr ""
 
-#: includes/class-admin.php:1927
+#: includes/class-admin.php:1948
 msgid "Ve a Preferencias → Desarrollo"
 msgstr ""
 
-#: includes/class-admin.php:1928
+#: includes/class-admin.php:1949
 msgid "Haz clic en \"Nueva aplicación\""
 msgstr ""
 
-#: includes/class-admin.php:1929
+#: includes/class-admin.php:1950
 msgid "Asigna un nombre (ej: Convoca Publisher) y marca el permiso \"write:statuses\""
 msgstr ""
 
-#: includes/class-admin.php:1930
+#: includes/class-admin.php:1951
 msgid "Copia el \"Access Token\" que se genera"
 msgstr ""
 
-#: includes/class-admin.php:1931
+#: includes/class-admin.php:1952
 msgid "Anota también la URL base de tu servidor (ej: https://mastodon.social)"
 msgstr ""
 
-#: includes/class-admin.php:1932
+#: includes/class-admin.php:1953
 msgid "Pega ambos en la pantalla del canal: Canales → Mastodon"
 msgstr ""
 
-#: includes/class-admin.php:1934
+#: includes/class-admin.php:1955
 msgid "Servidor (URL base), Access Token, Visibilidad (opcional)"
 msgstr ""
 
-#: includes/class-admin.php:1935
+#: includes/class-admin.php:1956
 msgid "Documentación oficial de Mastodon API"
 msgstr ""
 
-#: includes/class-admin.php:1957
+#: includes/class-admin.php:1978
 msgid "Esa red no existe."
 msgstr ""
 
-#: includes/class-admin.php:2044
+#: includes/class-admin.php:2065
 msgid "Una entrada puede salir en varias cuentas: cada una es un envío. Arrastra un envío a otro día para reprogramarlo, o hazlo desde la lista de abajo."
 msgstr ""
 
-#: includes/class-admin.php:2050
+#: includes/class-admin.php:2071
 msgid "Semana del "
 msgstr ""
 
-#: includes/class-admin.php:2067
+#: includes/class-admin.php:2088
 msgid "Hoy"
 msgstr ""
 
-#: includes/class-admin.php:2083
+#: includes/class-admin.php:2104
 msgid "Mes"
 msgstr ""
 
-#: includes/class-admin.php:2098
+#: includes/class-admin.php:2119
 msgid "Semana"
 msgstr ""
 
-#: includes/class-admin.php:2103
+#: includes/class-admin.php:2124
 msgid "Recolocar ahora"
 msgstr ""
 
-#: includes/class-admin.php:2329
+#: includes/class-admin.php:2353
 msgid "Se quedó atrás"
 msgstr ""
 
-#: includes/class-admin.php:2331
+#: includes/class-admin.php:2355
 msgid "Programados cuya hora ya pasó y no han salido: el cron puede no haber llegado a intentarlo. Se les puede dar salida ahora."
 msgstr ""
 
-#: includes/class-admin.php:2338
+#: includes/class-admin.php:2362
 msgid "Enviar todo lo atrasado"
 msgstr ""
 
-#: includes/class-admin.php:2342
+#: includes/class-admin.php:2366
 msgid "Atrasado"
 msgstr ""
 
-#: includes/class-admin.php:2357
+#: includes/class-admin.php:2381
 msgid "Ya no se insiste solo"
 msgstr ""
 
-#: includes/class-admin.php:2358
+#: includes/class-admin.php:2382
 msgid "Se intentó varias veces sin éxito. Se avisó por correo; desde aquí se puede reintentar cuando esté resuelto."
 msgstr ""
 
-#: includes/class-admin.php:2359
+#: includes/class-admin.php:2383
 msgid "Se dejó de insistir"
 msgstr ""
 
-#: includes/class-admin.php:2373
-#: includes/class-admin.php:2478
-#: includes/class-admin.php:2521
+#: includes/class-admin.php:2397
+#: includes/class-admin.php:2502
+#: includes/class-admin.php:2545
 msgid "Cuándo"
 msgstr ""
 
-#: includes/class-admin.php:2375
+#: includes/class-admin.php:2399
 msgid "Intentos"
 msgstr ""
 
-#: includes/class-admin.php:2376
+#: includes/class-admin.php:2400
 msgid "Qué hacer"
 msgstr ""
 
-#: includes/class-admin.php:2390
+#: includes/class-admin.php:2414
 msgid "Enviar ahora"
 msgstr ""
 
 #. translators: %d: envíos que han salido
-#: includes/class-admin.php:2448
+#: includes/class-admin.php:2472
 #, php-format
 msgid "%d envío recuperado."
 msgid_plural "%d envíos recuperados."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-admin.php:2466
+#: includes/class-admin.php:2490
 msgid "Lo que espera turno"
 msgstr ""
 
-#: includes/class-admin.php:2470
+#: includes/class-admin.php:2494
 msgid "Atascado: toca revisarlo"
 msgstr ""
 
-#: includes/class-admin.php:2474
+#: includes/class-admin.php:2498
 #: includes/class-dashboard.php:153
 msgid "Lo último que salió"
 msgstr ""
 
-#: includes/class-admin.php:2492
+#: includes/class-admin.php:2516
 msgid "Enviado"
 msgstr ""
 
-#: includes/class-admin.php:2512
+#: includes/class-admin.php:2536
 msgid "No hay nada en la cola."
 msgstr ""
 
-#: includes/class-admin.php:2524
+#: includes/class-admin.php:2548
 msgid "Reprogramar"
 msgstr ""
 
-#: includes/class-admin.php:2548
+#: includes/class-admin.php:2572
 msgid "Mover"
 msgstr ""
 
-#: includes/class-admin.php:2554
+#: includes/class-admin.php:2578
 msgid "¿Quitar este envío de la cola?"
 msgstr ""
 
-#: includes/class-admin.php:2554
+#: includes/class-admin.php:2578
 msgid "Quitar"
 msgstr ""
 
-#: includes/class-admin.php:2580
+#: includes/class-admin.php:2604
 msgid "Compartir ahora"
 msgstr ""
 
-#: includes/class-admin.php:2611
+#: includes/class-admin.php:2635
 msgid "No había ninguna cuenta a la que enviar esta entrada."
 msgstr ""
 
-#: includes/class-admin.php:2612
+#: includes/class-admin.php:2636
 msgid "Compartido. Mirando la cola, lo tienes."
 msgstr ""
 
-#: includes/class-admin.php:2629
+#: includes/class-admin.php:2653
 msgid "Compartido. El detalle está en la cola."
 msgstr ""
 
-#: includes/class-admin.php:2651
+#: includes/class-admin.php:2675
 msgid "Envío reprogramado."
 msgstr ""
 
-#: includes/class-admin.php:2671
+#: includes/class-admin.php:2695
 msgid "Envío quitado de la cola."
 msgstr ""
 
 #. translators: %d: envíos recolocados
-#: includes/class-admin.php:2692
+#: includes/class-admin.php:2716
 #, php-format
 msgid "%d envío recolocado."
 msgid_plural "%d envíos recolocados."
@@ -1739,7 +1739,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: lista de redes.
-#: includes/class-admin.php:2787
+#: includes/class-admin.php:2811
 #, php-format
 msgid "Estas redes van con la licencia PRO del Publisher y ahora no se ofrecen: %s. Con la licencia se activan solas."
 msgstr ""
@@ -1935,110 +1935,110 @@ msgid "%d publicaciones fallaron definitivamente. Revisa los tokens."
 msgstr ""
 
 #. translators: 1: caracteres que tiene, 2: límite de la red, 3: caracteres de más
-#: includes/class-platform-rules.php:206
+#: includes/class-platform-rules.php:213
 #, php-format
 msgid "No cabe en %1$s caracteres: tiene %2$d (%3$d de más)."
 msgstr ""
 
 #. translators: 1: número de etiquetas que lleva, 2: máximo recomendado
-#: includes/class-platform-rules.php:216
+#: includes/class-platform-rules.php:223
 #, php-format
 msgid "Lleva %1$d etiquetas; en esta red funcionan mejor hasta %2$d."
 msgstr ""
 
 #. translators: 1: número de enlaces que lleva, 2: máximo recomendado
-#: includes/class-platform-rules.php:225
+#: includes/class-platform-rules.php:232
 #, php-format
 msgid "Lleva %1$d enlaces; lo habitual en esta red es %2$d."
 msgstr ""
 
-#: includes/class-publisher.php:162
+#: includes/class-publisher.php:179
 msgid "El título del post está vacío."
 msgstr ""
 
-#: includes/class-publisher.php:165
+#: includes/class-publisher.php:182
 msgid "No hay imagen destacada. Algunas redes (Facebook, Twitter) requieren imagen."
 msgstr ""
 
 #. translators: 1: nombre del canal, 2: caracteres que tenía, 3: caracteres que se enviaron
-#: includes/class-publisher.php:194
+#: includes/class-publisher.php:211
 #, php-format
 msgid "El mensaje no cabía en %1$s: se recortó de %2$d a %3$d caracteres."
 msgstr ""
 
-#: includes/class-publisher.php:223
+#: includes/class-publisher.php:240
 msgid "Pendiente de revisión."
 msgstr ""
 
-#: includes/class-publisher.php:295
+#: includes/class-publisher.php:312
 msgid "Ese canal no está configurado."
 msgstr ""
 
-#: includes/class-publisher.php:317
+#: includes/class-publisher.php:334
 msgid "Prueba de publicación: salió."
 msgstr ""
 
-#: includes/class-publisher.php:318
+#: includes/class-publisher.php:335
 msgid "Prueba de publicación: falló."
 msgstr ""
 
-#: includes/class-publisher.php:384
+#: includes/class-publisher.php:401
 msgid "Título de la entrada"
 msgstr ""
 
-#: includes/class-publisher.php:385
+#: includes/class-publisher.php:402
 msgid "Título en negrita, en las redes que admiten formato (Telegram y Mastodon)"
 msgstr ""
 
-#: includes/class-publisher.php:386
+#: includes/class-publisher.php:403
 msgid "Extracto de la entrada"
 msgstr ""
 
-#: includes/class-publisher.php:387
+#: includes/class-publisher.php:404
 msgid "Texto anterior al «seguir leyendo», o el extracto si no lo lleva"
 msgstr ""
 
-#: includes/class-publisher.php:388
+#: includes/class-publisher.php:405
 msgid "Enlace permanente de la entrada"
 msgstr ""
 
-#: includes/class-publisher.php:389
+#: includes/class-publisher.php:406
 msgid "Primeras 5 etiquetas como hashtags"
 msgstr ""
 
-#: includes/class-publisher.php:390
+#: includes/class-publisher.php:407
 msgid "Fecha de publicación"
 msgstr ""
 
-#: includes/class-publisher.php:391
+#: includes/class-publisher.php:408
 msgid "Nombre del autor"
 msgstr ""
 
-#: includes/class-publisher.php:392
+#: includes/class-publisher.php:409
 msgid "URL de la imagen destacada"
 msgstr ""
 
-#: includes/class-publisher.php:393
+#: includes/class-publisher.php:410
 msgid "Nombres de las categorías, separados por comas"
 msgstr ""
 
-#: includes/class-publisher.php:394
+#: includes/class-publisher.php:411
 msgid "Primeras 5 categorías como hashtags"
 msgstr ""
 
-#: includes/class-publisher.php:395
+#: includes/class-publisher.php:412
 msgid "Nombres de las etiquetas, separados por comas (sin almohadilla)"
 msgstr ""
 
-#: includes/class-publisher.php:396
+#: includes/class-publisher.php:413
 msgid "Nombre del sitio"
 msgstr ""
 
-#: includes/class-publisher.php:397
+#: includes/class-publisher.php:414
 msgid "Enlace a la lista de entradas del autor"
 msgstr ""
 
-#: includes/class-publisher.php:555
+#: includes/class-publisher.php:572
 msgid "Esa entrada no existe."
 msgstr ""
 
@@ -2096,6 +2096,6 @@ msgstr ""
 msgid "Rechazado por moderación."
 msgstr ""
 
-#: includes/class-scheduler.php:55
+#: includes/class-scheduler.php:61
 msgid "Cada 15 minutos"
 msgstr ""

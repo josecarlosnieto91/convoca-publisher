@@ -1,3 +1,9 @@
+## [1.22.14] — 2026-11-01
+
+### Cambiado
+
+- **las reglas de Instagram y los tipos del calendario**
+
 ## [1.22.13] — 2026-10-26
 
 ### Cambiado
