@@ -1,3 +1,11 @@
+## [1.22.20] — 2026-11-02
+
+### Cambiado
+
+- **la pestaña de ajustes sale a `Vista_Ajustes`**: 121 líneas de vista menos.
+  `register_settings()` y los cinco saneadores **se quedan en `Admin`** a propósito: son el
+  contrato con WordPress y moverlos cambiaría dónde engancha el sitio con sus datos guardados.
+
 ## [1.22.19] — 2026-11-02
 
 ### Cambiado
