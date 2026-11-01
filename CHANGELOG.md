@@ -1,3 +1,11 @@
+## [1.22.17] — 2026-11-02
+
+### Cambiado
+
+- **el registro de publicaciones y la cola de moderación salen de `Admin`** a `Vista_Registro`:
+  253 líneas menos. `class-admin.php` queda en **2.396** líneas (eran 2.817 al empezar).
+  `render_log_page()` sigue siendo público como delegado: lo usan las pruebas de pantalla.
+
 ## [1.22.16] — 2026-11-02
 
 ### Cambiado
