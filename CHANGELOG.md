@@ -1,3 +1,12 @@
+## [1.22.19] — 2026-11-02
+
+### Cambiado
+
+- **las pantallas de canales salen a `Vista_Canales`**: la pestaña, la ficha de una cuenta y su
+  estado, 577 líneas. `class-admin.php` queda en **1.764** (eran 2.817 al empezar).
+  Los siete métodos públicos conservan su delegado en `Admin` con la misma firma: los usan las
+  pruebas y son API del panel.
+
 ## [1.22.18] — 2026-11-02
 
 ### Cambiado
