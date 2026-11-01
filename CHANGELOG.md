@@ -1,3 +1,11 @@
+## [1.22.16] — 2026-11-02
+
+### Cambiado
+
+- **la guía de configuración sale de `Admin`**: era el método más largo de la clase que no tocaba
+  nada —solo HTML—, 168 líneas. Ahora es `Vista_Guia::render()` y `class-admin.php` baja de
+  2.817 a **2.649** líneas. El HTML se compara byte a byte contra la captura previa del panel.
+
 ## [1.22.15] — 2026-11-02
 
 ### Cambiado
