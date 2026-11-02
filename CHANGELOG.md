@@ -1,3 +1,13 @@
+## [1.22.22] — 2026-11-02
+
+### Cambiado
+
+- **la pestaña de la cola sale a `Vista_Cola`**: doce métodos y 475 líneas menos en `class-admin.php`
+  (1.561 → **1.086**). Calendario de mes y semana, lista, lo atascado y sus ayudantes, movidos sin
+  tocar una etiqueta. La única dependencia que quedaba fuera era `tab_url`, que ya vivía en
+  `Vista_Canales`.
+- Verificado por captura: las ocho pantallas del panel salen **idénticas byte a byte**.
+
 ## [1.22.21] — 2026-11-02
 
 ### Cambiado
