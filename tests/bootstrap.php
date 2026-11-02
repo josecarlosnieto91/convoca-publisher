@@ -35,5 +35,6 @@ require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/class-log-view.php';
 
 // Apoyo de las pruebas (canales de mentira, etc.). Va al final: implementa la interfaz de canal.
 require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/class-rest.php';
+require_once CONVOCA_PUBLISHER_PLUGIN_DIR . 'includes/class-manejador-cola.php';
 
 require_once __DIR__ . '/Support/FakeChannel.php';

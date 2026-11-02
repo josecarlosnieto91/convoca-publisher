@@ -1266,49 +1266,8 @@ class Admin {
 
 		$todos   = ! empty( $_POST['convoca_publisher_todos'] );
 		$post_id = isset( $_POST['convoca_publisher_post'] ) ? (int) $_POST['convoca_publisher_post'] : 0;
-		$ids     = $todos ? array_map( static fn( array $fila ): int => (int) $fila['post_id'], array_merge( Queue::overdue(), array_map( static fn( int $id ): array => array( 'post_id' => $id ), Queue::needs_help() ) ) ) : array( $post_id );
-		$hechos  = 0;
 
-		foreach ( array_filter( $ids ) as $id ) {
-			$publicador = Publisher::instance();
-
-			if ( ! $publicador ) {
-				continue;
-			}
-
-			$resultado = $publicador->publish_to_accounts( (int) $id, array(), true, true );
-			$salio     = false;
-
-			foreach ( $resultado as $cuenta => $envio ) {
-				if ( '_' !== $cuenta[0] && ! empty( $envio['success'] ) ) {
-					$salio = true;
-				}
-			}
-
-			if ( $salio ) {
-				Queue::forget_attempts( (int) $id );
-				delete_post_meta( (int) $id, Queue::SCHEDULE_META );
-				++$hechos;
-				continue;
-			}
-
-			if ( Queue::count_attempt( (int) $id ) >= Queue::MAX_ATTEMPTS ) {
-				Queue::give_up( (int) $id );
-				Notifications::ask_for_help( (int) $id, Queue::MAX_ATTEMPTS );
-			}
-		}
-
-		set_transient(
-			'convoca_publisher_queue_notice_' . get_current_user_id(),
-			sprintf(
-				/* translators: %d: envíos que han salido */
-				_n( '%d envío recuperado.', '%d envíos recuperados.', $hechos, 'convoca-publisher' ),
-				$hechos
-			),
-			30
-		);
-		wp_safe_redirect( self::tab_url( 'queue' ) );
-		exit;
+		self::terminar( Manejador_Cola::forzar_atrasados( $todos, $post_id ) );
 	}
 
 	private static function render_queue_list(): void {
@@ -1501,15 +1460,7 @@ class Admin {
 		$dia    = isset( $_POST['convoca_publisher_dia'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['convoca_publisher_dia'] ) ) : '';
 		$cuando = isset( $_POST['convoca_publisher_cuando'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['convoca_publisher_cuando'] ) ) : '';
 
-		$sello = self::queue_parse_when( $dia, $cuando );
-
-		if ( $sello > 0 ) {
-			self::queue_move( $ref, $sello );
-			set_transient( 'convoca_publisher_queue_notice_' . get_current_user_id(), __( 'Envío reprogramado.', 'convoca-publisher' ), 30 );
-		}
-
-		wp_safe_redirect( self::tab_url( 'queue' ) );
-		exit;
+		self::terminar( Manejador_Cola::reprogramar( $ref, $dia, $cuando ) );
 	}
 
 	/**
@@ -1523,11 +1474,8 @@ class Admin {
 		check_admin_referer( 'convoca_publisher_queue_cancel' );
 
 		$ref = isset( $_POST['convoca_publisher_envio'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['convoca_publisher_envio'] ) ) : '';
-		self::queue_remove( $ref );
 
-		set_transient( 'convoca_publisher_queue_notice_' . get_current_user_id(), __( 'Envío quitado de la cola.', 'convoca-publisher' ), 30 );
-		wp_safe_redirect( self::tab_url( 'queue' ) );
-		exit;
+		self::terminar( Manejador_Cola::cancelar( $ref ) );
 	}
 
 	/**
@@ -1540,47 +1488,7 @@ class Admin {
 
 		check_admin_referer( 'convoca_publisher_queue_spacing' );
 
-		$movidos = Queue::apply_spacing();
-
-		set_transient(
-			'convoca_publisher_queue_notice_' . get_current_user_id(),
-			sprintf(
-				/* translators: %d: envíos recolocados */
-				_n( '%d envío recolocado.', '%d envíos recolocados.', $movidos, 'convoca-publisher' ),
-				$movidos
-			),
-			30
-		);
-		wp_safe_redirect( self::tab_url( 'queue' ) );
-		exit;
-	}
-
-	/**
-	 * Referencia de un envío («schedule:12» o «retry:5»).
-	 */
-	private static function queue_move( string $ref, int $when ): bool {
-		[$kind, $id] = array_pad( explode( ':', $ref, 2 ), 2, '' );
-		$id          = (int) $id;
-
-		if ( $id <= 0 ) {
-			return false;
-		}
-
-		return 'retry' === $kind ? Queue::reschedule_retry( $id, $when ) : Queue::reschedule_schedule( $id, $when );
-	}
-
-	/**
-	 * Quitar un envío de la cola.
-	 */
-	private static function queue_remove( string $ref ): bool {
-		[$kind, $id] = array_pad( explode( ':', $ref, 2 ), 2, '' );
-		$id          = (int) $id;
-
-		if ( $id <= 0 ) {
-			return false;
-		}
-
-		return 'retry' === $kind ? Queue::cancel_retry( $id ) : Queue::cancel_schedule( $id );
+		self::terminar( Manejador_Cola::recolocar() );
 	}
 
 	/**
@@ -1591,21 +1499,24 @@ class Admin {
 	 * completas (`$cuando`, de la lista de la cola). Todo en la zona horaria del sitio.
 	 */
 	public static function queue_parse_when( string $dia, string $cuando ): int {
-		$tz = wp_timezone();
+		return Manejador_Cola::parse_when( $dia, $cuando );
+	}
 
-		if ( '' !== $cuando ) {
-			$fecha = \DateTimeImmutable::createFromFormat( 'Y-m-d\TH:i', $cuando, $tz );
-
-			return $fecha instanceof \DateTimeImmutable ? $fecha->getTimestamp() : 0;
+	/**
+	 * Cierra un manejador: avisa, vuelve a la cola y corta la petición.
+	 *
+	 * Es el único sitio del bloque que sale con `exit`, y por eso el único que no se puede probar:
+	 * lo que se prueba es lo de antes, `Manejador_Cola`, que devuelve el resultado.
+	 *
+	 * @param array{ok: bool, aviso: string} $resultado Lo que ha pasado.
+	 */
+	private static function terminar( array $resultado ): void {
+		if ( '' !== $resultado['aviso'] ) {
+			set_transient( 'convoca_publisher_queue_notice_' . get_current_user_id(), $resultado['aviso'], 30 );
 		}
 
-		if ( '' !== $dia ) {
-			$fecha = \DateTimeImmutable::createFromFormat( 'Y-m-d H:i', $dia . ' 09:00', $tz );
-
-			return $fecha instanceof \DateTimeImmutable ? $fecha->getTimestamp() : 0;
-		}
-
-		return 0;
+		wp_safe_redirect( self::tab_url( 'queue' ) );
+		exit;
 	}
 
 	/**

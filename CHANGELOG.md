@@ -1,3 +1,17 @@
+## [1.22.21] — 2026-11-02
+
+### Cambiado
+
+- **los cuatro manejadores de la cola devuelven un resultado.** La lógica sale a `Manejador_Cola`
+  (`cancelar`, `reprogramar`, `recolocar`, `forzar_atrasados`), que no redirige ni sale: devuelve
+  `ok` y el aviso. En `Admin` quedan la puerta (permiso y nonce) y un único `terminar()` que avisa,
+  redirige y corta la petición.
+- **Consecuencia, y es la que se buscaba:** el camino feliz ya se puede probar. Antes, ejecutar un
+  manejador dentro de PHPUnit terminaba el proceso; ahora hay siete pruebas de efecto (quitar,
+  reprogramar, recolocar, fechas) y se han comprobado en negativo.
+- Quitar de la cola un envío que ya no estaba **lo dice** en vez de contestar «quitado»: el aviso
+  anterior era falso en ese caso. Reprogramar con una fecha ilegible sigue sin avisar, como antes.
+
 ## [1.22.20] — 2026-11-02
 
 ### Cambiado
