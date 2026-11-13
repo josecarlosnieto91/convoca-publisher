@@ -38,10 +38,35 @@ final class Vista_Guia {
 			<p><?php echo esc_html__( 'Sigue estos pasos para configurar cada red social. Necesitarás una cuenta de desarrollador en cada plataforma para obtener los tokens de acceso.', 'convoca-publisher' ); ?></p>
 		</div>
 
+		<!-- Caducidad y límites -->
+		<div class="cp-section" id="caducidad-redes">
+			<h2>⏱️ <?php esc_html_e( 'Caducidad y límites que conviene saber', 'convoca-publisher' ); ?></h2>
+			<p><?php esc_html_e( 'El plugin guarda el token que se pega a mano; no lo refresca solo. Estos son los plazos reales de cada red:', 'convoca-publisher' ); ?></p>
+			<table class="widefat striped">
+				<thead><tr><th><?php esc_html_e( 'Red', 'convoca-publisher' ); ?></th><th><?php esc_html_e( 'Duración de la credencial', 'convoca-publisher' ); ?></th><th><?php esc_html_e( 'Límite o requisito', 'convoca-publisher' ); ?></th></tr></thead>
+				<tbody>
+					<tr><td><?php esc_html_e( 'Facebook', 'convoca-publisher' ); ?></td><td><?php esc_html_e( 'No caduca si es token de página', 'convoca-publisher' ); ?></td><td><?php esc_html_e( 'Un token de usuario caduca a los 60 días; por eso el campo pide el de página.', 'convoca-publisher' ); ?></td></tr>
+					<tr><td><?php esc_html_e( 'Instagram', 'convoca-publisher' ); ?></td><td><?php esc_html_e( 'La del token de página', 'convoca-publisher' ); ?></td><td><?php esc_html_e( 'Imagen JPEG, HTTPS y proporción 4:5; no se puede editar el pie después.', 'convoca-publisher' ); ?></td></tr>
+					<tr><td><?php esc_html_e( 'LinkedIn', 'convoca-publisher' ); ?></td><td><?php esc_html_e( '60 días', 'convoca-publisher' ); ?></td><td><?php esc_html_e( 'El token de refresco de 365 días solo lo tienen apps partner; aquí se pega el de acceso.', 'convoca-publisher' ); ?></td></tr>
+					<tr><td><?php esc_html_e( 'TikTok', 'convoca-publisher' ); ?></td><td><?php esc_html_e( '1 día (24 h)', 'convoca-publisher' ); ?></td><td><?php esc_html_e( 'Exige vídeo; el token de acceso se renueva a mano.', 'convoca-publisher' ); ?></td></tr>
+					<tr><td><?php esc_html_e( 'Google My Business', 'convoca-publisher' ); ?></td><td><?php esc_html_e( '1 hora', 'convoca-publisher' ); ?></td><td><?php esc_html_e( 'El aviso del plugin usa 1 día de margen; el token real dura 60 minutos.', 'convoca-publisher' ); ?></td></tr>
+					<tr><td><?php esc_html_e( 'Twitter/X, Telegram y Mastodon', 'convoca-publisher' ); ?></td><td><?php esc_html_e( 'No caducan por su cuenta', 'convoca-publisher' ); ?></td><td><?php esc_html_e( 'Telegram: el bot debe ser administrador del grupo y el Chat ID es negativo. Los pies con imagen se limitan a 1024 caracteres.', 'convoca-publisher' ); ?></td></tr>
+				</tbody>
+			</table>
+		</div>
+
 		<!-- Facebook / Instagram -->
 		<div class="cp-section" id="canal-facebook">
-			<h2>📘 <?php echo esc_html__( 'Facebook / Instagram', 'convoca-publisher' ); ?></h2>
-			<p><strong><?php echo esc_html__( 'Requiere:', 'convoca-publisher' ); ?></strong> <?php echo esc_html__( 'Página de Facebook, App de Facebook Developer', 'convoca-publisher' ); ?></p>
+			<h2>📘 <?php esc_html_e( 'Facebook / Instagram', 'convoca-publisher' ); ?></h2>
+			<p><strong><?php esc_html_e( 'Requiere:', 'convoca-publisher' ); ?></strong> <?php esc_html_e( 'Página de Facebook, cuenta de Instagram profesional vinculada a esa página y una app de Meta for Developers.', 'convoca-publisher' ); ?></p>
+
+			<h3><?php esc_html_e( '1. Comprueba el vínculo Instagram ↔ página', 'convoca-publisher' ); ?></h3>
+			<ol>
+				<li><?php esc_html_e( 'Convierte la cuenta de Instagram en profesional (Business o Creator). Una cuenta personal no publica por API.', 'convoca-publisher' ); ?></li>
+				<li><?php esc_html_e( 'En la página de Facebook: Configuración → Cuentas vinculadas → Instagram. La cuenta debe aparecer ahí; si no, el canal publicará en Facebook y se saltará Instagram.', 'convoca-publisher' ); ?></li>
+			</ol>
+
+			<h3><?php esc_html_e( '2. Crea la app y autoriza solo lo necesario', 'convoca-publisher' ); ?></h3>
 			<ol>
 				<li>
 				<?php
@@ -51,16 +76,25 @@ final class Vista_Guia {
 					'<a href="https://developers.facebook.com/apps/" target="_blank">developers.facebook.com/apps/</a>'
 				);
 				?>
-					</li>
-				<li><?php echo esc_html__( 'Crea una app tipo "Business" o "Sin integración"', 'convoca-publisher' ); ?></li>
-				<li><?php echo esc_html__( 'En Productos, añade "Facebook Login" y "Instagram Graph API"', 'convoca-publisher' ); ?></li>
-				<li><?php echo esc_html__( 'Ve a Herramientas → "Generar token de página"', 'convoca-publisher' ); ?></li>
-				<li><?php echo esc_html__( 'Selecciona tu página y copia el token', 'convoca-publisher' ); ?></li>
-				<li><?php echo esc_html__( 'Copia también el ID de página (Page ID)', 'convoca-publisher' ); ?></li>
-				<li><?php echo esc_html__( 'Pega ambos en la pantalla del canal: Canales → Facebook / Instagram', 'convoca-publisher' ); ?></li>
+				</li>
+				<li><?php esc_html_e( 'Crea una app tipo "Business".', 'convoca-publisher' ); ?></li>
+				<li><?php esc_html_e( 'En Productos, añade "Facebook Login" e "Instagram Graph API".', 'convoca-publisher' ); ?></li>
+				<li><?php esc_html_e( 'Permisos exactos: pages_show_list, pages_read_engagement, pages_manage_posts, instagram_basic e instagram_content_publish.', 'convoca-publisher' ); ?></li>
+				<li><?php esc_html_e( 'En la ventana de consentimiento elige "solo las cuentas actuales" y marca únicamente la página y la cuenta de Instagram que se van a usar. No marques "todas las actuales y futuras": eso da acceso a páginas que no tocan.', 'convoca-publisher' ); ?></li>
+				<li><?php esc_html_e( 'Mientras la app esté en modo desarrollo funciona para administradores de la app, sin revisión de Meta. No pidas revisión hasta que la integración esté probada.', 'convoca-publisher' ); ?></li>
 			</ol>
-			<p><strong><?php echo esc_html__( 'Campos necesarios:', 'convoca-publisher' ); ?></strong> <?php echo esc_html__( 'Page Access Token, Page ID, Instagram Business ID (opcional)', 'convoca-publisher' ); ?></p>
-			<p><a href="https://developers.facebook.com/docs/pages/publishing/" target="_blank">📄 <?php echo esc_html__( 'Documentación oficial de Meta', 'convoca-publisher' ); ?></a></p>
+
+			<h3><?php esc_html_e( '3. Obtén el token de página y los dos ID', 'convoca-publisher' ); ?></h3>
+			<ol>
+				<li><?php esc_html_e( 'Genera un token de PÁGINA, no de usuario. El de página derivado de un usuario de larga duración no caduca; el de usuario caduca en 60 días.', 'convoca-publisher' ); ?></li>
+				<li><?php esc_html_e( 'Copia el Page ID de la página de Facebook.', 'convoca-publisher' ); ?></li>
+				<li><?php esc_html_e( 'El Instagram Business ID no se teclea de memoria. Léelo con el token de página:', 'convoca-publisher' ); ?><br><code>GET https://graph.facebook.com/v21.0/{page-id}?fields=instagram_business_account&amp;access_token={page-token}</code></li>
+				<li><?php esc_html_e( 'Pega el Page Access Token, el Page ID y el Instagram Business ID en Canales → Facebook / Instagram.', 'convoca-publisher' ); ?></li>
+			</ol>
+			<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Imagen obligatoria en Instagram:', 'convoca-publisher' ); ?></strong> <?php esc_html_e( 'sin imagen destacada la publicación se salta y solo queda el aviso en el historial. Meta necesita una URL pública HTTPS que responda 200, en JPEG (WebP no sirve) y con proporción dentro de 4:5; un cartel A4 vertical se rechaza o se recorta.', 'convoca-publisher' ); ?></p></div>
+			<p class="description"><?php esc_html_e( 'Instagram no permite editar el pie ni borrar un medio publicado con estos permisos. Revisa el texto antes de enviar.', 'convoca-publisher' ); ?></p>
+			<p><strong><?php esc_html_e( 'Campos necesarios:', 'convoca-publisher' ); ?></strong> <?php esc_html_e( 'Page Access Token, Page ID, Instagram Business ID (opcional, pero necesario para publicar en Instagram).', 'convoca-publisher' ); ?></p>
+			<p><a href="https://developers.facebook.com/docs/pages/publishing/" target="_blank">📄 <?php esc_html_e( 'Documentación oficial de Meta', 'convoca-publisher' ); ?></a></p>
 		</div>
 
 		<!-- LinkedIn -->
@@ -135,26 +169,36 @@ final class Vista_Guia {
 
 		<!-- Google My Business -->
 		<div class="cp-section" id="canal-googlemybusiness">
-			<h2>🏪 <?php echo esc_html__( 'Google My Business', 'convoca-publisher' ); ?></h2>
-			<p><strong><?php echo esc_html__( 'Requiere:', 'convoca-publisher' ); ?></strong> <?php echo esc_html__( 'Cuenta de Google, Proyecto en Google Cloud Console, Perfil de empresa en Google', 'convoca-publisher' ); ?></p>
+			<h2>🏪 <?php esc_html_e( 'Google My Business', 'convoca-publisher' ); ?></h2>
+			<p><strong><?php esc_html_e( 'Requiere:', 'convoca-publisher' ); ?></strong> <?php esc_html_e( 'Cuenta de Google, proyecto en Google Cloud Console, perfil de empresa y acceso aprobado a las APIs de Google Business Profile.', 'convoca-publisher' ); ?></p>
+
+			<h3><?php esc_html_e( '1. Pide el acceso (allowlist) ANTES de crear credenciales', 'convoca-publisher' ); ?></h3>
+			<p><?php esc_html_e( 'La API v4 no es de autoservicio. Con un proyecto nuevo responde 403 "Permission denied to get service". Hay que solicitar el acceso básico desde una cuenta que administre el perfil, indicando el número de proyecto, en:', 'convoca-publisher' ); ?> <a href="https://support.google.com/business/workflow/16726127" target="_blank"><?php esc_html_e( 'Solicitud de acceso básico a las APIs', 'convoca-publisher' ); ?></a>.</p> <!-- convoca-hygiene-ignore: dominio público de Google. -->
+			<p><?php esc_html_e( 'La revisión tarda 7–10 días laborables y solo se admite una solicitud por proyecto. No la reenvíes: si está en revisión, espera.', 'convoca-publisher' ); ?></p>
+
+			<h3><?php esc_html_e( '2. Habilita las tres APIs, no solo una', 'convoca-publisher' ); ?></h3>
+			<ul>
+				<li><code>mybusiness.googleapis.com</code> — <?php esc_html_e( 'publicaciones (API v4).', 'convoca-publisher' ); ?></li>
+				<li><code>mybusinessaccountmanagement.googleapis.com</code> — <?php esc_html_e( 'listar cuentas.', 'convoca-publisher' ); ?></li>
+				<li><code>mybusinessbusinessinformation.googleapis.com</code> — <?php esc_html_e( 'leer ubicaciones.', 'convoca-publisher' ); ?></li>
+			</ul>
+			<p><?php esc_html_e( 'Se pueden habilitar por autoservicio, pero mientras el proyecto no esté aprobado responden 429 con quota_limit_value: 0. La API está encendida y la cuota es cero: ese 429 es el bloqueo real, no un token mal copiado.', 'convoca-publisher' ); ?></p>
+
+			<h3><?php esc_html_e( '3. Credenciales OAuth y scope', 'convoca-publisher' ); ?></h3>
+			<p><?php esc_html_e( 'Crea credenciales OAuth 2.0 y autoriza el scope exacto:', 'convoca-publisher' ); ?> <code>https://www.googleapis.com/auth/business.manage</code>.</p>
+
+			<h3><?php esc_html_e( '4. Obtén el Location ID después de la aprobación', 'convoca-publisher' ); ?></h3>
 			<ol>
-				<li>
-				<?php
-				printf(
-					/* translators: %s: URL/link to the developer portal */
-					esc_html__( 'Ve a %s', 'convoca-publisher' ),
-					'<a href="https://console.cloud.google.com/" target="_blank">console.cloud.google.com</a>'
-				);
-				?>
-					</li>
-				<li><?php echo esc_html__( 'Crea un proyecto y habilita la API "Google My Business API"', 'convoca-publisher' ); ?></li>
-				<li><?php echo esc_html__( 'Crea credenciales OAuth 2.0 y obtén un token de acceso', 'convoca-publisher' ); ?></li>
-				<li><?php echo esc_html__( 'Para obtener el Location ID: usa la API de GMB o la herramienta de administración de Google', 'convoca-publisher' ); ?></li>
-				<li><?php echo esc_html__( 'El formato del Location ID es: accounts/{accountId}/locations/{locationId}', 'convoca-publisher' ); ?></li>
-				<li><?php echo esc_html__( 'Pega ambos en la pantalla del canal: Canales → Google My Business', 'convoca-publisher' ); ?></li>
+				<li><?php esc_html_e( 'Lista las cuentas a las que tiene acceso el usuario:', 'convoca-publisher' ); ?><br><code>GET https://mybusinessaccountmanagement.googleapis.com/v1/accounts</code><!-- convoca-hygiene-ignore: API pública de Google. --></li>
+				<li><?php esc_html_e( 'Lista las ubicaciones de la cuenta y copia el name completo:', 'convoca-publisher' ); ?><br><code>GET https://mybusinessbusinessinformation.googleapis.com/v1/{account}/locations</code></li>
+				<li><?php esc_html_e( 'El valor que se pega tiene la forma accounts/{accountId}/locations/{locationId}.', 'convoca-publisher' ); ?></li>
 			</ol>
-			<p><strong><?php echo esc_html__( 'Campos necesarios:', 'convoca-publisher' ); ?></strong> <?php echo esc_html__( 'Access Token (OAuth 2.0), Location ID', 'convoca-publisher' ); ?></p>
-			<p><a href="https://developers.google.com/my-business" target="_blank">📄 <?php echo esc_html__( 'Documentación oficial de GMB API', 'convoca-publisher' ); ?></a></p>
+
+			<h3><?php esc_html_e( '5. El token dura una hora', 'convoca-publisher' ); ?></h3>
+			<p><?php esc_html_e( 'El campo pide un Access Token OAuth 2.0 pegado a mano. Google lo caduca a los 60 minutos, así que el canal sirve para una publicación puntual, no para automatizar. Si el token se pega una hora antes, la publicación fallará al día siguiente.', 'convoca-publisher' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Para automatizar de verdad haría falta un refresh token (client_id, client_secret y refresh_token) y refrescar en cada envío. Hoy el plugin no lo hace; no es un fallo del token.', 'convoca-publisher' ); ?></p>
+			<p><strong><?php esc_html_e( 'Campos necesarios:', 'convoca-publisher' ); ?></strong> <?php esc_html_e( 'Access Token (OAuth 2.0), Location ID.', 'convoca-publisher' ); ?></p>
+			<p><a href="https://developers.google.com/my-business" target="_blank">📄 <?php esc_html_e( 'Documentación oficial de Google Business Profile API', 'convoca-publisher' ); ?></a></p>
 		</div>
 
 		<!-- Telegram -->
