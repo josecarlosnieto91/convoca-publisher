@@ -42,50 +42,91 @@ final class Preflight {
 			return self::empty_result();
 		}
 
-		$network = $channel instanceof Channel_Profile ? $channel->get_channel_id() : $channel->get_id();
-		$is_ig   = 'instagram' === $network || self::publishes_to_instagram( $channel, $network );
+		$network  = $channel instanceof Channel_Profile ? $channel->get_channel_id() : $channel->get_id();
+		$is_ig    = 'instagram' === $network || self::publishes_to_instagram( $channel, $network );
+		$message  = Publisher::instance() ? Publisher::instance()->preview_message( $post_id, $account_id ) : '';
+		$rules    = Platform_Rules::check( $is_ig ? 'instagram' : $network, $message );
+		$image    = self::image( $post_id );
+		$blockers = self::blockers( $post, $image, $is_ig, $check_url );
 
-		$message = Publisher::instance() ? Publisher::instance()->preview_message( $post_id, $account_id ) : '';
-		$rules   = Platform_Rules::check( $is_ig ? 'instagram' : $network, $message );
-		$image   = self::image( $post_id );
+		return array(
+			'ok'           => array() === $blockers,
+			'blockers'     => $blockers,
+			'warnings'     => self::warnings( $channel, $is_ig, $image, $rules ),
+			'message'      => (string) $rules['message'],
+			'account_name' => $channel->get_name(),
+			'network'      => $is_ig ? 'instagram' : $network,
+			'chars'        => (int) $rules['chars'],
+			'limit'        => (int) $rules['limit'],
+			'image'        => $image,
+		);
+	}
 
+	/**
+	 * Motivos que impiden enviar.
+	 *
+	 * @param \WP_Post $post      Entrada.
+	 * @param array<string, mixed> $image Imagen destacada.
+	 * @param bool     $is_ig     Si la cuenta publica en Instagram.
+	 * @param bool     $check_url Si se comprueba la URL de la imagen.
+	 * @return string[]
+	 */
+	private static function blockers( \WP_Post $post, array $image, bool $is_ig, bool $check_url ): array {
 		$blockers = array();
-		$warnings = array();
 
 		if ( '' === trim( (string) $post->post_title ) ) {
 			$blockers[] = __( 'La entrada no tiene título.', 'convoca-publisher' );
 		}
+
+		if ( ! $is_ig ) {
+			return $blockers;
+		}
+
+		if ( '' === $image['url'] ) {
+			return array_merge( $blockers, array( __( 'Instagram exige una imagen destacada: sin ella la publicación se saltaría.', 'convoca-publisher' ) ) );
+		}
+
+		if ( 'image/jpeg' !== $image['mime'] ) {
+			$blockers[] = sprintf(
+				/* translators: %s: MIME de la imagen */
+				__( 'Instagram solo acepta JPEG; la imagen es %s. Cambia la imagen destacada o expórtala en JPEG.', 'convoca-publisher' ),
+				'' !== $image['mime'] ? $image['mime'] : __( 'de tipo desconocido', 'convoca-publisher' )
+			);
+		}
+
+		if ( $check_url && 200 !== self::url_status( (string) $image['url'] ) ) {
+			$blockers[] = sprintf(
+				/* translators: 1: código HTTP, 2: URL de la imagen */
+				__( 'Instagram necesita una imagen pública que responda 200; %1$s devolvió %2$d.', 'convoca-publisher' ),
+				(string) $image['url'],
+				self::url_status( (string) $image['url'] )
+			);
+		}
+
+		return $blockers;
+	}
+
+	/**
+	 * Avisos que no impiden enviar.
+	 *
+	 * @param \ConvocaPublisher\Channels\ChannelInterface $channel Cuenta.
+	 * @param bool   $is_ig   Si publica en Instagram.
+	 * @param array<string, mixed> $image Imagen.
+	 * @param array<string, mixed> $rules Reglas de la red.
+	 * @return string[]
+	 */
+	private static function warnings( \ConvocaPublisher\Channels\ChannelInterface $channel, bool $is_ig, array $image, array $rules ): array {
+		$warnings = array();
 
 		if ( '' === $image['url'] ) {
 			$warnings[] = __( 'No hay imagen destacada; la publicación saldrá solo con texto.', 'convoca-publisher' );
 		}
 
 		if ( $is_ig ) {
-			if ( '' === $image['url'] ) {
-				$blockers[] = __( 'Instagram exige una imagen destacada: sin ella la publicación se saltaría.', 'convoca-publisher' );
-			} elseif ( 'image/jpeg' !== $image['mime'] ) {
-				$blockers[] = sprintf(
-					/* translators: %s: MIME de la imagen */
-					__( 'Instagram solo acepta JPEG; la imagen es %s. Cambia la imagen destacada o expórtala en JPEG.', 'convoca-publisher' ),
-					'' !== $image['mime'] ? $image['mime'] : __( 'de tipo desconocido', 'convoca-publisher' )
-				);
-			}
-
 			if ( $image['ratio'] > 0 && ( $image['ratio'] < 0.8 || $image['ratio'] > 1.91 ) ) {
 				$warnings[] = __( 'La proporción de la imagen se sale de 4:5–1.91:1: Instagram la recortará.', 'convoca-publisher' );
 			}
-
-			if ( '' !== $image['url'] && $check_url ) {
-				$status = self::url_status( $image['url'] );
-				if ( 200 !== $status ) {
-					$blockers[] = sprintf(
-						/* translators: 1: código HTTP, 2: URL de la imagen */
-						__( 'Instagram necesita una imagen pública que responda 200; %1$s devolvió %2$d.', 'convoca-publisher' ),
-						$image['url'],
-						$status
-					);
-				}
-			}
+			$warnings[] = __( 'Instagram no permite editar el pie ni borrar el medio después de publicar: revisa el texto antes de aprobar.', 'convoca-publisher' );
 		}
 
 		if ( ! $rules['fit'] ) {
@@ -98,25 +139,11 @@ final class Preflight {
 			);
 		}
 
-		foreach ( $rules['warnings'] as $warning ) {
-			$warnings[] = $warning;
+		foreach ( (array) $rules['warnings'] as $warning ) {
+			$warnings[] = (string) $warning;
 		}
 
-		if ( 'instagram' === $network || self::publishes_to_instagram( $channel, $network ) ) {
-			$warnings[] = __( 'Instagram no permite editar el pie ni borrar el medio después de publicar: revisa el texto antes de aprobar.', 'convoca-publisher' );
-		}
-
-		return array(
-			'ok'           => array() === $blockers,
-			'blockers'     => $blockers,
-			'warnings'     => array_values( array_unique( $warnings ) ),
-			'message'      => (string) $rules['message'],
-			'account_name' => $channel->get_name(),
-			'network'      => $is_ig ? 'instagram' : $network,
-			'chars'        => (int) $rules['chars'],
-			'limit'        => (int) $rules['limit'],
-			'image'        => $image,
-		);
+		return array_values( array_unique( $warnings ) );
 	}
 
 	/**

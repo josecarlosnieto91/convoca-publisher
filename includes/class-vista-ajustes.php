@@ -90,68 +90,7 @@ final class Vista_Ajustes {
 							<p class="description"><?php echo esc_html__( 'Máximo de publicaciones correctas por cuenta y día. 0 = sin límite. Evita ráfagas que el algoritmo penaliza.', 'convoca-publisher' ); ?></p>
 						</td>
 					</tr>
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Enrutado por categoría o etiqueta', 'convoca-publisher' ); ?></th>
-						<td>
-							<input type="hidden" name="convoca_publisher_routing[__reset]" value="1" />
-							<?php
-							$cp_cuentas = convoca_publisher()->get_channels();
-							$cp_reglas  = Routing::rules();
-							if ( array() === $cp_cuentas ) :
-								?>
-								<p class="description"><?php echo esc_html__( 'Configura primero una cuenta para poder enrutar.', 'convoca-publisher' ); ?></p>
-							<?php else : ?>
-								<p class="description"><?php echo esc_html__( 'Sin reglas, todas las cuentas reciben las entradas. Con reglas, solo las cuentas marcadas en las categorías o etiquetas que coinciden; si nada coincide, la entrada no se propone a nadie.', 'convoca-publisher' ); ?></p>
-								<table class="widefat striped cp-routing">
-									<thead><tr><th><?php echo esc_html__( 'Criterio', 'convoca-publisher' ); ?></th>
-									<?php
-									foreach ( $cp_cuentas as $cp_cuenta ) :
-										?>
-										<th><?php echo esc_html( $cp_cuenta->get_name() ); ?></th><?php endforeach; ?>
-									</tr></thead>
-									<tbody>
-									<?php
-									$cp_grupos = array(
-										'cat' => array(
-											__( 'Categorías', 'convoca-publisher' ), get_terms(
-												array(
-												'taxonomy' => 'category', 'hide_empty' => false, 'number' => 100
-												)
-											)
-										),
-										'tag' => array(
-											__( 'Etiquetas', 'convoca-publisher' ), get_terms(
-												array(
-												'taxonomy' => 'post_tag', 'hide_empty' => false, 'number' => 100
-												)
-											)
-										),
-									);
-									foreach ( $cp_grupos as $cp_tipo => $cp_grupo ) :
-										$cp_terminos = is_array( $cp_grupo[1] ) ? $cp_grupo[1] : array();
-										if ( array() === $cp_terminos ) :
-											continue;
-										endif;
-										?>
-										<tr><th colspan="<?php echo esc_attr( (string) ( count( $cp_cuentas ) + 1 ) ); ?>"><strong><?php echo esc_html( $cp_grupo[0] ); ?></strong></th></tr>
-										<?php foreach ( $cp_terminos as $cp_termino ) : ?>
-											<?php $cp_key = $cp_tipo . '_' . (int) $cp_termino->term_id; ?>
-											<tr>
-												<td><?php echo esc_html( $cp_termino->name ); ?></td>
-												<?php foreach ( $cp_cuentas as $cp_id => $cp_cuenta ) : ?>
-													<td>
-														<input type="hidden" name="convoca_publisher_routing[<?php echo esc_attr( $cp_key ); ?>][]" value="" />
-														<input type="checkbox" name="convoca_publisher_routing[<?php echo esc_attr( $cp_key ); ?>][]" value="<?php echo esc_attr( (string) $cp_id ); ?>" <?php checked( in_array( (string) $cp_id, (array) ( $cp_reglas[ $cp_key ] ?? array() ), true ) ); ?> />
-													</td>
-												<?php endforeach; ?>
-											</tr>
-										<?php endforeach; ?>
-									<?php endforeach; ?>
-									</tbody>
-								</table>
-							<?php endif; ?>
-						</td>
-					</tr>
+					<?php self::render_routing(); ?>
 					<tr>
 						<th scope="row"><?php echo esc_html__( 'Programación', 'convoca-publisher' ); ?></th>
 						<td>
@@ -205,5 +144,83 @@ final class Vista_Ajustes {
 		<?php submit_button(); ?>
 		</form>
 		<?php
+	}
+	/**
+	 * Tabla de enrutado: categoría/etiqueta → cuentas.
+	 */
+	private static function render_routing(): void {
+		?>
+						<tr>
+						<th scope="row"><?php echo esc_html__( 'Enrutado por categoría o etiqueta', 'convoca-publisher' ); ?></th>
+						<td>
+							<input type="hidden" name="convoca_publisher_routing[__reset]" value="1" />
+							<?php
+							$cp_cuentas = convoca_publisher()->get_channels();
+							$cp_reglas  = Routing::rules();
+							if ( array() === $cp_cuentas ) :
+								?>
+								<p class="description"><?php echo esc_html__( 'Configura primero una cuenta para poder enrutar.', 'convoca-publisher' ); ?></p>
+							<?php else : ?>
+								<p class="description"><?php echo esc_html__( 'Sin reglas, todas las cuentas reciben las entradas. Con reglas, solo las cuentas marcadas en las categorías o etiquetas que coinciden; si nada coincide, la entrada no se propone a nadie.', 'convoca-publisher' ); ?></p>
+								<table class="widefat striped cp-routing">
+									<thead><tr><th><?php echo esc_html__( 'Criterio', 'convoca-publisher' ); ?></th>
+									<?php
+									foreach ( $cp_cuentas as $cp_cuenta ) :
+										?>
+										<th><?php echo esc_html( $cp_cuenta->get_name() ); ?></th><?php endforeach; ?>
+									</tr></thead>
+									<tbody>
+									<?php self::render_routing_rows( $cp_cuentas, $cp_reglas ); ?>
+									</tbody>
+								</table>
+							<?php endif; ?>
+						</td>
+					</tr>
+					<?php
+	}
+	/**
+	 * Filas de la tabla de enrutado.
+	 *
+	 * @param array<string, object> $cp_cuentas Cuentas.
+	 * @param array<string, string[]> $cp_reglas Reglas guardadas.
+	 */
+	private static function render_routing_rows( array $cp_cuentas, array $cp_reglas ): void {
+						$cp_grupos = array(
+							'cat' => array(
+								__( 'Categorías', 'convoca-publisher' ), get_terms(
+									array(
+									'taxonomy' => 'category', 'hide_empty' => false, 'number' => 100
+									)
+								)
+							),
+							'tag' => array(
+								__( 'Etiquetas', 'convoca-publisher' ), get_terms(
+									array(
+									'taxonomy' => 'post_tag', 'hide_empty' => false, 'number' => 100
+									)
+								)
+							),
+						);
+						foreach ( $cp_grupos as $cp_tipo => $cp_grupo ) :
+							$cp_terminos = is_array( $cp_grupo[1] ) ? $cp_grupo[1] : array();
+							if ( array() === $cp_terminos ) :
+								continue;
+							endif;
+							?>
+										<tr><th colspan="<?php echo esc_attr( (string) ( count( $cp_cuentas ) + 1 ) ); ?>"><strong><?php echo esc_html( $cp_grupo[0] ); ?></strong></th></tr>
+										<?php foreach ( $cp_terminos as $cp_termino ) : ?>
+											<?php $cp_key = $cp_tipo . '_' . (int) $cp_termino->term_id; ?>
+											<tr>
+												<td><?php echo esc_html( $cp_termino->name ); ?></td>
+												<?php foreach ( $cp_cuentas as $cp_id => $cp_cuenta ) : ?>
+													<td>
+														<input type="hidden" name="convoca_publisher_routing[<?php echo esc_attr( $cp_key ); ?>][]" value="" />
+														<input type="checkbox" name="convoca_publisher_routing[<?php echo esc_attr( $cp_key ); ?>][]" value="<?php echo esc_attr( (string) $cp_id ); ?>" <?php checked( in_array( (string) $cp_id, (array) ( $cp_reglas[ $cp_key ] ?? array() ), true ) ); ?> />
+													</td>
+												<?php endforeach; ?>
+											</tr>
+										<?php endforeach; ?>
+									<?php endforeach; ?>
+					<?php
 	}
 }

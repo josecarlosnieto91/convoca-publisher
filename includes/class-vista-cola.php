@@ -198,39 +198,7 @@ final class Vista_Cola {
 			<?php self::render_queue_table( $fallidos, true ); ?>
 		<?php endif; ?>
 
-		<h2><?php echo esc_html__( 'Lo último que salió', 'convoca-publisher' ); ?></h2>
-		<table class="wp-list-table widefat striped">
-			<thead>
-				<tr>
-					<th scope="col"><?php echo esc_html__( 'Cuándo', 'convoca-publisher' ); ?></th>
-					<th scope="col"><?php echo esc_html__( 'Cuenta', 'convoca-publisher' ); ?></th>
-					<th scope="col"><?php echo esc_html__( 'Entrada', 'convoca-publisher' ); ?></th>
-					<th scope="col"><?php echo esc_html__( 'Resultado', 'convoca-publisher' ); ?></th>
-					<th scope="col"><?php echo esc_html__( 'Enlace', 'convoca-publisher' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach ( array_slice( Queue::sent_entries( 20 ), 0, 20 ) as $salio ) : ?>
-					<tr>
-						<td><?php echo esc_html( $salio['time'] ); ?></td>
-						<td><?php echo esc_html( $salio['account'] ); ?></td>
-						<td><?php echo esc_html( $salio['title'] ); ?></td>
-						<td>
-							<?php if ( $salio['success'] ) : ?>
-								<span class="cp-status cp-status--ok">✅ <?php echo esc_html__( 'Enviado', 'convoca-publisher' ); ?></span>
-							<?php else : ?>
-								<span class="cp-status cp-status--fail">❌ <?php echo esc_html( (string) $salio['detail'] ); ?></span>
-							<?php endif; ?>
-						</td>
-						<td>
-							<?php if ( ! empty( $salio['permalink'] ) ) : ?>
-								<a href="<?php echo esc_url( (string) $salio['permalink'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html__( 'Ver entrada', 'convoca-publisher' ); ?></a>
-							<?php endif; ?>
-						</td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
+		<?php self::render_sent_table(); ?>
 		<?php
 	}
 
@@ -504,6 +472,46 @@ final class Vista_Cola {
 								<?php wp_nonce_field( 'convoca_publisher_queue_send_stuck' ); ?>
 								<button type="submit" class="button"><?php echo esc_html__( 'Enviar ahora', 'convoca-publisher' ); ?></button>
 							</form>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+		<?php
+	}
+	/**
+	 * Tabla de lo último que salió.
+	 */
+	private static function render_sent_table(): void {
+		?>
+		<h2><?php echo esc_html__( 'Lo último que salió', 'convoca-publisher' ); ?></h2>
+		<table class="wp-list-table widefat striped">
+			<thead>
+				<tr>
+					<th scope="col"><?php echo esc_html__( 'Cuándo', 'convoca-publisher' ); ?></th>
+					<th scope="col"><?php echo esc_html__( 'Cuenta', 'convoca-publisher' ); ?></th>
+					<th scope="col"><?php echo esc_html__( 'Entrada', 'convoca-publisher' ); ?></th>
+					<th scope="col"><?php echo esc_html__( 'Resultado', 'convoca-publisher' ); ?></th>
+					<th scope="col"><?php echo esc_html__( 'Enlace', 'convoca-publisher' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( array_slice( Queue::sent_entries( 20 ), 0, 20 ) as $salio ) : ?>
+					<tr>
+						<td><?php echo esc_html( $salio['time'] ); ?></td>
+						<td><?php echo esc_html( $salio['account'] ); ?></td>
+						<td><?php echo esc_html( $salio['title'] ); ?></td>
+						<td>
+							<?php if ( $salio['success'] ) : ?>
+								<span class="cp-status cp-status--ok">✅ <?php echo esc_html__( 'Enviado', 'convoca-publisher' ); ?></span>
+							<?php else : ?>
+								<span class="cp-status cp-status--fail">❌ <?php echo esc_html( (string) $salio['detail'] ); ?></span>
+							<?php endif; ?>
+						</td>
+						<td>
+							<?php if ( ! empty( $salio['permalink'] ) ) : ?>
+								<a href="<?php echo esc_url( (string) $salio['permalink'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html__( 'Ver entrada', 'convoca-publisher' ); ?></a>
+							<?php endif; ?>
 						</td>
 					</tr>
 				<?php endforeach; ?>

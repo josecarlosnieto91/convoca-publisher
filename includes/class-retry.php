@@ -271,6 +271,7 @@ class Retry {
 		 * @var object{id: int|string, post_id: int|string, channel: string, payload?: string, status?: string, created_at?: string}|null $item
 		 */
 		$item = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ) );
+
 		if ( ! $item || ! in_array( (string) ( $item->status ?? '' ), array( self::STATUS_PENDING_REVIEW, self::STATUS_PROPOSAL ), true ) ) {
 			return array(
 				'success' => false,
@@ -278,22 +279,36 @@ class Retry {
 			);
 		}
 
+		return self::approve_item( $item, $id );
+	}
+
+	/**
+	 * Enviar una fila aprobada y dejar rastro.
+	 *
+	 * @param object{post_id: int|string, channel: string, payload?: string} $item Fila.
+	 * @param int                                                           $id   Id de la fila.
+	 * @return array{success: bool, error?: string, post_id?: string}
+	 */
+	private static function approve_item( object $item, int $id ): array {
+		global $wpdb;
+		$table = $wpdb->prefix . self::TABLE;
+
 		$post    = get_post( (int) $item->post_id );
 		$channel = convoca_publisher()->get_channel( (string) $item->channel );
 
 		if ( ! $post || ! $channel ) {
 			$wpdb->delete( $table, array( 'id' => $id ) );
 			delete_post_meta( (int) $item->post_id, '_convoca_publisher_moderation' );
+
 			return array(
 				'success' => false,
 				'error'   => __( 'Post o canal no disponibles.', 'convoca-publisher' ),
 			);
 		}
 
-		$url     = get_permalink( $post );
 		$message = (string) ( $item->payload ?? '' );
+		$check   = Preflight::validate( (int) $item->post_id, (string) $item->channel );
 
-		$check = Preflight::validate( (int) $item->post_id, (string) $item->channel );
 		if ( ! $check['ok'] ) {
 			return array(
 				'success' => false,
@@ -302,33 +317,44 @@ class Retry {
 		}
 
 		$image  = (string) wp_get_attachment_image_url( (int) get_post_thumbnail_id( (int) $item->post_id ), 'full' );
-		$result = $channel->publish( (int) $item->post_id, $message, $url, $image );
+		$result = $channel->publish( (int) $item->post_id, $message, (string) get_permalink( $post ), $image );
 
 		$wpdb->delete( $table, array( 'id' => $id ) );
 		delete_post_meta( (int) $item->post_id, '_convoca_publisher_moderation' );
+		self::log_approval( $item, $result );
 
-		$publicador = Publisher::instance();
-		if ( $publicador ) {
-			$publicador->log_publish(
-				array(
-					'post_id'     => (int) $item->post_id,
-					'title'       => (string) get_the_title( (int) $item->post_id ),
-					'channel'     => (string) $item->channel,
-					'success'     => ! empty( $result['success'] ),
-					'time'        => current_time( 'mysql' ),
-					'post_id_red' => (string) ( $result['post_id'] ?? '' ),
-					'permalink'   => (string) get_permalink( (int) $item->post_id ),
-					'response'    => trim( (string) ( $result['post_id'] ?? $result['error'] ?? '' ) . ( '' !== (string) ( $result['notice'] ?? '' ) ? ' — ' . (string) ( $result['notice'] ?? '' ) : '' ) ),
-				)
-			);
-		}
-
-		// Si falla al aprobar, reintenta con el backoff normal.
 		if ( empty( $result['success'] ) ) {
 			self::enqueue( (int) $item->post_id, (string) $item->channel, $message, 0 );
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Dejar constancia en el historial de una propuesta aprobada.
+	 *
+	 * @param object{post_id: int|string, channel: string} $item   Fila de la cola.
+	 * @param array<string, mixed>                        $result Respuesta del canal.
+	 */
+	private static function log_approval( object $item, array $result ): void {
+		$publicador = Publisher::instance();
+
+		if ( ! $publicador ) {
+			return;
+		}
+
+		$publicador->log_publish(
+			array(
+				'post_id'     => (int) $item->post_id,
+				'title'       => (string) get_the_title( (int) $item->post_id ),
+				'channel'     => (string) $item->channel,
+				'success'     => ! empty( $result['success'] ),
+				'time'        => current_time( 'mysql' ),
+				'post_id_red' => (string) ( $result['post_id'] ?? '' ),
+				'permalink'   => (string) get_permalink( (int) $item->post_id ),
+				'response'    => trim( (string) ( $result['post_id'] ?? $result['error'] ?? '' ) . ( '' !== (string) ( $result['notice'] ?? '' ) ? ' — ' . (string) ( $result['notice'] ?? '' ) : '' ) ),
+			)
+		);
 	}
 
 	/**
