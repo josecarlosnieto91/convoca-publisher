@@ -1,3 +1,10 @@
+## [1.22.23] — 2026-11-13
+
+### Cambiado
+
+- **guia de Facebook, Instagram y Google My Business completa**
+- Documenta el allowlist de GMB, las tres APIs, la caducidad real del token y los requisitos de Instagram.
+
 ## [1.22.22] — 2026-11-02
 
 ### Cambiado
