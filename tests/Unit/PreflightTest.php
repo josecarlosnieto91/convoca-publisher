@@ -76,6 +76,16 @@ final class PreflightTest extends TestCase
         $this->assertNotEmpty($check['warnings'], 'Instagram siempre avisa de que el pie no se puede editar.');
     }
 
+    public function test_una_imagen_que_no_responde_bloquea_instagram(): void
+    {
+        $GLOBALS['_cp_test_head_response'] = ['response' => ['code' => 404]];
+
+        $check = Preflight::validate(5, $this->account, true);
+
+        $this->assertFalse($check['ok']);
+        $this->assertStringContainsString('devolvió 404', implode(' ', $check['blockers']));
+    }
+
     public function test_sin_titulo_es_un_bloqueo(): void
     {
         $GLOBALS['_cp_test_titles'][5] = '';
