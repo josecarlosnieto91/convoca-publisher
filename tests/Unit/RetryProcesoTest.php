@@ -322,7 +322,7 @@ final class RetryProcesoTest extends TestCase
 
         $stats = Retry::get_queue_stats();
 
-        $this->assertSame(['pending' => 7, 'pending_review' => 7, 'failed' => 7], $stats, 'string de la base a int');
+        $this->assertSame(['pending' => 7, 'pending_review' => 7, 'proposal' => 7, 'failed' => 7], $stats, 'string de la base a int');
     }
 
     public function test_las_entradas_en_revision_se_listan(): void

@@ -240,11 +240,57 @@ final class Queue {
 
 		// La misma regla para la cola y para el publicador: desmarcada en el editor o sin
 		// credenciales, esa cuenta no recibe la entrada.
-		return array_filter(
+		$cuentas = array_filter(
 			$accounts ?? convoca_publisher()->get_channels(),
 			static fn( object $account ): bool => ! in_array( $account->get_id(), $desactivadas, true )
 				&& $account->is_available()
 		);
+
+		/**
+		 * Cuentas que quedan tras el enrutado.
+		 *
+		 * @var array<string, Channels\ChannelInterface> $filtradas
+		 */
+		$filtradas = Routing::filter_accounts( $post_id, $cuentas );
+
+		return $filtradas;
+	}
+
+	/**
+	 * Límite diario por cuenta (0 = sin límite).
+	 */
+	public static function daily_limit(): int {
+		return max( 0, (int) get_option( 'convoca_publisher_daily_limit', 0 ) );
+	}
+
+	/**
+	 * ¿Esta cuenta ha llegado ya al límite de hoy?
+	 *
+	 * El historial es la fuente: una fila correcta por envío, contando solo hoy y
+	 * excluyendo las pruebas para no bloquear por una comprobación manual.
+	 */
+	public static function daily_limit_reached( string $account_id ): bool {
+		$limit = self::daily_limit();
+		if ( $limit <= 0 ) {
+			return false;
+		}
+
+		$hoy   = (string) current_time( 'Y-m-d' );
+		$count = 0;
+
+		foreach ( (array) get_option( 'convoca_publisher_publish_log', array() ) as $entry ) {
+			if ( ! is_array( $entry ) || empty( $entry['success'] ) || ! empty( $entry['test'] ) ) {
+				continue;
+			}
+			if ( (string) ( $entry['channel'] ?? '' ) !== $account_id ) {
+				continue;
+			}
+			if ( str_starts_with( (string) ( $entry['time'] ?? '' ), $hoy ) ) {
+				++$count;
+			}
+		}
+
+		return $count >= $limit;
 	}
 
 	/**
@@ -312,11 +358,12 @@ final class Queue {
 			}
 
 			$entries[] = array(
-				'title'   => (string) ( $entry['title'] ?? '' ),
-				'account' => (string) ( $entry['channel'] ?? '' ),
-				'success' => ! empty( $entry['success'] ),
-				'time'    => (string) ( $entry['time'] ?? '' ),
-				'detail'  => (string) ( $entry['response'] ?? '' ),
+				'title'     => (string) ( $entry['title'] ?? '' ),
+				'account'   => (string) ( $entry['channel'] ?? '' ),
+				'success'   => ! empty( $entry['success'] ),
+				'time'      => (string) ( $entry['time'] ?? '' ),
+				'detail'    => (string) ( $entry['response'] ?? '' ),
+				'permalink' => (string) ( $entry['permalink'] ?? ( ! empty( $entry['post_id'] ) ? get_permalink( (int) $entry['post_id'] ) : '' ) ),
 			);
 		}
 

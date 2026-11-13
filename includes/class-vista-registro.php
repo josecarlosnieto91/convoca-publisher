@@ -228,7 +228,24 @@ endif;
 			$message = $notice['message'] ?? $notice['error'] ?? '';
 			echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible"><p>' . esc_html( $icon ) . ' ' . esc_html( $message ) . '</p></div>';
 		}
+		/**
+		 * Propuestas pendientes.
+		 *
+		 * @var array<int, object{id: int|string, post_id: int|string, channel: string, payload?: string}> $propuestas
+		 */
+		$propuestas = Retry::get_proposals();
 		?>
+		<div class="cp-section">
+			<h2><?php echo esc_html__( 'Propuestas de publicación', 'convoca-publisher' ); ?></h2>
+			<p class="description"><?php echo esc_html__( 'Publicar una entrada no envía nada: crea una propuesta por cuenta. Revisa el texto y la imagen; aprobar es el envío.', 'convoca-publisher' ); ?></p>
+			<?php if ( array() === $propuestas ) : ?>
+				<p><?php echo esc_html__( 'No hay propuestas pendientes.', 'convoca-publisher' ); ?></p>
+			<?php else : ?>
+				<?php foreach ( $propuestas as $propuesta ) : ?>
+					<?php self::render_proposal( $propuesta ); ?>
+				<?php endforeach; ?>
+			<?php endif; ?>
+		</div>
 		<div class="cp-section">
 			<h2><?php echo esc_html__( 'Cola de moderación', 'convoca-publisher' ); ?></h2>
 			<?php if ( empty( $items ) ) : ?>
@@ -278,6 +295,48 @@ endif;
 				</table>
 			<?php endif; ?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Tarjeta de una propuesta.
+	 *
+	 * @param object{id: int|string, post_id: int|string, channel: string, payload?: string} $propuesta Fila.
+	 */
+	private static function render_proposal( object $propuesta ): void {
+			$propuesta_id     = (int) $propuesta->id;
+			$propuesta_post   = get_post( (int) $propuesta->post_id );
+			$propuesta_cuenta = convoca_publisher()->get_channel( (string) $propuesta->channel );
+			$propuesta_check  = Preflight::validate( (int) $propuesta->post_id, (string) $propuesta->channel );
+			$aprobar_url      = wp_nonce_url( admin_url( 'admin-post.php?action=convoca_publisher_approve_review&id=' . $propuesta_id ), 'convoca_publisher_review_' . $propuesta_id );
+			$rechazar_url     = wp_nonce_url( admin_url( 'admin-post.php?action=convoca_publisher_reject_review&id=' . $propuesta_id ), 'convoca_publisher_review_' . $propuesta_id );
+		?>
+			<div class="cp-section" style="border:1px solid #dcdcde;padding:12px;margin-bottom:12px">
+				<p>
+					<strong><?php echo $propuesta_post ? esc_html( $propuesta_post->post_title ) : esc_html__( '(entrada eliminada)', 'convoca-publisher' ); ?></strong>
+					— <?php echo esc_html( $propuesta_cuenta ? $propuesta_cuenta->get_name() : (string) $propuesta->channel ); ?>
+				</p>
+				<?php if ( $propuesta_check['image']['url'] ) : ?>
+					<p><img src="<?php echo esc_url( $propuesta_check['image']['url'] ); ?>" alt="" style="max-width:180px;height:auto" /></p>
+					<p class="description"><?php echo esc_html( sprintf( '%d × %d px · %s', (int) $propuesta_check['image']['width'], (int) $propuesta_check['image']['height'], (string) $propuesta_check['image']['mime'] ) ); ?></p>
+				<?php else : ?>
+					<p class="description"><?php echo esc_html__( 'Sin imagen destacada.', 'convoca-publisher' ); ?></p>
+				<?php endif; ?>
+				<pre style="white-space:pre-wrap;background:#f6f7f7;padding:8px"><?php echo esc_html( (string) ( $propuesta->payload ?? '' ) ); ?></pre>
+				<p class="description"><?php echo esc_html( sprintf( '%d / %d caracteres', (int) $propuesta_check['chars'], (int) $propuesta_check['limit'] ) ); ?></p>
+				<?php foreach ( $propuesta_check['blockers'] as $bloqueo ) : ?>
+					<p class="cp-status cp-status--fail">⛔ <?php echo esc_html( $bloqueo ); ?></p>
+				<?php endforeach; ?>
+				<?php foreach ( $propuesta_check['warnings'] as $aviso ) : ?>
+					<p class="cp-status">⚠️ <?php echo esc_html( $aviso ); ?></p>
+				<?php endforeach; ?>
+				<p>
+					<?php if ( $propuesta_check['ok'] ) : ?>
+						<a href="<?php echo esc_url( $aprobar_url ); ?>" class="button button-primary"><?php echo esc_html__( 'Publicar ahora', 'convoca-publisher' ); ?></a>
+					<?php endif; ?>
+					<a href="<?php echo esc_url( $rechazar_url ); ?>" class="button"><?php echo esc_html__( 'Descartar', 'convoca-publisher' ); ?></a>
+				</p>
+			</div>
 		<?php
 	}
 }

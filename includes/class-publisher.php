@@ -79,7 +79,8 @@ class Publisher {
 		if ( get_post_meta( $post_id, '_convoca_publisher_published', true ) ) {
 			return;
 		}
-		if ( ! get_option( 'convoca_publisher_auto_publish', true ) ) {
+		if ( ! get_option( 'convoca_publisher_auto_publish', false ) ) {
+			$this->propose_post( $post_id );
 			return;
 		}
 
@@ -103,8 +104,60 @@ class Publisher {
 		$this->publish_post( $post_id );
 	}
 
+	/**
+	 * Crear una propuesta por cuenta en vez de enviar.
+	 *
+	 * Es el modo por defecto: publicar la entrada no publica en redes. La propuesta
+	 * guarda el mensaje final y se aprueba desde la pestaña de moderación.
+	 *
+	 * @return int Propuestas creadas.
+	 */
+	public function propose_post( int $post_id ): int {
+		$post = get_post( $post_id );
+		if ( ! $post instanceof \WP_Post || 'post' !== $post->post_type ) {
+			return 0;
+		}
+
+		if ( get_post_meta( $post_id, '_convoca_publisher_published', true ) ) {
+			return 0;
+		}
+
+		$cuentas = Queue::accounts_for_post( $post_id, $this->channels );
+		if ( array() === $cuentas ) {
+			update_post_meta( $post_id, '_convoca_publisher_proposal_note', Routing::no_match_note( $post_id ) ?: __( 'No hay cuentas disponibles para esta entrada.', 'convoca-publisher' ) );
+			return 0;
+		}
+
+		$url      = (string) get_permalink( $post );
+		$hashtags = $this->get_post_hashtags( $post );
+		$creadas  = 0;
+
+		foreach ( $cuentas as $channel_id => $channel ) {
+			if ( Retry::has_proposal( $post_id, (string) $channel_id ) ) {
+				continue;
+			}
+
+			$message = $this->build_channel_message( $post, $channel, $url, $hashtags );
+			$red     = $this->network_of( $channel );
+			$cabe    = Platform_Rules::check( $red, $message );
+			Retry::enqueue_proposal( $post_id, (string) $channel_id, (string) $cabe['message'] );
+			++$creadas;
+		}
+
+		if ( $creadas > 0 ) {
+			delete_post_meta( $post_id, '_convoca_publisher_proposal_note' );
+			update_post_meta( $post_id, '_convoca_publisher_proposed', current_time( 'mysql' ) );
+		}
+
+		return $creadas;
+	}
+
 	public function on_scheduled_publish( \WP_Post $post ): void {
 		if ( ! get_option( 'convoca_publisher_enable_scheduler', true ) ) {
+			return;
+		}
+		if ( ! get_option( 'convoca_publisher_auto_publish', false ) ) {
+			$this->propose_post( $post->ID );
 			return;
 		}
 		$this->publish_post( $post->ID );
@@ -243,20 +296,34 @@ class Publisher {
 				continue;
 			}
 
+			if ( Queue::daily_limit_reached( (string) $channel_id ) ) {
+				$results[ $channel_id ] = array(
+					'success' => false,
+					'error'   => __( 'Límite diario de esta cuenta alcanzado; no se ha enviado.', 'convoca-publisher' ),
+				);
+				$warnings[]             = sprintf(
+					/* translators: %s: nombre de la cuenta */
+					__( 'No se envió a %s: límite diario alcanzado.', 'convoca-publisher' ),
+					$channel->get_name()
+				);
+				continue;
+			}
+
 			$result                 = $channel->publish( $post_id, $message, $url, $image_url );
 			$results[ $channel_id ] = array_merge( $result, $avisos );
 			$sent_any               = true;
 
 			$this->log_publish(
 				array(
-					'post_id'  => $post_id,
-					'title'    => $post->post_title,
-					'channel'  => $channel_id,
-					'success'  => $result['success'],
-					'time'     => current_time( 'mysql' ),
+					'post_id'   => $post_id,
+					'title'     => $post->post_title,
+					'channel'   => $channel_id,
+					'permalink' => $url,
+					'success'   => $result['success'],
+					'time'      => current_time( 'mysql' ),
 					// Un envío puede salir bien en una red y mal en otra (el muro se publica y
 					// Instagram falla): el aviso va con la respuesta para que el historial lo cuente.
-					'response' => trim(
+					'response'  => trim(
 						(string) ( $result['post_id'] ?? $result['error'] ?? '' )
 						. ( '' !== (string) ( $result['notice'] ?? '' ) ? ' — ' . (string) ( $result['notice'] ?? '' ) : '' )
 					),
@@ -325,15 +392,16 @@ class Publisher {
 		// prueba para no confundirla con una publicación de la entrada.
 		$this->log_publish(
 			array(
-				'post_id'  => $post_id,
-				'title'    => $post->post_title,
-				'channel'  => $channel_id,
-				'success'  => ! empty( $resultado['success'] ),
-				'time'     => current_time( 'mysql' ),
-				'response' => ! empty( $resultado['success'] )
+				'post_id'   => $post_id,
+				'title'     => $post->post_title,
+				'channel'   => $channel_id,
+				'permalink' => (string) get_permalink( $post ),
+				'success'   => ! empty( $resultado['success'] ),
+				'time'      => current_time( 'mysql' ),
+				'response'  => ! empty( $resultado['success'] )
 					? __( 'Prueba de publicación: salió.', 'convoca-publisher' )
 					: (string) ( $resultado['error'] ?? __( 'Prueba de publicación: falló.', 'convoca-publisher' ) ),
-				'test'     => true,
+				'test'      => true,
 			)
 		);
 
@@ -648,7 +716,7 @@ class Publisher {
 	 *
 	 * @param array<string, mixed> $entry Entrada del historial.
 	 */
-	private function log_publish( array $entry ): void {
+	public function log_publish( array $entry ): void {
 		$logs   = get_option( 'convoca_publisher_publish_log', array() );
 		$logs[] = $entry;
 		if ( count( $logs ) > 200 ) {

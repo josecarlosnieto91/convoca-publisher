@@ -152,7 +152,7 @@ class Admin {
 			'convoca_publisher_auto_publish',
 			array(
 				'type'    => 'boolean',
-				'default' => true,
+				'default' => false,
 			)
 		);
 		register_setting(
@@ -192,6 +192,26 @@ class Admin {
 				'default'           => array(),
 			)
 		);
+		register_setting(
+			'convoca_publisher_settings',
+			'convoca_publisher_daily_limit',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => array( self::class, 'sanitize_daily_limit' ),
+				'show_in_rest'      => false,
+				'default'           => 0,
+			)
+		);
+		register_setting(
+			'convoca_publisher_settings',
+			Routing::OPTION,
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( self::class, 'sanitize_routing' ),
+				'show_in_rest'      => false,
+				'default'           => array(),
+			)
+		);
 	}
 
 	/**
@@ -224,6 +244,43 @@ class Admin {
 		// guardado terminaba en un 500. Pasaba guardando una plantilla porque el grupo de
 		// ajustes se guarda entero desde esa pestaña, aunque el intervalo no se toque.
 		return Queue::clamp_interval( (int) $value );
+	}
+
+	/**
+	 * Límite diario por cuenta: 0–20 (0 = sin límite).
+	 *
+	 * @param mixed $value Valor recibido.
+	 */
+	public static function sanitize_daily_limit( $value ): int {
+		return max( 0, min( 20, (int) $value ) );
+	}
+
+	/**
+	 * Reglas de enrutado: `cat_12`/`tag_34` => ids de cuenta existentes.
+	 *
+	 * @param mixed $value Valor recibido.
+	 * @return array<string, string[]>
+	 */
+	public static function sanitize_routing( $value ): array {
+		if ( ! is_array( $value ) ) {
+			return array();
+		}
+
+		$valid = array_keys( convoca_publisher()->get_channels() );
+		$rules = array();
+
+		foreach ( $value as $key => $ids ) {
+			if ( ! is_string( $key ) || ! preg_match( '/^(cat|tag)_[0-9]+$/', $key ) ) {
+				continue;
+			}
+
+			$clean = array_values( array_unique( array_intersect( array_map( 'strval', (array) $ids ), $valid ) ) );
+			if ( array() !== $clean ) {
+				$rules[ $key ] = $clean;
+			}
+		}
+
+		return $rules;
 	}
 
 	/**
