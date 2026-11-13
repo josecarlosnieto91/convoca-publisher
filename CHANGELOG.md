@@ -1,3 +1,10 @@
+## [1.22.24] — 2026-11-13
+
+### Cambiado
+
+- **propuestas con validación previa y enrutado**
+- Publicar crea propuestas con preflight; auto_publish deja de ser el defecto; enrutado por categoría/etiqueta y límite diario.
+
 ## [1.22.23] — 2026-11-13
 
 ### Cambiado
