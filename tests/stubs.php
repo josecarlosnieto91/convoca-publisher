@@ -194,7 +194,8 @@ function get_the_excerpt(\WP_Post|int $post = null): string
 }
 function get_post_thumbnail_id(\WP_Post|int $post = null): int|false
 {
-    return false;
+    unset($post);
+    return $GLOBALS['_cp_test_thumbnail_id'] ?? false;
 }
 function get_the_post_thumbnail_url(\WP_Post|int $post = null, string|array $size = 'post-thumbnail'): string|false
 {
@@ -323,6 +324,32 @@ function wp_get_post_categories(int $post_id = 0, array $args = []): array
 function wp_get_post_tags(int $post_id, array $args = []): array
 {
     return $GLOBALS['_cp_test_tags'][$post_id] ?? [];
+}
+function get_terms(array|string $args = [], array $deprecated = []): array|WP_Error
+{
+    unset($deprecated);
+    $taxonomy = is_array($args) ? (string) ($args['taxonomy'] ?? '') : (string) $args;
+    return $GLOBALS['_cp_test_terms'][$taxonomy] ?? [];
+}
+function wp_get_attachment_image_url(int $attachment_id, string|array $size = 'thumbnail'): string|false
+{
+    unset($attachment_id, $size);
+    return $GLOBALS['_cp_test_attachment_url'] ?? '';
+}
+function wp_get_attachment_metadata(int $attachment_id): array|false
+{
+    unset($attachment_id);
+    return $GLOBALS['_cp_test_attachment_meta'] ?? [];
+}
+function get_post_mime_type(\WP_Post|int $post = null): string|false
+{
+    unset($post);
+    return $GLOBALS['_cp_test_mime'] ?? '';
+}
+function wp_remote_head(string $url, array $args = []): array|WP_Error
+{
+    $GLOBALS['_cp_test_http'][] = ['method' => 'HEAD', 'url' => $url, 'args' => $args];
+    return $GLOBALS['_cp_test_head_response'] ?? ['response' => ['code' => 200]];
 }
 function sanitize_title(string $title): string
 {

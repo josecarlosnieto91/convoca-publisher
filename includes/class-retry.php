@@ -53,6 +53,8 @@ class Retry {
 
 	private const STATUS_PENDING_REVIEW = 'pending_review';
 
+	public const STATUS_PROPOSAL = 'proposal';
+
 	public const STATUS_FAILED = 'failed';
 
 	/**
@@ -187,6 +189,54 @@ class Retry {
 	}
 
 	/**
+	 * Encolar una propuesta de publicación (modo borrador).
+	 *
+	 * @param int    $post_id ID del post.
+	 * @param string $channel ID de la cuenta.
+	 * @param string $payload Mensaje final renderizado.
+	 * @return int ID de la fila insertada.
+	 */
+	public static function enqueue_proposal( int $post_id, string $channel, string $payload = '' ): int {
+		return self::enqueue( $post_id, $channel, $payload, 0, self::STATUS_PROPOSAL );
+	}
+
+	/**
+	 * ¿Hay ya una propuesta para esta entrada y cuenta?
+	 */
+	public static function has_proposal( int $post_id, string $channel ): bool {
+		global $wpdb;
+		$table = $wpdb->prefix . self::TABLE;
+
+		return (bool) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT id FROM {$table} WHERE post_id = %d AND channel = %s AND status = %s LIMIT 1",
+				$post_id,
+				$channel,
+				self::STATUS_PROPOSAL
+			)
+		);
+	}
+
+	/**
+	 * Propuestas pendientes de aprobación.
+	 *
+	 * @return array<int, object>
+	 */
+	public static function get_proposals(): array {
+		global $wpdb;
+		$table = $wpdb->prefix . self::TABLE;
+
+		$items = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$table} WHERE status = %s ORDER BY created_at ASC, id ASC",
+				self::STATUS_PROPOSAL
+			)
+		);
+
+		return is_array( $items ) ? $items : array();
+	}
+
+	/**
 	 * Listar entradas pendientes de revisión.
 	 *
 	 * @return array<int, object>
@@ -215,8 +265,13 @@ class Retry {
 		global $wpdb;
 		$table = $wpdb->prefix . self::TABLE;
 
+		/**
+		 * Fila de la cola.
+		 *
+		 * @var object{id: int|string, post_id: int|string, channel: string, payload?: string, status?: string, created_at?: string}|null $item
+		 */
 		$item = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ) );
-		if ( ! $item || ( $item->status ?? '' ) !== self::STATUS_PENDING_REVIEW ) {
+		if ( ! $item || ! in_array( (string) ( $item->status ?? '' ), array( self::STATUS_PENDING_REVIEW, self::STATUS_PROPOSAL ), true ) ) {
 			return array(
 				'success' => false,
 				'error'   => __( 'Entrada de moderación no encontrada.', 'convoca-publisher' ),
@@ -237,10 +292,36 @@ class Retry {
 
 		$url     = get_permalink( $post );
 		$message = (string) ( $item->payload ?? '' );
-		$result  = $channel->publish( (int) $item->post_id, $message, $url );
+
+		$check = Preflight::validate( (int) $item->post_id, (string) $item->channel );
+		if ( ! $check['ok'] ) {
+			return array(
+				'success' => false,
+				'error'   => implode( ' ', $check['blockers'] ),
+			);
+		}
+
+		$image  = (string) wp_get_attachment_image_url( (int) get_post_thumbnail_id( (int) $item->post_id ), 'full' );
+		$result = $channel->publish( (int) $item->post_id, $message, $url, $image );
 
 		$wpdb->delete( $table, array( 'id' => $id ) );
 		delete_post_meta( (int) $item->post_id, '_convoca_publisher_moderation' );
+
+		$publicador = Publisher::instance();
+		if ( $publicador ) {
+			$publicador->log_publish(
+				array(
+					'post_id'     => (int) $item->post_id,
+					'title'       => (string) get_the_title( (int) $item->post_id ),
+					'channel'     => (string) $item->channel,
+					'success'     => ! empty( $result['success'] ),
+					'time'        => current_time( 'mysql' ),
+					'post_id_red' => (string) ( $result['post_id'] ?? '' ),
+					'permalink'   => (string) get_permalink( (int) $item->post_id ),
+					'response'    => trim( (string) ( $result['post_id'] ?? $result['error'] ?? '' ) . ( '' !== (string) ( $result['notice'] ?? '' ) ? ' — ' . (string) ( $result['notice'] ?? '' ) : '' ) ),
+				)
+			);
+		}
 
 		// Si falla al aprobar, reintenta con el backoff normal.
 		if ( empty( $result['success'] ) ) {
@@ -260,6 +341,11 @@ class Retry {
 		global $wpdb;
 		$table = $wpdb->prefix . self::TABLE;
 
+		/**
+		 * Fila de la cola.
+		 *
+		 * @var object{post_id: int|string, channel: string}|null $item
+		 */
 		$item = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ) );
 		if ( ! $item ) {
 			return false;
@@ -453,6 +539,7 @@ class Retry {
 		return array(
 			'pending'        => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE status = %s", self::STATUS_PENDING ) ),
 			'pending_review' => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE status = %s", self::STATUS_PENDING_REVIEW ) ),
+			'proposal'       => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE status = %s", self::STATUS_PROPOSAL ) ),
 			'failed'         => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE status = %s", self::STATUS_FAILED ) ),
 		);
 	}

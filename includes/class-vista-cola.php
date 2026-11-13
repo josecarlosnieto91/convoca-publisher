@@ -206,6 +206,7 @@ final class Vista_Cola {
 					<th scope="col"><?php echo esc_html__( 'Cuenta', 'convoca-publisher' ); ?></th>
 					<th scope="col"><?php echo esc_html__( 'Entrada', 'convoca-publisher' ); ?></th>
 					<th scope="col"><?php echo esc_html__( 'Resultado', 'convoca-publisher' ); ?></th>
+					<th scope="col"><?php echo esc_html__( 'Enlace', 'convoca-publisher' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -219,6 +220,11 @@ final class Vista_Cola {
 								<span class="cp-status cp-status--ok">✅ <?php echo esc_html__( 'Enviado', 'convoca-publisher' ); ?></span>
 							<?php else : ?>
 								<span class="cp-status cp-status--fail">❌ <?php echo esc_html( (string) $salio['detail'] ); ?></span>
+							<?php endif; ?>
+						</td>
+						<td>
+							<?php if ( ! empty( $salio['permalink'] ) ) : ?>
+								<a href="<?php echo esc_url( (string) $salio['permalink'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html__( 'Ver entrada', 'convoca-publisher' ); ?></a>
 							<?php endif; ?>
 						</td>
 					</tr>

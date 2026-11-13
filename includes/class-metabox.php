@@ -128,10 +128,15 @@ class Metabox {
 			// El botón «Republicar» vivía aquí sin ningún JS que lo escuchara: pulsarlo no
 			// hacía nada. La acción AJAX a la que apuntaba se ha retirado (ver docs/deuda-tecnica.md).
 			// Para republicar está «Compartir ahora», que sí funciona.
-		} elseif ( get_option( 'convoca_publisher_auto_publish', true ) ) {
+		} elseif ( get_option( 'convoca_publisher_auto_publish', false ) ) {
 			echo '<p>' . esc_html__( 'Se publicará automáticamente al guardar.', 'convoca-publisher' ) . '</p>';
 		} else {
-			echo '<p>' . esc_html__( 'No se publica solo: usa «Compartir ahora» cuando quieras publicarlo.', 'convoca-publisher' ) . '</p>';
+			echo '<p>' . esc_html__( 'No se publica solo: al guardar se crea una propuesta por cuenta en Convoca Publisher → Moderación. Allí la revisas y la apruebas.', 'convoca-publisher' ) . '</p>';
+		}
+
+		$nota = (string) get_post_meta( $post->ID, '_convoca_publisher_proposal_note', true );
+		if ( '' !== $nota ) {
+			echo '<p class="cp-meta__warn">⚠️ ' . esc_html( $nota ) . '</p>';
 		}
 
 		if ( ! empty( $channels ) ) {
@@ -196,6 +201,15 @@ class Metabox {
 				</p>
 				<p class="cp-previa" data-cp-previa><?php echo esc_html( $mensaje ); ?></p>
 				<p class="cp-aviso" data-cp-aviso hidden></p>
+				<?php
+				$cp_check = Preflight::validate( (int) $post->ID, (string) $id, false );
+				foreach ( $cp_check['blockers'] as $cp_bloqueo ) {
+					echo '<p class="cp-meta__fail">⛔ ' . esc_html( $cp_bloqueo ) . '</p>';
+				}
+				foreach ( $cp_check['warnings'] as $cp_aviso ) {
+					echo '<p class="cp-meta__warn">⚠️ ' . esc_html( $cp_aviso ) . '</p>';
+				}
+				?>
 				<p>
 					<button type="button" class="button button-small cp-compartir" data-post-id="<?php echo esc_attr( (string) $post->ID ); ?>" data-cuenta="<?php echo esc_attr( (string) $id ); ?>">
 						<?php echo esc_html__( 'Compartir ahora en esta cuenta', 'convoca-publisher' ); ?>
