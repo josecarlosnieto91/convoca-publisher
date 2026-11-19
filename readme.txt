@@ -2,7 +2,7 @@
 Contributors: josecarlosnietoramos
 Tags: social-media, publishing, scheduling, telegram, mastodon
 Requires at least: 6.4
-Tested up to: 7.1.4
+Tested up to: 7.1.5
 Requires PHP: 8.2
 Stable tag: 1.22.24
 License: GPL-2.0-or-later
