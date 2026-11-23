@@ -126,6 +126,56 @@ final class CanalesRealesTest extends TestCase
     /**
      * @dataProvider canales
      */
+    /**
+     * Google My Business rechaza `UNSPECIFIED_ALERT_TYPE` con `STANDARD` (publisher#22).
+     */
+    public function test_gmb_no_manda_alert_type_con_una_publicacion_standard(): void
+    {
+        foreach ($this->credenciales()['googlemybusiness'] as $opcion => $valor) {
+            $GLOBALS['_cp_test_options'][$opcion] = $valor;
+        }
+
+        $GLOBALS['_cp_test_http'] = [];
+        $GLOBALS['_cp_test_http_queue'] = [
+            ['response' => ['code' => 200], 'body' => '{"name":"accounts/1/locations/2/localPosts/3"}'],
+        ];
+
+        $resultado = (new GoogleMyBusiness())->publish(10, 'Mensaje de prueba', 'https://example.com/?p=10');
+
+        $this->assertTrue($resultado['success'], 'con 200 y name la publicación vale');
+        $this->assertNotEmpty($GLOBALS['_cp_test_http'], 'tiene que haber llamado a la API');
+
+        $cuerpo = json_decode((string) $GLOBALS['_cp_test_http'][0]['args']['body'], true);
+
+        $this->assertArrayNotHasKey('alertType', $cuerpo, 'con STANDARD el campo no se manda: la API lo rechaza');
+        $this->assertSame('STANDARD', $cuerpo['topicType']);
+    }
+
+    /**
+     * Con imagen, el anuncio de GMB lleva el medio.
+     */
+    public function test_gmb_manda_la_imagen_cuando_la_hay(): void
+    {
+        foreach ($this->credenciales()['googlemybusiness'] as $opcion => $valor) {
+            $GLOBALS['_cp_test_options'][$opcion] = $valor;
+        }
+
+        $GLOBALS['_cp_test_http'] = [];
+        $GLOBALS['_cp_test_http_queue'] = [
+            ['response' => ['code' => 200], 'body' => '{"name":"accounts/1/locations/2/localPosts/4"}'],
+        ];
+
+        (new GoogleMyBusiness())->publish(10, 'Mensaje', 'https://example.com/?p=10', 'https://example.com/foto.jpg');
+
+        $cuerpo = json_decode((string) $GLOBALS['_cp_test_http'][0]['args']['body'], true);
+
+        $this->assertSame('https://example.com/foto.jpg', $cuerpo['media'][0]['sourceUrl']);
+        $this->assertSame('PHOTO', $cuerpo['media'][0]['mediaFormat']);
+    }
+
+    /**
+     * @dataProvider canales
+     */
     public function test_con_credenciales_y_red_que_falla_no_dice_que_publico(object $canal): void
     {
         foreach ($this->credenciales()[$canal->get_id()] as $opcion => $valor) {

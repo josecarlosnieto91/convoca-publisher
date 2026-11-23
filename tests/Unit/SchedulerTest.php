@@ -240,6 +240,173 @@ final class SchedulerTest extends TestCase
         $this->assertCount(0, $canal->sent);
     }
 
+    public function test_un_fallo_agotado_no_se_reintenta_y_avisa_una_sola_vez(): void
+    {
+        $canal = new FakeChannel('fb', 'facebook', 'Facebook');
+        $this->conPublisher($canal);
+        $GLOBALS['_cp_test_options']['admin_email'] = 'admin@example.com';
+        $GLOBALS['_cp_test_options']['convoca_publisher_publish_log'] = [
+            ['post_id' => 10, 'success' => false, 'channel' => 'fb', 'time' => '', 'response' => ''],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_publish_results'] = [
+            'fb' => ['success' => false, 'error' => 'siempre falla'],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_retry_failures'] = [
+            'fb' => ['attempts' => 5, 'next' => 0],
+        ];
+
+        Scheduler::retry_failed();
+        Scheduler::retry_failed();
+
+        $this->assertCount(0, $canal->sent, 'agotado el tope no se vuelve a llamar a la red');
+        $this->assertCount(1, $GLOBALS['_cp_test_mail'] ?? [], 'se avisa una vez, no en cada vuelta');
+    }
+
+    public function test_un_reintento_que_todavia_no_toca_no_se_adelanta(): void
+    {
+        $canal = new FakeChannel('fb', 'facebook', 'Facebook');
+        $this->conPublisher($canal);
+        $GLOBALS['_cp_test_options']['convoca_publisher_publish_log'] = [
+            ['post_id' => 10, 'success' => false, 'channel' => 'fb', 'time' => '', 'response' => ''],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_publish_results'] = [
+            'fb' => ['success' => false, 'error' => 'falla'],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_retry_failures'] = [
+            'fb' => ['attempts' => 1, 'next' => time() + 3600],
+        ];
+
+        Scheduler::retry_failed();
+
+        $this->assertCount(0, $canal->sent, 'el backoff se respeta');
+    }
+
+    public function test_si_la_cola_ya_lleva_esa_cuenta_no_se_vuelve_a_llamar(): void
+    {
+        $canal = new FakeChannel('fb', 'facebook', 'Facebook');
+        $this->conPublisher($canal);
+        $GLOBALS['_cp_test_options']['convoca_publisher_publish_log'] = [
+            ['post_id' => 10, 'success' => false, 'channel' => 'fb', 'time' => '', 'response' => ''],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_publish_results'] = [
+            'fb' => ['success' => false, 'error' => 'falla'],
+        ];
+        // La cola dice que ya hay un pendiente para esta entrada y cuenta.
+        $GLOBALS['_cp_test_db']['var'] = 42;
+
+        Scheduler::retry_failed();
+
+        $this->assertCount(0, $canal->sent, 'un solo dueño del reintento: la cola');
+    }
+
+    public function test_un_reintento_que_sale_limpia_el_contador(): void
+    {
+        $canal = new FakeChannel('fb', 'facebook', 'Facebook');
+        $this->conPublisher($canal);
+        $GLOBALS['_cp_test_options']['convoca_publisher_publish_log'] = [
+            ['post_id' => 10, 'success' => false, 'channel' => 'fb', 'time' => '', 'response' => ''],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_publish_results'] = [
+            'fb' => ['success' => false, 'error' => 'falla'],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_retry_failures'] = [
+            'fb' => ['attempts' => 2, 'next' => 0],
+        ];
+
+        Scheduler::retry_failed();
+
+        $this->assertCount(1, $canal->sent, 'ya tocaba reintentar');
+        $this->assertArrayNotHasKey('_convoca_publisher_retry_failures', $GLOBALS['_cp_test_postmeta'][10] ?? [], 'si sale, se deja de contar');
+    }
+
+    public function test_el_aviso_de_agotado_no_se_repite(): void
+    {
+        $canal = new FakeChannel('fb', 'facebook', 'Facebook');
+        $this->conPublisher($canal);
+        $GLOBALS['_cp_test_options']['admin_email'] = 'admin@example.com';
+        $GLOBALS['_cp_test_options']['convoca_publisher_publish_log'] = [
+            ['post_id' => 10, 'success' => false, 'channel' => 'fb', 'time' => '', 'response' => ''],
+            ['post_id' => 10, 'success' => true, 'channel' => 'fb', 'time' => '', 'response' => ''],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_publish_results'] = [
+            'fb' => ['success' => false, 'error' => 'falla'],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_retry_failures'] = [
+            'fb' => ['attempts' => 5, 'next' => 0],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_retry_notified'] = '1';
+
+        Scheduler::retry_failed();
+
+        $this->assertCount(0, $canal->sent);
+        $this->assertSame([], $GLOBALS['_cp_test_mail'] ?? [], 'ya se avisó antes: no se repite');
+    }
+
+    public function test_un_log_sin_canal_usa_las_cuentas_del_ultimo_resultado(): void
+    {
+        $canal = new FakeChannel('fb', 'facebook', 'Facebook');
+        $this->conPublisher($canal);
+        $GLOBALS['_cp_test_options']['convoca_publisher_publish_log'] = [
+            ['post_id' => 10, 'success' => false, 'time' => '', 'response' => 'sin canal'],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_publish_results'] = [
+            'fb' => ['success' => false, 'error' => 'falla'],
+        ];
+
+        Scheduler::retry_failed();
+
+        $this->assertCount(1, $canal->sent, 'sin canal en el log se usan las que fallaron en el último resultado');
+    }
+
+    public function test_un_contador_roto_no_impide_el_reintento(): void
+    {
+        $canal = new FakeChannel('fb', 'facebook', 'Facebook');
+        $this->conPublisher($canal);
+        $GLOBALS['_cp_test_options']['convoca_publisher_publish_log'] = [
+            ['post_id' => 10, 'success' => false, 'channel' => 'fb', 'time' => '', 'response' => ''],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_publish_results'] = [
+            'fb' => ['success' => false, 'error' => 'falla'],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_retry_failures'] = 'basura';
+
+        Scheduler::retry_failed();
+
+        $this->assertCount(1, $canal->sent);
+    }
+
+    public function test_el_ultimo_reintento_avisa_al_agotarse(): void
+    {
+        $canal = new FakeChannel('fb', 'facebook', 'Facebook', false, 'sigue fallando');
+        $this->conPublisher($canal);
+        $GLOBALS['_cp_test_options']['admin_email'] = 'admin@example.com';
+        $GLOBALS['_cp_test_options']['convoca_publisher_publish_log'] = [
+            ['post_id' => 10, 'success' => false, 'channel' => 'fb', 'time' => '', 'response' => ''],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_publish_results'] = [
+            'fb' => ['success' => false, 'error' => 'sigue fallando'],
+        ];
+        $GLOBALS['_cp_test_postmeta'][10]['_convoca_publisher_retry_failures'] = [
+            'fb' => ['attempts' => 4, 'next' => 0],
+        ];
+
+        Scheduler::retry_failed();
+
+        $this->assertCount(1, $canal->sent);
+        $this->assertNotEmpty($GLOBALS['_cp_test_mail'] ?? [], 'el quinto fallo avisa');
+    }
+
+    public function test_un_historial_roto_no_reintenta_nada(): void
+    {
+        $canal = new FakeChannel('fb', 'facebook', 'Facebook');
+        $this->conPublisher($canal);
+        $GLOBALS['_cp_test_options']['convoca_publisher_publish_log'] = 'basura';
+
+        Scheduler::retry_failed();
+
+        $this->assertCount(0, $canal->sent);
+    }
+
     public function test_al_reintentar_agotado_pide_ayuda(): void
     {
         $canal = new FakeChannel('fb', 'facebook', 'Facebook');

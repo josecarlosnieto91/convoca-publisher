@@ -1,3 +1,23 @@
+## [1.23.1] — 2026-11-24
+
+### Corregido
+
+- **Google My Business rechazaba todos los envíos (#22).** Se mandaba `alertType` con
+  `UNSPECIFIED_ALERT_TYPE`, que es el valor por defecto del enum y no un valor enviable: la API
+  devolvía «Invalid value at 'local_post.alert_type'». Con `topicType = STANDARD` el campo se omite.
+- **La cola de reintentos ya no se duplica.** `Retry::enqueue()` insertaba una fila por cada fallo;
+  ahora, si ya hay un `pending` para la misma entrada y cuenta, actualiza el mensaje y devuelve esa
+  fila. En biodevas había 696 pendientes para tres entradas.
+- **El reintento desde el historial tiene tope y backoff.** Antes recorría todas las filas fallidas
+  cada hora sin límite ni espera y se realimentaba con sus propios fallos. Ahora lleva el contador por
+  entrada y cuenta (`_convoca_publisher_retry_failures`), respeta el backoff de la cola, no toca las
+  cuentas que ya tienen un pendiente y avisa **una sola vez** al agotar los intentos.
+
+### Notas
+
+- Los pendientes duplicados que ya existen se pueden consolidar sin tocar datos de publicación; la
+  limpieza de la cola de biodevas se hizo aparte, con copia previa.
+
 ## [1.23.0] — 2026-11-23
 
 ### Añadido
@@ -6,9 +26,10 @@
   salen las cuentas configuradas) y `cola de moderación` (PRO). Dentro de la cola cada cuenta tiene
   su estado: `Enviar al publicar`, `Dejar propuesta para revisar` y `No enviar: solo a mano`.
 - Ajustes enseña el modo y el estado de cada cuenta en una sola tabla. La migración traduce la
-  configuración anterior sin cambiar el comportamiento: `auto_publish` desactivado → modo automático
-  con todo «solo a mano»; moderación total → cola con todo a revisar; moderación por canal → cola con
-  esas cuentas a revisar y el resto automáticas.
+  configuración anterior: moderación total → cola con todo a revisar; moderación por canal → cola con
+  esas cuentas a revisar y el resto automáticas; `auto_publish` desactivado → modo automático con todo
+  «solo a mano» (antes dejaba una propuesta por entrada; ahora no envía ni encola, que es la decisión
+  de producto para no llenar la cola de pendientes falsos).
 - `_convoca_publisher_sent` guarda, por cuenta, cuándo salió la entrada, con su id y su permalink.
   Una entrada que salió por Google ya no bloquea el envío a Facebook ni el botón «Compartir ahora».
 
