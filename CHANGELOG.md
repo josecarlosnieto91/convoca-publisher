@@ -6,9 +6,10 @@
   salen las cuentas configuradas) y `cola de moderación` (PRO). Dentro de la cola cada cuenta tiene
   su estado: `Enviar al publicar`, `Dejar propuesta para revisar` y `No enviar: solo a mano`.
 - Ajustes enseña el modo y el estado de cada cuenta en una sola tabla. La migración traduce la
-  configuración anterior sin cambiar el comportamiento: `auto_publish` desactivado → modo automático
-  con todo «solo a mano»; moderación total → cola con todo a revisar; moderación por canal → cola con
-  esas cuentas a revisar y el resto automáticas.
+  configuración anterior: moderación total → cola con todo a revisar; moderación por canal → cola con
+  esas cuentas a revisar y el resto automáticas; `auto_publish` desactivado → modo automático con todo
+  «solo a mano» (antes dejaba una propuesta por entrada; ahora no envía ni encola, que es la decisión
+  de producto para no llenar la cola de pendientes falsos).
 - `_convoca_publisher_sent` guarda, por cuenta, cuándo salió la entrada, con su id y su permalink.
   Una entrada que salió por Google ya no bloquea el envío a Facebook ni el botón «Compartir ahora».
 
