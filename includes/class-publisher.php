@@ -36,6 +36,14 @@ class Publisher {
 	public const MESSAGE_META = '_convoca_publisher_message';
 
 	/**
+	 * Marca por cuenta de que la entrada ya salió (publisher#20).
+	 *
+	 * Sustituye al booleano `_convoca_publisher_published`, que impedía compartir en una cuenta
+	 * después de que otra hubiera publicado.
+	 */
+	public const SENT_META = '_convoca_publisher_sent';
+
+	/**
 	 * Arranca el motor con las cuentas indicadas.
 	 *
 	 * @param array<string, \ConvocaPublisher\Channels\ChannelInterface> $channels Cuentas.
@@ -76,17 +84,16 @@ class Publisher {
 		if ( $post->post_status !== 'publish' ) {
 			return;
 		}
-		if ( get_post_meta( $post_id, '_convoca_publisher_published', true ) ) {
-			return;
-		}
-		if ( ! get_option( 'convoca_publisher_auto_publish', false ) ) {
-			$this->propose_post( $post_id );
-			return;
-		}
 
 		// Si tiene programación, no publicar ahora (lo hará el cron)
 		$schedule_ts = (int) get_post_meta( $post_id, '_convoca_publisher_schedule_time', true );
 		if ( $schedule_ts > 0 ) {
+			return;
+		}
+
+		// Qué cuentas tienen algo que hacer: las que esperan revisión y las que envían solas.
+		// Una cuenta en `manual` no se toca hasta que alguien comparte (publisher#20).
+		if ( ! $this->has_work( $post_id ) ) {
 			return;
 		}
 
@@ -95,6 +102,63 @@ class Publisher {
 		if ( ! wp_next_scheduled( 'convoca_publisher_async_publish', array( $post_id ) ) ) {
 			wp_schedule_single_event( time() + 5, 'convoca_publisher_async_publish', array( $post_id ) );
 		}
+	}
+
+	/**
+	 * ¿Le queda algo por hacer a alguna cuenta con esta entrada?
+	 *
+	 * `manual` no cuenta (no envía ni encola) y una cuenta ya enviada tampoco.
+	 *
+	 * @param int $post_id Entrada.
+	 */
+	private function has_work( int $post_id ): bool {
+		$enviadas = self::sent_map( $post_id );
+
+		foreach ( Queue::accounts_for_post( $post_id, $this->channels ) as $channel_id => $channel ) {
+			unset( $channel );
+			$channel_id = (string) $channel_id;
+
+			if ( Policy::MANUAL === Policy::policy_for( $channel_id ) ) {
+				continue;
+			}
+
+			if ( ! isset( $enviadas[ $channel_id ] ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Cuentas a las que ya ha salido esta entrada, con su marca.
+	 *
+	 * @param int $post_id Entrada.
+	 * @return array<string, array{time?: string, post_id?: string, permalink?: string}>
+	 */
+	public static function sent_map( int $post_id ): array {
+		$mapa = get_post_meta( $post_id, self::SENT_META, true );
+
+		return is_array( $mapa ) ? $mapa : array();
+	}
+
+	/**
+	 * Apunta que una entrada ha salido por una cuenta.
+	 *
+	 * @param int    $post_id   Entrada.
+	 * @param string $channel_id Cuenta.
+	 * @param string $remote_id  Identificador en la red (si lo devolvió).
+	 */
+	public static function mark_sent( int $post_id, string $channel_id, string $remote_id = '' ): void {
+		$mapa = self::sent_map( $post_id );
+
+		$mapa[ $channel_id ] = array(
+			'time'      => (string) current_time( 'mysql' ),
+			'post_id'   => $remote_id,
+			'permalink' => (string) get_permalink( $post_id ),
+		);
+
+		update_post_meta( $post_id, self::SENT_META, $mapa );
 	}
 
 	/**
@@ -118,9 +182,7 @@ class Publisher {
 			return 0;
 		}
 
-		if ( get_post_meta( $post_id, '_convoca_publisher_published', true ) ) {
-			return 0;
-		}
+		$enviadas = self::sent_map( $post_id );
 
 		$cuentas = Queue::accounts_for_post( $post_id, $this->channels );
 		if ( array() === $cuentas ) {
@@ -133,7 +195,9 @@ class Publisher {
 		$creadas  = 0;
 
 		foreach ( $cuentas as $channel_id => $channel ) {
-			if ( Retry::has_proposal( $post_id, (string) $channel_id ) ) {
+			$channel_id = (string) $channel_id;
+
+			if ( isset( $enviadas[ $channel_id ] ) || Retry::has_proposal( $post_id, $channel_id ) ) {
 				continue;
 			}
 
@@ -156,37 +220,7 @@ class Publisher {
 		if ( ! get_option( 'convoca_publisher_enable_scheduler', true ) ) {
 			return;
 		}
-		if ( ! get_option( 'convoca_publisher_auto_publish', false ) ) {
-			$this->propose_post( $post->ID );
-			return;
-		}
 		$this->publish_post( $post->ID );
-	}
-
-	/**
-	 * Modo de moderación previa configurado (off|all|canal).
-	 */
-	public function moderation_mode(): string {
-		$mode = get_option( 'convoca_publisher_moderation', 'off' );
-
-		return in_array( $mode, array( 'off', 'all', 'canal' ), true ) ? $mode : 'off';
-	}
-
-	/**
-	 * Indica si un canal concreto requiere moderación previa.
-	 */
-	public function channel_needs_moderation( string $channel_id ): bool {
-		$mode = $this->moderation_mode();
-
-		if ( $mode === 'all' ) {
-			return true;
-		}
-		if ( $mode === 'canal' ) {
-			$channels = get_option( 'convoca_publisher_moderation_channels', array() );
-			return is_array( $channels ) && in_array( $channel_id, $channels, true );
-		}
-
-		return false;
 	}
 
 	/**
@@ -217,9 +251,7 @@ class Publisher {
 			return array();
 		}
 
-		if ( ! $force && get_post_meta( $post_id, '_convoca_publisher_published', true ) ) {
-			return array();
-		}
+		$enviadas = self::sent_map( $post_id );
 
 		$url       = get_permalink( $post );
 		$image_url = $this->get_featured_image( $post );
@@ -247,6 +279,27 @@ class Publisher {
 		}
 
 		foreach ( $cuentas as $channel_id => $channel ) {
+			$channel_id = (string) $channel_id;
+			$policy     = Policy::policy_for( $channel_id );
+
+			// `manual`: no se envía ni se encola; solo sale cuando alguien comparte esa cuenta.
+			if ( Policy::MANUAL === $policy && ! $force ) {
+				$results[ $channel_id ] = array(
+					'success' => false,
+					'skipped' => Policy::MANUAL,
+				);
+				continue;
+			}
+
+			// Envío normal: no se repite lo que ya salió por esa cuenta.
+			if ( ! $force && isset( $enviadas[ $channel_id ] ) ) {
+				$results[ $channel_id ] = array(
+					'success' => false,
+					'skipped' => 'enviada',
+				);
+				continue;
+			}
+
 			$message = $this->build_channel_message( $post, $channel, $url, $hashtags, $message_override );
 
 			// Lo que admite la red: se recorta lo que no cabe y se avisa de lo que solo conviene.
@@ -274,9 +327,11 @@ class Publisher {
 
 			$message = $cabe['message'];
 
-			// D15 — Moderación previa: encolar pendiente de revisión en vez de enviar.
-			if ( $this->channel_needs_moderation( $channel_id ) && ! $approved ) {
-				Retry::enqueue_review( $post_id, $channel_id, $message );
+			// Moderación (PRO): la cuenta en `revisar` deja una propuesta, no se envía.
+			if ( Policy::REVIEW === $policy && ! $approved ) {
+				if ( ! Retry::has_proposal( $post_id, $channel_id ) ) {
+					Retry::enqueue_proposal( $post_id, $channel_id, $message );
+				}
 				$pending_review         = true;
 				$results[ $channel_id ] = array(
 					'success'        => false,
@@ -312,6 +367,10 @@ class Publisher {
 			$result                 = $channel->publish( $post_id, $message, $url, $image_url );
 			$results[ $channel_id ] = array_merge( $result, $avisos );
 			$sent_any               = true;
+
+			if ( ! empty( $result['success'] ) ) {
+				self::mark_sent( $post_id, $channel_id, (string) ( $result['post_id'] ?? '' ) );
+			}
 
 			$this->log_publish(
 				array(

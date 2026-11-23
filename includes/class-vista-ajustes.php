@@ -45,13 +45,21 @@ final class Vista_Ajustes {
 				<h2><?php echo esc_html__( 'Configuración general', 'convoca-publisher' ); ?></h2>
 				<table class="form-table">
 					<tr>
-						<th scope="row"><?php echo esc_html__( 'Publicación automática', 'convoca-publisher' ); ?></th>
+						<th scope="row"><label for="convoca_publisher_publish_mode"><?php echo esc_html__( 'Modo de publicación', 'convoca-publisher' ); ?></label></th>
 						<td>
-							<label>
-								<input type="checkbox" name="convoca_publisher_auto_publish" value="1" <?php checked( get_option( 'convoca_publisher_auto_publish', false ) ); ?> />
-								<?php echo esc_html__( 'Publicar automáticamente al publicar una entrada (excepción consciente)', 'convoca-publisher' ); ?>
-							</label>
-							<p class="description"><?php echo esc_html__( 'Desmarcado (recomendado): al publicar se crea una propuesta por cuenta y nada sale hasta que la apruebas. Marcado: se envía solo, sin revisión previa.', 'convoca-publisher' ); ?></p>
+							<select name="<?php echo esc_attr( Policy::MODE_OPTION ); ?>" id="convoca_publisher_publish_mode">
+								<option value="<?php echo esc_attr( Policy::MODE_AUTO ); ?>" <?php selected( Policy::mode(), Policy::MODE_AUTO ); ?>><?php echo esc_html__( 'Automático — al publicar, sale en las cuentas configuradas (gratis)', 'convoca-publisher' ); ?></option>
+								<option value="<?php echo esc_attr( Policy::MODE_QUEUE ); ?>" <?php selected( Policy::mode(), Policy::MODE_QUEUE ); ?> <?php disabled( ! Policy::queue_available() ); ?>><?php echo esc_html__( 'Cola de moderación — cada cuenta decide: enviar, revisar o esperar (PRO)', 'convoca-publisher' ); ?></option>
+							</select>
+							<p class="description">
+								<?php
+								echo esc_html(
+									Policy::queue_available()
+										? __( 'En modo cola, una cuenta en «revisar» deja una propuesta para aprobar y una en «manual» no envía nada hasta que la compartas a mano.', 'convoca-publisher' )
+										: __( 'La cola de moderación necesita licencia PRO. Mientras no la haya, las cuentas en «revisar» se tratan como «manual»: nada sale solo.', 'convoca-publisher' )
+								);
+								?>
+							</p>
 						</td>
 					</tr>
 					<tr>
@@ -112,33 +120,27 @@ final class Vista_Ajustes {
 			</div>
 
 		<div class="cp-section">
-			<h2><?php echo esc_html__( 'Moderación previa', 'convoca-publisher' ); ?></h2>
+			<h2><?php echo esc_html__( 'Qué hace cada cuenta', 'convoca-publisher' ); ?></h2>
+			<input type="hidden" name="<?php echo esc_attr( Policy::POLICY_OPTION ); ?>[*]" value="<?php echo esc_attr( (string) ( Policy::saved()['*'] ?? Policy::AUTO ) ); ?>" />
 			<table class="form-table">
-				<tr>
-					<th scope="row"><label for="convoca_publisher_moderation"><?php echo esc_html__( 'Modo de moderación', 'convoca-publisher' ); ?></label></th>
-					<td>
-						<select name="convoca_publisher_moderation" id="convoca_publisher_moderation">
-							<option value="off" <?php selected( get_option( 'convoca_publisher_moderation', 'off' ), 'off' ); ?>><?php echo esc_html__( 'Desactivada (publicación automática)', 'convoca-publisher' ); ?></option>
-							<option value="all" <?php selected( get_option( 'convoca_publisher_moderation', 'off' ), 'all' ); ?>><?php echo esc_html__( 'Todas las publicaciones requieren revisión', 'convoca-publisher' ); ?></option>
-							<option value="canal" <?php selected( get_option( 'convoca_publisher_moderation', 'off' ), 'canal' ); ?>><?php echo esc_html__( 'Solo canales seleccionados', 'convoca-publisher' ); ?></option>
-						</select>
-						<p class="description"><?php echo esc_html__( 'Cuando está activa, las publicaciones quedan pendientes de revisión en la pestaña Moderación antes de enviarse a las redes.', 'convoca-publisher' ); ?></p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><?php echo esc_html__( 'Canales con moderación', 'convoca-publisher' ); ?></th>
-					<td>
-						<input type="hidden" name="convoca_publisher_moderation_channels[]" value="" />
-						<?php foreach ( convoca_publisher()->get_channels() as $channel ) : ?>
-							<?php $checked = in_array( $channel->get_id(), (array) get_option( 'convoca_publisher_moderation_channels', array() ), true ) ? 'checked' : ''; ?>
-							<label class="cp-check" data-cp-moderation-group>
-								<input type="checkbox" name="convoca_publisher_moderation_channels[]" value="<?php echo esc_attr( $channel->get_id() ); ?>" data-cp-moderation-channel <?php echo esc_attr( $checked ); ?>> <?php echo esc_html( $channel->get_name() ); ?>
-							</label>
-						<?php endforeach; ?>
-						<p class="description"><?php echo esc_html__( 'Se aplican cuando el modo es "Solo canales seleccionados".', 'convoca-publisher' ); ?></p>
-					</td>
-				</tr>
+				<?php foreach ( convoca_publisher()->get_channels() as $cuenta ) : ?>
+					<?php
+					$id     = (string) $cuenta->get_id();
+					$estado = (string) ( Policy::saved()[ $id ] ?? Policy::saved()['*'] ?? Policy::AUTO );
+					?>
+					<tr>
+						<th scope="row"><label for="convoca_policy_<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $cuenta->get_name() ); ?></label></th>
+						<td>
+							<select name="<?php echo esc_attr( Policy::POLICY_OPTION . '[' . $id . ']' ); ?>" id="convoca_policy_<?php echo esc_attr( $id ); ?>">
+								<option value="<?php echo esc_attr( Policy::AUTO ); ?>" <?php selected( $estado, Policy::AUTO ); ?>><?php echo esc_html__( 'Enviar al publicar', 'convoca-publisher' ); ?></option>
+								<option value="<?php echo esc_attr( Policy::REVIEW ); ?>" <?php selected( $estado, Policy::REVIEW ); ?>><?php echo esc_html__( 'Dejar propuesta para revisar', 'convoca-publisher' ); ?></option>
+								<option value="<?php echo esc_attr( Policy::MANUAL ); ?>" <?php selected( $estado, Policy::MANUAL ); ?>><?php echo esc_html__( 'No enviar: solo a mano', 'convoca-publisher' ); ?></option>
+							</select>
+						</td>
+					</tr>
+				<?php endforeach; ?>
 			</table>
+			<p class="description"><?php echo esc_html__( 'En modo automático todo envía al publicar salvo lo marcado «solo a mano». «Dejar propuesta» solo funciona con el modo cola y licencia PRO; sin licencia se trata como «solo a mano».', 'convoca-publisher' ); ?></p>
 		</div>
 
 		<?php submit_button(); ?>

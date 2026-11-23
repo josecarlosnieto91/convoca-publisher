@@ -59,6 +59,28 @@ class Migrator {
 	 */
 	public static function init(): void {
 		add_action( 'init', array( self::class, 'migrar_ganchos_heredados' ), 5 );
+		add_action( 'init', array( self::class, 'migrar_politicas_de_publicacion' ), 6 );
+	}
+
+	/**
+	 * Traduce `auto_publish` + `moderation` al modelo de modo y política por cuenta (publisher#20).
+	 *
+	 * Corre una sola vez: si el modo ya está guardado, no toca nada. Las opciones viejas se quedan
+	 * donde están, así que volver a la versión anterior devuelve el comportamiento de antes.
+	 */
+	public static function migrar_politicas_de_publicacion(): void {
+		if ( false !== get_option( Policy::MODE_OPTION, false ) ) {
+			return;
+		}
+
+		$mapa = Policy::migration(
+			(bool) get_option( 'convoca_publisher_auto_publish', false ),
+			(string) get_option( 'convoca_publisher_moderation', 'off' ),
+			array_values( array_filter( (array) get_option( 'convoca_publisher_moderation_channels', array() ), 'is_string' ) )
+		);
+
+		update_option( Policy::MODE_OPTION, $mapa['mode'], false );
+		update_option( Policy::POLICY_OPTION, $mapa['policy'], false );
 	}
 
 	/**

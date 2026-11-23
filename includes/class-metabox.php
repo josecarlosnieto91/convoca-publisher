@@ -97,41 +97,55 @@ class Metabox {
 	public static function render( \WP_Post $post ): void {
 		wp_nonce_field( 'convoca_publisher_metabox', 'convoca_publisher_metabox_nonce' );
 
-		$results   = get_post_meta( $post->ID, '_convoca_publisher_publish_results', true ) ?: array();
-		$published = get_post_meta( $post->ID, '_convoca_publisher_published', true );
-		$disabled  = get_post_meta( $post->ID, '_convoca_publisher_disabled_channels', true ) ?: array();
-		$channels  = convoca_publisher()->get_channels();
+		$results  = get_post_meta( $post->ID, '_convoca_publisher_publish_results', true ) ?: array();
+		$enviadas = Publisher::sent_map( $post->ID );
+		$disabled = get_post_meta( $post->ID, '_convoca_publisher_disabled_channels', true ) ?: array();
+		$channels = convoca_publisher()->get_channels();
 
 		echo '<div class="cp-meta">';
 
-		if ( $published ) {
+		if ( ! empty( $enviadas ) ) {
 			echo '<p class="cp-meta__ok"><strong>✅ ' . esc_html__( 'Publicado en redes', 'convoca-publisher' ) . '</strong></p>';
-			foreach ( $results as $channel_id => $result ) {
-				if ( $channel_id === '_warnings' ) {
-					continue;
-				}
-				$icon = ! empty( $result['success'] ) ? '✅' : '❌';
-				echo '<p class="cp-meta__row">' . esc_html( $icon ) . ' <strong>' . esc_html( $channel_id ) . '</strong>: ';
-				if ( ! empty( $result['success'] ) ) {
-					echo '<span class="cp-meta__ok">' . esc_html( $result['post_id'] ?? 'OK' ) . '</span>';
-				} else {
-					echo '<span class="cp-meta__fail">' . esc_html( $result['error'] ?? __( 'Error', 'convoca-publisher' ) ) . '</span>';
-				}
-				echo '</p>';
+			foreach ( $enviadas as $channel_id => $marca ) {
+				$nombre = isset( $channels[ $channel_id ] ) ? $channels[ $channel_id ]->get_name() : (string) $channel_id;
+				echo '<p class="cp-meta__row">✅ <strong>' . esc_html( $nombre ) . '</strong>: ';
+				echo '<span class="cp-meta__ok">' . esc_html( (string) ( $marca['time'] ?? 'OK' ) ) . '</span></p>';
 			}
-			// Mostrar warnings si existen
 			if ( ! empty( $results['_warnings'] ) ) {
 				foreach ( $results['_warnings'] as $w ) {
 					echo '<p class="cp-meta__warn">⚠️ ' . esc_html( $w ) . '</p>';
 				}
 			}
-			// El botón «Republicar» vivía aquí sin ningún JS que lo escuchara: pulsarlo no
-			// hacía nada. La acción AJAX a la que apuntaba se ha retirado (ver docs/deuda-tecnica.md).
-			// Para republicar está «Compartir ahora», que sí funciona.
-		} elseif ( get_option( 'convoca_publisher_auto_publish', false ) ) {
-			echo '<p>' . esc_html__( 'Se publicará automáticamente al guardar.', 'convoca-publisher' ) . '</p>';
-		} else {
-			echo '<p>' . esc_html__( 'No se publica solo: al guardar se crea una propuesta por cuenta en Convoca Publisher → Moderación. Allí la revisas y la apruebas.', 'convoca-publisher' ) . '</p>';
+		}
+
+		// Lo que falló de verdad se sigue viendo: un error no se tapa porque otra cuenta saliera.
+		foreach ( $results as $channel_id => $result ) {
+			if ( '_warnings' === $channel_id || ! empty( $result['success'] ) || ! empty( $result['skipped'] ) ) {
+				continue;
+			}
+			$nombre = isset( $channels[ $channel_id ] ) ? $channels[ $channel_id ]->get_name() : (string) $channel_id;
+			echo '<p class="cp-meta__row">❌ <strong>' . esc_html( $nombre ) . '</strong>: ';
+			echo '<span class="cp-meta__fail">' . esc_html( (string) ( $result['error'] ?? __( 'Error', 'convoca-publisher' ) ) ) . '</span></p>';
+		}
+
+		// Qué va a pasar con las cuentas que aún no tienen la entrada.
+		$por_hacer = array();
+		foreach ( $channels as $id => $cuenta ) {
+			$id = (string) $id;
+			if ( isset( $enviadas[ $id ] ) || in_array( $id, $disabled, true ) ) {
+				continue;
+			}
+			$por_hacer[ Policy::policy_for( $id ) ][] = $cuenta->get_name();
+		}
+
+		if ( isset( $por_hacer[ Policy::AUTO ] ) ) {
+			echo '<p>' . esc_html__( 'Se enviará al guardar:', 'convoca-publisher' ) . ' ' . esc_html( implode( ', ', $por_hacer[ Policy::AUTO ] ) ) . '</p>';
+		}
+		if ( isset( $por_hacer[ Policy::REVIEW ] ) ) {
+			echo '<p>' . esc_html__( 'Quedará propuesta para revisar:', 'convoca-publisher' ) . ' ' . esc_html( implode( ', ', $por_hacer[ Policy::REVIEW ] ) ) . '</p>';
+		}
+		if ( isset( $por_hacer[ Policy::MANUAL ] ) ) {
+			echo '<p>' . esc_html__( 'Solo a mano (Compartir ahora):', 'convoca-publisher' ) . ' ' . esc_html( implode( ', ', $por_hacer[ Policy::MANUAL ] ) ) . '</p>';
 		}
 
 		$nota = (string) get_post_meta( $post->ID, '_convoca_publisher_proposal_note', true );

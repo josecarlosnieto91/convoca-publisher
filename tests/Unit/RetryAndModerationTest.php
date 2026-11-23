@@ -7,6 +7,7 @@
 namespace ConvocaPublisher\Tests;
 
 use PHPUnit\Framework\TestCase;
+use ConvocaPublisher\Policy;
 use ConvocaPublisher\Publisher;
 use ConvocaPublisher\Retry;
 
@@ -151,48 +152,13 @@ class RetryAndModerationTest extends TestCase
         $this->assertSame(0, $inserts[0]['data']['attempts']);
     }
 
-    // ── D15 — Moderación previa ────────────────────────────────────
+    // ── 1.23.0 — modo y política por cuenta (publisher#20) ──────────
 
-    public function testModerationDefaultIsOff(): void
+    public function testManualNoEnviaNiEncola(): void
     {
-        $publisher = new Publisher([]);
-
-        $this->assertSame('off', $publisher->moderation_mode());
-        $this->assertFalse($publisher->channel_needs_moderation('facebook'));
-    }
-
-    public function testModerationAllRequiresReview(): void
-    {
-        update_option('convoca_publisher_moderation', 'all');
-        $publisher = new Publisher([]);
-
-        $this->assertSame('all', $publisher->moderation_mode());
-        $this->assertTrue($publisher->channel_needs_moderation('facebook'));
-        $this->assertTrue($publisher->channel_needs_moderation('telegram'));
-    }
-
-    public function testModerationCanalRequiresReviewOnlyForSelected(): void
-    {
-        update_option('convoca_publisher_moderation', 'canal');
-        update_option('convoca_publisher_moderation_channels', ['facebook']);
-        $publisher = new Publisher([]);
-
-        $this->assertTrue($publisher->channel_needs_moderation('facebook'));
-        $this->assertFalse($publisher->channel_needs_moderation('telegram'));
-    }
-
-    public function testModerationCanalWithoutSelectionRequiresNothing(): void
-    {
-        update_option('convoca_publisher_moderation', 'canal');
-        update_option('convoca_publisher_moderation_channels', []);
-        $publisher = new Publisher([]);
-
-        $this->assertFalse($publisher->channel_needs_moderation('facebook'));
-    }
-
-    public function testPendingReviewDoesNotPublish(): void
-    {
-        update_option('convoca_publisher_moderation', 'all');
+        update_option(Policy::MODE_OPTION, Policy::MODE_QUEUE);
+        update_option(Policy::POLICY_OPTION, ['*' => Policy::AUTO, 'facebook' => Policy::MANUAL]);
+        add_filter('convoca_publisher_redes_pro', static fn (): bool => true);
 
         $calls = 0;
         $channel = $this->makeChannel('facebook', static function () use (&$calls): array {
@@ -203,18 +169,91 @@ class RetryAndModerationTest extends TestCase
         $publisher = new Publisher(['facebook' => $channel]);
         $results = $publisher->publish_post(1);
 
-        $this->assertSame(0, $calls, 'No debe enviarse si está pendiente de moderación.');
-        $this->assertArrayHasKey('facebook', $results);
+        $this->assertSame(0, $calls, '`manual` no puede hablar con la red.');
+        $this->assertSame(Policy::MANUAL, $results['facebook']['skipped'] ?? '');
+        $this->assertSame([], $GLOBALS['_cp_test_db']['inserts'], 'ni puede dejar basura en la cola.');
+    }
+
+    public function testReviewDejaPropuestaYNoEnvia(): void
+    {
+        update_option(Policy::MODE_OPTION, Policy::MODE_QUEUE);
+        update_option(Policy::POLICY_OPTION, ['*' => Policy::AUTO, 'facebook' => Policy::REVIEW]);
+        add_filter('convoca_publisher_redes_pro', static fn (): bool => true);
+
+        $calls = 0;
+        $channel = $this->makeChannel('facebook', static function () use (&$calls): array {
+            $calls++;
+            return ['success' => true, 'post_id' => 'x'];
+        });
+
+        $publisher = new Publisher(['facebook' => $channel]);
+        $results = $publisher->publish_post(1);
+
+        $this->assertSame(0, $calls);
         $this->assertTrue($results['facebook']['pending_review'] ?? false);
 
         $inserts = $GLOBALS['_cp_test_db']['inserts'];
         $this->assertNotEmpty($inserts);
-        $this->assertSame('pending_review', end($inserts)['data']['status']);
+        $this->assertSame(Retry::STATUS_PROPOSAL, end($inserts)['data']['status'], 'una propuesta, no un pendiente de revisión huérfano');
+    }
+
+    public function testSinLicenciaUnaCuentaEnReviewNoEnviaNiEncola(): void
+    {
+        update_option(Policy::MODE_OPTION, Policy::MODE_QUEUE);
+        update_option(Policy::POLICY_OPTION, ['*' => Policy::REVIEW]);
+
+        $calls = 0;
+        $channel = $this->makeChannel('facebook', static function () use (&$calls): array {
+            $calls++;
+            return ['success' => true, 'post_id' => 'x'];
+        });
+
+        $publisher = new Publisher(['facebook' => $channel]);
+        $publisher->publish_post(1);
+
+        $this->assertSame(0, $calls, 'sin PRO, `revisar` cae a manual: nada sale solo.');
+        $this->assertSame([], $GLOBALS['_cp_test_db']['inserts']);
+    }
+
+    public function testSinLicenciaLoAutomaticoSigueSaliendo(): void
+    {
+        update_option(Policy::MODE_OPTION, Policy::MODE_QUEUE);
+        update_option(Policy::POLICY_OPTION, ['*' => Policy::AUTO]);
+
+        $calls = 0;
+        $channel = $this->makeChannel('facebook', static function () use (&$calls): array {
+            $calls++;
+            return ['success' => true, 'post_id' => 'x'];
+        });
+
+        $publisher = new Publisher(['facebook' => $channel]);
+        $publisher->publish_post(1);
+
+        $this->assertSame(1, $calls, 'la autopublicación es la función gratis.');
+    }
+
+    public function testEnModoAutoUnReviewGuardadoNoPublica(): void
+    {
+        update_option(Policy::MODE_OPTION, Policy::MODE_AUTO);
+        update_option(Policy::POLICY_OPTION, ['*' => Policy::REVIEW]);
+
+        $calls = 0;
+        $channel = $this->makeChannel('facebook', static function () use (&$calls): array {
+            $calls++;
+            return ['success' => true, 'post_id' => 'x'];
+        });
+
+        $publisher = new Publisher(['facebook' => $channel]);
+        $publisher->publish_post(1);
+
+        $this->assertSame(0, $calls, 'cambiar a modo auto no publica lo que estaba esperando revisión.');
     }
 
     public function testApprovedPublishes(): void
     {
-        update_option('convoca_publisher_moderation', 'all');
+        update_option(Policy::MODE_OPTION, Policy::MODE_QUEUE);
+        update_option(Policy::POLICY_OPTION, ['*' => Policy::REVIEW]);
+        add_filter('convoca_publisher_redes_pro', static fn (): bool => true);
 
         $calls = 0;
         $channel = $this->makeChannel('facebook', static function () use (&$calls): array {
