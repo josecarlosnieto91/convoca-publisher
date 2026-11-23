@@ -323,6 +323,10 @@ class Retry {
 		delete_post_meta( (int) $item->post_id, '_convoca_publisher_moderation' );
 		self::log_approval( $item, $result );
 
+		if ( ! empty( $result['success'] ) ) {
+			Publisher::mark_sent( (int) $item->post_id, (string) $item->channel, (string) ( $result['post_id'] ?? '' ) );
+		}
+
 		if ( empty( $result['success'] ) ) {
 			self::enqueue( (int) $item->post_id, (string) $item->channel, $message, 0 );
 		}

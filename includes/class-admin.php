@@ -194,6 +194,26 @@ class Admin {
 		);
 		register_setting(
 			'convoca_publisher_settings',
+			Policy::MODE_OPTION,
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => array( self::class, 'sanitize_publish_mode' ),
+				'show_in_rest'      => false,
+				'default'           => Policy::MODE_AUTO,
+			)
+		);
+		register_setting(
+			'convoca_publisher_settings',
+			Policy::POLICY_OPTION,
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( self::class, 'sanitize_account_policy' ),
+				'show_in_rest'      => false,
+				'default'           => array(),
+			)
+		);
+		register_setting(
+			'convoca_publisher_settings',
 			'convoca_publisher_daily_limit',
 			array(
 				'type'              => 'integer',
@@ -293,6 +313,51 @@ class Admin {
 		$value = (string) $value;
 
 		return in_array( $value, array( 'off', 'all', 'canal' ), true ) ? $value : 'off';
+	}
+
+	/**
+	 * Sanitiza el modo de publicación (`auto` | `cola`).
+	 *
+	 * @param mixed $value Valor recibido.
+	 */
+	public static function sanitize_publish_mode( $value ): string {
+		$value = sanitize_key( (string) $value );
+
+		return Policy::MODE_QUEUE === $value ? Policy::MODE_QUEUE : Policy::MODE_AUTO;
+	}
+
+	/**
+	 * Sanitiza el estado por cuenta.
+	 *
+	 * Acepta la clave `*` (valor por defecto) y los ids de cuenta reales. Un valor desconocido cae
+	 * a `auto`; el motor vuelve a sanear al decidir, así que un mapa viejo tampoco puede publicar
+	 * lo que no debe.
+	 *
+	 * @param mixed $value Valor recibido.
+	 * @return array<string, string>
+	 */
+	public static function sanitize_account_policy( $value ): array {
+		if ( ! is_array( $value ) ) {
+			return array();
+		}
+
+		$validos = array_keys( convoca_publisher()->get_channels() );
+		$limpio  = array();
+
+		foreach ( $value as $cuenta => $estado ) {
+			$cuenta = sanitize_key( (string) $cuenta );
+			$estado = sanitize_key( (string) $estado );
+
+			if ( ! in_array( $estado, Policy::states(), true ) ) {
+				continue;
+			}
+
+			if ( '*' === $cuenta || in_array( $cuenta, $validos, true ) ) {
+				$limpio[ $cuenta ] = $estado;
+			}
+		}
+
+		return $limpio;
 	}
 
 	/**

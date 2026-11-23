@@ -1,3 +1,25 @@
+## [1.23.0] — 2026-11-23
+
+### Añadido
+
+- **Modo de publicación y estado por cuenta (#20).** Dos modos: `automático` (gratis; al publicar
+  salen las cuentas configuradas) y `cola de moderación` (PRO). Dentro de la cola cada cuenta tiene
+  su estado: `Enviar al publicar`, `Dejar propuesta para revisar` y `No enviar: solo a mano`.
+- Ajustes enseña el modo y el estado de cada cuenta en una sola tabla. La migración traduce la
+  configuración anterior sin cambiar el comportamiento: `auto_publish` desactivado → modo automático
+  con todo «solo a mano»; moderación total → cola con todo a revisar; moderación por canal → cola con
+  esas cuentas a revisar y el resto automáticas.
+- `_convoca_publisher_sent` guarda, por cuenta, cuándo salió la entrada, con su id y su permalink.
+  Una entrada que salió por Google ya no bloquea el envío a Facebook ni el botón «Compartir ahora».
+
+### Corregido
+
+- **`manual` ya no ensucia la cola.** Antes, una cuenta que no debía publicarse sola generaba un
+  pendiente por cada entrada; ahora no envía ni encola y se queda esperando al botón del editor.
+- **Perder la licencia no publica lo que estaba en revisión.** Sin PRO, las cuentas en «revisar» se
+  tratan como «solo a mano»; las automáticas siguen saliendo, que es la función gratis.
+- El editor dice qué va a pasar con cada cuenta y sigue enseñando los fallos reales de envío.
+
 ## [1.22.24] — 2026-11-13
 
 ### Cambiado

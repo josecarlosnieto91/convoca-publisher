@@ -534,6 +534,15 @@ function checked(mixed $checked, mixed $current = true, bool $echo = false): str
     }
     return $atributo;
 }
+function disabled(mixed $disabled, mixed $current = true, bool $echo = true): string
+{
+    // Como WordPress: escribe el atributo (o lo devuelve si $echo es false).
+    $atributo = ((string) $disabled === (string) $current || (true === $disabled && true === $current)) ? " disabled='disabled'" : '';
+    if ($echo) {
+        echo $atributo;
+    }
+    return $atributo;
+}
 function submit_button(string $text = '', string $type = 'primary', string $name = 'submit', bool $wrap = true, array|string $other_attributes = []): void
 {
     echo '<button type="submit">' . esc_html($text) . '</button>';
@@ -617,6 +626,7 @@ function cp_test_reset(): void
     $GLOBALS['wpdb']               = new wpdb();
     $_GET                          = [];
     $_POST                         = [];
+    $GLOBALS['_cp_test_filters']   = [];
 
     unset($GLOBALS['_convoca_publisher_test_stub']);
 

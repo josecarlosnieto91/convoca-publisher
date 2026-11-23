@@ -12,6 +12,7 @@
 namespace ConvocaPublisher\Tests\Unit;
 
 use ConvocaPublisher\Metabox;
+use ConvocaPublisher\Policy;
 use ConvocaPublisher\Publisher;
 use ConvocaPublisher\Tests\Support\FakeChannel;
 use PHPUnit\Framework\TestCase;
@@ -133,30 +134,42 @@ final class MetaboxTest extends TestCase
 
     // ── lo que se ve ───────────────────────────────────────────────────────────────────────
 
-    public function test_sin_publicar_y_con_publicacion_automatica_lo_dice(): void
+    public function test_sin_publicar_dice_que_cuentas_envian_al_guardar(): void
     {
-        $GLOBALS['_cp_test_options']['convoca_publisher_auto_publish'] = true;
-
         $html = $this->render();
 
-        $this->assertStringContainsString('Se publicará automáticamente', $html);
+        $this->assertStringContainsString('Se enviará al guardar', $html);
         $this->assertStringContainsString('name="convoca_publisher_message"', $html, 'falta la caja del mensaje');
         $this->assertStringContainsString('convoca_publisher_metabox_nonce', $html, 'sin nonce no se puede guardar');
     }
 
-    public function test_sin_publicar_y_sin_automatica_explica_el_boton(): void
+    public function test_una_cuenta_en_revisar_se_anuncia_como_propuesta(): void
     {
-        $GLOBALS['_cp_test_options']['convoca_publisher_auto_publish'] = false;
+        $GLOBALS['_cp_test_options'][Policy::MODE_OPTION]   = Policy::MODE_QUEUE;
+        $GLOBALS['_cp_test_options'][Policy::POLICY_OPTION] = ['*' => Policy::REVIEW];
+        add_filter('convoca_publisher_redes_pro', static fn (): bool => true);
 
         $html = $this->render();
 
-        $this->assertStringContainsString('No se publica solo', $html);
+        $this->assertStringContainsString('Quedará propuesta para revisar', $html);
+    }
+
+    public function test_una_cuenta_manual_dice_que_solo_sale_a_mano(): void
+    {
+        $GLOBALS['_cp_test_options'][Policy::MODE_OPTION]   = Policy::MODE_AUTO;
+        $GLOBALS['_cp_test_options'][Policy::POLICY_OPTION] = ['*' => Policy::MANUAL];
+
+        $html = $this->render();
+
+        $this->assertStringContainsString('Solo a mano', $html);
     }
 
     public function test_ya_publicado_enseña_el_resultado_de_cada_canal(): void
     {
         $GLOBALS['_cp_test_postmeta'][10] = [
-            '_convoca_publisher_published' => true,
+            '_convoca_publisher_sent' => [
+                'fb' => ['time' => '2026-11-23 10:00:00', 'post_id' => '123_456', 'permalink' => 'https://example.com/?p=10'],
+            ],
             '_convoca_publisher_publish_results' => [
                 'fb' => ['success' => true, 'post_id' => '123_456'],
                 'tg' => ['success' => false, 'error' => 'chat not found'],
@@ -167,7 +180,7 @@ final class MetaboxTest extends TestCase
         $html = $this->render();
 
         $this->assertStringContainsString('Publicado en redes', $html);
-        $this->assertStringContainsString('123_456', $html, 'el id publicado se ve');
+        $this->assertStringContainsString('2026-11-23 10:00:00', $html, 'cuándo salió, por cuenta');
         $this->assertStringContainsString('chat not found', $html, 'el fallo se ve, no se tapa');
         $this->assertStringContainsString('Se recortó para que cupiera', $html, 'y los avisos también');
         $this->assertStringNotContainsString('_warnings', $html, 'la clave interna no se pinta');
