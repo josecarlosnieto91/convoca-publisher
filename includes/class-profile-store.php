@@ -334,6 +334,6 @@ final class Profile_Store {
 	 * ¿Este ajuste es una credencial?
 	 */
 	public static function is_secret( string $option ): bool {
-		return str_ends_with( $option, '_token' ) || str_ends_with( $option, '_bearer_token' );
+		return str_ends_with( $option, '_token' ) || str_ends_with( $option, '_bearer_token' ) || str_ends_with( $option, '_secret' );
 	}
 }

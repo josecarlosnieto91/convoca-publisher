@@ -22,6 +22,50 @@ class CryptoTest extends TestCase
     }
 
     /**
+     * El filtro de WordPress pasa (valor, valor_anterior, opción): con el orden correcto el
+     * token se cifra; con el hook a 2 argumentos llegaba el valor anterior y se guardaba en claro.
+     */
+    public function test_encrypt_on_save_cifra_con_el_orden_de_wordpress(): void
+    {
+        $GLOBALS['_cp_test_filters'] = [];
+        add_filter('pre_update_option', [Crypto::class, 'encrypt_on_save'], 10, 3);
+
+        $guardado = apply_filters('pre_update_option', 'secreto-de-prueba', '', 'convoca_publisher_x_token');
+
+        $this->assertIsString($guardado);
+        $this->assertStringStartsWith('convoca_publisher_enc:', $guardado, 'el token tiene que salir cifrado');
+        $this->assertSame(
+            'secreto-de-prueba',
+            Crypto::decrypt(substr($guardado, strlen('convoca_publisher_enc:'))),
+            'y tiene que poder descifrarse'
+        );
+    }
+
+    /**
+     * El registro del hook tiene que aceptar los tres argumentos de `pre_update_option`.
+     */
+    public function test_el_hook_se_registra_con_tres_argumentos(): void
+    {
+        $plugin = file_get_contents(__DIR__ . '/../../includes/class-plugin.php');
+
+        $this->assertMatchesRegularExpression(
+            "/add_action\(\s*'pre_update_option'\s*,\s*array\(\s*Crypto::class\s*,\s*'encrypt_on_save'\s*\)\s*,\s*10\s*,\s*3\s*\)/",
+            (string) $plugin,
+            'con 2 argumentos, $option recibe el valor anterior y no se cifra nada'
+        );
+    }
+
+    /**
+     * Los secretos (client_secret) se cifran igual que los tokens.
+     */
+    public function test_un_secreto_tambien_se_cifra(): void
+    {
+        $guardado = Crypto::encrypt_on_save('client-secret', '', 'convoca_publisher_gmb_client_secret');
+
+        $this->assertStringStartsWith('convoca_publisher_enc:', (string) $guardado);
+    }
+
+    /**
      * @test
      * decrypt(encrypt(x)) === x (roundtrip).
      */
@@ -177,16 +221,16 @@ class CryptoTest extends TestCase
         $value = 'sensitive-data-here';
 
         // Plugin token options ending in _token should be prefixed.
-        $result = Crypto::encrypt_on_save($value, 'convoca_publisher_facebook_token');
+        $result = Crypto::encrypt_on_save($value, '', 'convoca_publisher_facebook_token');
         $this->assertStringStartsWith('convoca_publisher_enc:', $result);
         $this->assertNotEquals($value, $result);
 
         // Plugin options ending in _bearer_token should be prefixed.
-        $result2 = Crypto::encrypt_on_save($value, 'convoca_publisher_api_bearer_token');
+        $result2 = Crypto::encrypt_on_save($value, '', 'convoca_publisher_api_bearer_token');
         $this->assertStringStartsWith('convoca_publisher_enc:', $result2);
 
         // Non-token options should NOT be modified
-        $result3 = Crypto::encrypt_on_save($value, 'some_other_option');
+        $result3 = Crypto::encrypt_on_save($value, '', 'some_other_option');
         $this->assertSame($value, $result3);
     }
 
@@ -196,9 +240,9 @@ class CryptoTest extends TestCase
      */
     public function testEncryptOnSaveHandlesNonStrings(): void
     {
-        $this->assertSame(42, Crypto::encrypt_on_save(42, 'my_token'));
-        $this->assertSame([], Crypto::encrypt_on_save([], 'my_token'));
-        $this->assertNull(Crypto::encrypt_on_save(null, 'my_token'));
+        $this->assertSame(42, Crypto::encrypt_on_save(42, '', 'my_token'));
+        $this->assertSame([], Crypto::encrypt_on_save([], '', 'my_token'));
+        $this->assertNull(Crypto::encrypt_on_save(null, '', 'my_token'));
     }
 
     /**
@@ -208,11 +252,11 @@ class CryptoTest extends TestCase
     public function testEncryptOnSaveSkipsEmptyAndAlreadyPrefixed(): void
     {
         // Empty value
-        $this->assertSame('', Crypto::encrypt_on_save('', 'my_token'));
+        $this->assertSame('', Crypto::encrypt_on_save('', '', 'my_token'));
 
         // Already prefixed
         $already = 'convoca_publisher_enc:some_already_encrypted_data';
-        $this->assertSame($already, Crypto::encrypt_on_save($already, 'my_token'));
+        $this->assertSame($already, Crypto::encrypt_on_save($already, '', 'my_token'));
     }
 
     /**
@@ -224,7 +268,7 @@ class CryptoTest extends TestCase
         $original = 'my_sensitive_bearer_token_value';
 
         // Simulate save -> load roundtrip
-        $saved = Crypto::encrypt_on_save($original, 'facebook_token');
+        $saved = Crypto::encrypt_on_save($original, '', 'facebook_token');
         $loaded = Crypto::decrypt_on_load($saved, 'facebook_token');
 
         $this->assertSame($original, $loaded);

@@ -557,11 +557,12 @@ function wp_kses_post(string $data): string
 }
 function set_transient(string $transient, mixed $value, int $expiration = 0): bool
 {
+    $GLOBALS['_cp_test_transients'][$transient] = $value;
     return true;
 }
 function get_transient(string $transient): mixed
 {
-    return false;
+    return $GLOBALS['_cp_test_transients'][$transient] ?? false;
 }
 function wp_safe_redirect(string $location, int $status = 302, string $x_redirect_by = 'WordPress'): bool
 {
@@ -627,6 +628,7 @@ function cp_test_reset(): void
     $_GET                          = [];
     $_POST                         = [];
     $GLOBALS['_cp_test_filters']   = [];
+    $GLOBALS['_cp_test_transients'] = [];
 
     unset($GLOBALS['_convoca_publisher_test_stub']);
 
@@ -817,6 +819,7 @@ function wp_unslash(mixed $value): mixed
 }
 function delete_transient(string $transient): bool
 {
+    unset($GLOBALS['_cp_test_transients'][$transient]);
     return true;
 }
 function number_format_i18n(float $number, int $decimals = 0): string
@@ -1000,4 +1003,56 @@ function deactivate_plugins(string|array $plugins, bool $silent = false, bool $n
 function plugin_basename(string $file): string
 {
     return 'convoca-publisher/' . basename($file);
+}
+
+if (!function_exists('wp_parse_url')) {
+    /**
+     * Como WordPress: parse_url con el mismo retorno que espera el plugin.
+     */
+    function wp_parse_url(string $url, int $component = -1): mixed
+    {
+        return -1 === $component ? parse_url($url) : parse_url($url, $component);
+    }
+}
+
+
+if (!function_exists('attachment_url_to_postid')) {
+    function attachment_url_to_postid(string $url): int
+    {
+        return (int) ($GLOBALS['_cp_test_attachment_urls'][$url] ?? 0);
+    }
+}
+
+if (!function_exists('wp_get_original_image_url')) {
+    function wp_get_original_image_url(int $attachment_id): string
+    {
+        return (string) ($GLOBALS['_cp_test_original_urls'][$attachment_id] ?? '');
+    }
+}
+
+if (!function_exists('get_attached_file')) {
+    function get_attached_file(int $attachment_id): string|false
+    {
+        return $GLOBALS['_cp_test_attached_files'][$attachment_id] ?? false;
+    }
+}
+
+if (!function_exists('wp_upload_dir')) {
+    /**
+     * @return array<string, string>
+     */
+    function wp_upload_dir(): array
+    {
+        return $GLOBALS['_cp_test_upload_dir'] ?? [
+            'basedir' => '/var/www/uploads',
+            'baseurl' => 'https://example.com/uploads',
+        ];
+    }
+}
+
+if (!function_exists('wp_get_image_editor')) {
+    function wp_get_image_editor(string $path): mixed
+    {
+        return $GLOBALS['_cp_test_image_editor'] ?? new WP_Error('sin_editor', 'no hay editor');
+    }
 }

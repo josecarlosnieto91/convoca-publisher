@@ -1,3 +1,28 @@
+## [1.24.0] — 2026-11-24
+
+### Añadido
+
+- **Renovación automática del token de Google My Business (#26).** Con `refresh token`, `client ID` y
+  `client secret`, el canal pide un access token nuevo antes de cada envío y lo reutiliza mientras
+  vive: la conexión ya no se cae a la hora. Los tres campos se guardan cifrados.
+- **La pantalla de conexión dice qué pasa con el token.** Sin refresh token avisa de que caduca en una
+  hora; con él, de que se renueva solo.
+
+### Corregido
+
+- **Los tokens guardados con `update_option()` se guardan cifrados (#25).** El hook
+  `pre_update_option` se registraba con dos argumentos y WordPress pasa tres: `$option` recibía el valor
+  anterior, así que todo token escrito por esa vía quedaba en claro. Ahora se aceptan los tres y también
+  se cifran los `*_secret`.
+- **La clase del canal de GMB lee las credenciales del perfil (#26).** Leía solo opciones globales que
+  una instalación configurada por el panel no tiene, y decía «no configurado» con el canal funcionando.
+  El perfil le pasa sus ajustes y, si se instancia a mano, usa el primer perfil de GMB.
+- **GMB publica con la foto aunque la destacada sea webp (#24).** La API solo acepta JPEG/PNG y devolvía
+  un 400 sin decir el campo. Se usa el original del adjunto, o una copia JPEG generada al vuelo; si no se
+  puede, se publica sin foto y el historial lo dice.
+- **Los errores de GMB traen el detalle de Google.** Un 400 incluye `status` y `details[].reason`; un 401
+  se explica como token caducado con la salida (refresh token o reconectar), no como un fallo opaco.
+
 ## [1.23.1] — 2026-11-24
 
 ### Corregido
