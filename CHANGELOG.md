@@ -1,3 +1,12 @@
+## [1.24.2] — 2026-11-24
+
+### Corregido
+
+- **La copia JPEG de una imagen webp salía en webp.** El editor de imágenes de WordPress
+  (`WP_Image_Editor_Imagick`) conserva el formato de origen aunque se le pida `image/jpeg` y devuelve
+  un `-gmb.webp`, que Google vuelve a rechazar. Ahora se valida el fichero generado y, si no es JPEG,
+  se convierte con Imagick o GD. Una caché mala de la versión anterior se descarta sola.
+
 ## [1.24.1] — 2026-11-24
 
 ### Corregido
