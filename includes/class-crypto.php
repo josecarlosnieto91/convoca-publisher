@@ -81,16 +81,18 @@ class Crypto {
 	/**
 	 * Hook: cifrar credenciales al guardarlas en options.
 	 *
-	 * `pre_update_option` pasa `( $value, $old_value, $option )`: el segundo argumento es el
-	 * valor anterior, no el nombre de la opción. Aceptarlo (aunque no se use) es obligatorio
-	 * para que `$option` llegue donde toca; si no, todo token guardado por `update_option()`
-	 * quedaba en claro (publisher#25).
+	 * Orden real del filtro en WordPress: `( $value, $option, $old_value )`. El nombre va
+	 * SEGUNDO; el valor anterior, tercero, y puede ser un array. Tipar el tercero como
+	 * `string` tumbaba el sitio al guardar cualquier opción (regresión de 1.24.0).
 	 *
-	 * @param mixed  $value     Valor nuevo.
-	 * @param mixed  $old_value Valor anterior (no se usa).
-	 * @param string $option    Nombre de la opción.
+	 * @param mixed $value  Valor nuevo.
+	 * @param mixed $option Nombre de la opción (se valida aquí).
 	 */
-	public static function encrypt_on_save( mixed $value, mixed $old_value, string $option ): mixed {
+	public static function encrypt_on_save( mixed $value, mixed $option ): mixed {
+		if ( ! is_string( $option ) ) {
+			return $value;
+		}
+
 		// Solo cifrar opciones propias del plugin — no tocar '_token' de terceros.
 		if ( ! str_starts_with( $option, 'convoca_publisher_' ) ) {
 			return $value;

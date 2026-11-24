@@ -104,10 +104,10 @@ class Plugin {
 			'convoca_publisher_mastodon_token',
 		);
 
-		// `pre_update_option` pasa TRES argumentos: ( valor, valor_anterior, opción ). Con 2
-		// el segundo era el valor anterior y la opción nunca llegaba: los tokens se guardaban
-		// en claro (publisher#25).
-		add_action( 'pre_update_option', array( Crypto::class, 'encrypt_on_save' ), 10, 3 );
+		// WordPress pasa ( valor, opción, valor_anterior ) en este filtro: el nombre va
+		// SEGUNDO. Con tres argumentos y el orden supuesto, un valor anterior tipo array
+		// acababa en `$option` y tumbaba el sitio al guardar cualquier opción.
+		add_action( 'pre_update_option', array( Crypto::class, 'encrypt_on_save' ), 10, 2 );
 
 		foreach ( $token_options as $option ) {
 			add_filter( "option_{$option}", array( Crypto::class, 'decrypt_on_load' ), 10, 2 );

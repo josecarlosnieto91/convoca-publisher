@@ -1,3 +1,20 @@
+## [1.24.1] — 2026-11-24
+
+### Corregido
+
+- **El cifrado de credenciales tumbaba el sitio al guardar opciones.** El hook `pre_update_option`
+  se registraba con tres argumentos dando por hecho que el orden era `( valor, anterior, opción )`,
+  cuando WordPress pasa `( valor, opción, anterior )`. El tercero podía ser un array (lo es en muchas
+  opciones de terceros) y el `TypeError` cortaba la carga entera. Vuelve a dos argumentos, con el
+  nombre de la opción donde toca y una guarda por si el segundo no es texto.
+- **Se mantiene el cifrado de los `*_secret`** (client secret de OAuth) en opciones y perfiles.
+
+### Nota
+
+- El cifrado de tokens guardados con `update_option()` **ya funcionaba** en 1.23.1. La evidencia de
+  #25 aplicaba el filtro con los argumentos en otro orden. Lo que sí queda fuera son las escrituras
+  directas a la tabla (`wp option update`), que no pasan por ningún filtro de WordPress.
+
 ## [1.24.0] — 2026-11-24
 
 ### Añadido
