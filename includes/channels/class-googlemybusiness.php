@@ -251,7 +251,7 @@ class Googlemybusiness implements ChannelInterface {
 			);
 		}
 
-		$vida = is_array( $cuerpo ) ? (int) ( $cuerpo['expires_in'] ?? 3600 ) : 3600;
+		$vida = isset( $cuerpo['expires_in'] ) ? (int) $cuerpo['expires_in'] : 3600;
 		set_transient( $clave, $nuevo, max( 60, $vida - 60 ) );
 
 		return array(
