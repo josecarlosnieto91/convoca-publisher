@@ -414,8 +414,13 @@ class Googlemybusiness implements ChannelInterface {
 	private static function jpeg_del_adjunto( int $adjunto ): string {
 		$guardada = (string) get_post_meta( $adjunto, '_convoca_publisher_gmb_jpeg', true );
 
-		if ( '' !== $guardada && '' !== (string) get_attached_file( $adjunto ) ) {
-			return $guardada;
+		if ( '' !== $guardada ) {
+			if ( self::es_jpeg_url( $guardada ) ) {
+				return $guardada;
+			}
+
+			// Caché de una versión anterior que guardó un webp con nombre de jpeg: se tira.
+			delete_post_meta( $adjunto, '_convoca_publisher_gmb_jpeg' );
 		}
 
 		$origen = (string) get_attached_file( $adjunto );
@@ -424,35 +429,179 @@ class Googlemybusiness implements ChannelInterface {
 			return '';
 		}
 
-		$editor = wp_get_image_editor( $origen );
+		$destino = (string) preg_replace( '/\.[^.]+$/', '', $origen ) . '-gmb.jpg';
 
-		if ( is_wp_error( $editor ) ) {
+		if ( ! file_exists( $destino ) && ! self::generar_jpeg( $origen, $destino ) ) {
 			return '';
 		}
 
-		$editor->set_quality( 82 );
-
-		$ruta_sin_ext = preg_replace( '/\.[^.]+$/', '', $origen );
-		$guardado     = $editor->save( $ruta_sin_ext . '-gmb.jpg', 'image/jpeg' );
-
-		if ( is_wp_error( $guardado ) || empty( $guardado['path'] ) ) {
+		if ( ! self::es_jpeg( $destino ) ) {
+			if ( file_exists( $destino ) ) {
+				wp_delete_file( $destino );
+			}
 			return '';
 		}
 
-		$subidas = wp_upload_dir();
-		$url     = str_replace(
-			$subidas['basedir'],
-			$subidas['baseurl'],
-			(string) $guardado['path']
-		);
+		$url = self::url_de_ruta( $destino );
 
-		if ( '' === $url || $url === (string) $guardado['path'] ) {
+		if ( '' === $url ) {
 			return '';
 		}
 
 		update_post_meta( $adjunto, '_convoca_publisher_gmb_jpeg', $url );
 
 		return $url;
+	}
+
+	/**
+	 * Generar el JPEG: primero el editor de WordPress y, si no convierte, Imagick o GD.
+	 *
+	 * El editor de Imagick de WordPress **conserva el formato de origen**: pedirle `image/jpeg`
+	 * con un webp devuelve otro webp (medido en producción). Por eso se valida el resultado y
+	 * se cae a una conversión explícita.
+	 *
+	 * @param string $origen  Fichero de origen.
+	 * @param string $destino Fichero JPEG de destino.
+	 */
+	private static function generar_jpeg( string $origen, string $destino ): bool {
+		return self::jpeg_con_editor( $origen, $destino )
+			|| self::jpeg_con_imagick( $origen, $destino )
+			|| self::jpeg_con_gd( $origen, $destino );
+	}
+
+	/**
+	 * Intento con el editor de WordPress.
+	 *
+	 * @param string $origen  Fichero de origen.
+	 * @param string $destino Fichero JPEG de destino.
+	 */
+	private static function jpeg_con_editor( string $origen, string $destino ): bool {
+		$editor = wp_get_image_editor( $origen );
+
+		if ( is_wp_error( $editor ) ) {
+			return false;
+		}
+
+		$editor->set_quality( 82 );
+		$guardado = $editor->save( $destino, 'image/jpeg' );
+
+		if ( is_wp_error( $guardado ) || empty( $guardado['path'] ) ) {
+			return false;
+		}
+
+		$ruta = (string) $guardado['path'];
+
+		if ( $ruta !== $destino ) {
+			// El editor decidió otro nombre (y otro formato): no sirve.
+			if ( file_exists( $ruta ) ) {
+				wp_delete_file( $ruta );
+			}
+			return false;
+		}
+
+		return self::es_jpeg( $ruta, (string) $guardado['mime-type'] );
+	}
+
+	/**
+	 * Conversión explícita con Imagick.
+	 *
+	 * @param string $origen  Fichero de origen.
+	 * @param string $destino Fichero JPEG de destino.
+	 */
+	private static function jpeg_con_imagick( string $origen, string $destino ): bool {
+		if ( ! class_exists( '\Imagick' ) ) {
+			return false;
+		}
+
+		try {
+			$imagen = new \Imagick( $origen );
+			$imagen->setImageBackgroundColor( 'white' );
+			$imagen = $imagen->mergeImageLayers( \Imagick::LAYERMETHOD_FLATTEN );
+			$imagen->setImageFormat( 'jpeg' );
+			$imagen->setImageCompressionQuality( 82 );
+			$imagen->writeImage( $destino );
+			$imagen->clear();
+			$imagen->destroy();
+		} catch ( \Throwable $e ) {
+			return false;
+		}
+
+		return self::es_jpeg( $destino );
+	}
+
+	/**
+	 * Conversión con GD (sin extensión Imagick).
+	 *
+	 * @param string $origen  Fichero de origen.
+	 * @param string $destino Fichero JPEG de destino.
+	 */
+	private static function jpeg_con_gd( string $origen, string $destino ): bool {
+		if ( ! function_exists( 'imagecreatefromwebp' ) || ! function_exists( 'imagejpeg' ) ) {
+			return false;
+		}
+
+		$fuente = imagecreatefromwebp( $origen );
+
+		if ( ! $fuente ) {
+			return false;
+		}
+
+		$ancho  = imagesx( $fuente );
+		$alto   = imagesy( $fuente );
+		$lienzo = imagecreatetruecolor( $ancho, $alto );
+		$blanco = imagecolorallocate( $lienzo, 255, 255, 255 );
+
+		if ( false === $blanco ) {
+			unset( $fuente, $lienzo );
+			return false;
+		}
+
+		imagefill( $lienzo, 0, 0, $blanco );
+		imagecopy( $lienzo, $fuente, 0, 0, 0, 0, $ancho, $alto );
+		$ok = imagejpeg( $lienzo, $destino, 82 );
+
+		unset( $fuente, $lienzo );
+
+		return $ok && self::es_jpeg( $destino );
+	}
+
+	/**
+	 * ¿El fichero es un JPEG de verdad?
+	 *
+	 * @param string $ruta Fichero.
+	 * @param string $mime MIME declarado (para dobles que no escriben el fichero).
+	 */
+	private static function es_jpeg( string $ruta, string $mime = '' ): bool {
+		if ( file_exists( $ruta ) ) {
+			$info = getimagesize( $ruta );
+
+			return is_array( $info ) && defined( 'IMAGETYPE_JPEG' ) && IMAGETYPE_JPEG === $info[2];
+		}
+
+		return 'image/jpeg' === $mime;
+	}
+
+	/**
+	 * ¿La URL guardada termina en una extensión que la API acepta?
+	 *
+	 * @param string $url URL.
+	 */
+	private static function es_jpeg_url( string $url ): bool {
+		$ext = strtolower( (string) pathinfo( (string) wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
+
+		return in_array( $ext, array( 'jpg', 'jpeg', 'png' ), true );
+	}
+
+	/**
+	 * URL pública de un fichero de subidas.
+	 *
+	 * @param string $ruta Ruta absoluta.
+	 */
+	private static function url_de_ruta( string $ruta ): string {
+		$subidas = wp_upload_dir();
+		$url     = str_replace( $subidas['basedir'], $subidas['baseurl'], $ruta );
+
+		return $url === $ruta ? '' : $url;
 	}
 
 	/**
