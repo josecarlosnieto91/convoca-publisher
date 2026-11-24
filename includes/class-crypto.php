@@ -79,10 +79,18 @@ class Crypto {
 	}
 
 	/**
-	 * Hook: cifrar tokens al guardarlos en options.
-	 * pre_update_option puede pasar arrays (ej: WP-CLI activation).
+	 * Hook: cifrar credenciales al guardarlas en options.
+	 *
+	 * `pre_update_option` pasa `( $value, $old_value, $option )`: el segundo argumento es el
+	 * valor anterior, no el nombre de la opción. Aceptarlo (aunque no se use) es obligatorio
+	 * para que `$option` llegue donde toca; si no, todo token guardado por `update_option()`
+	 * quedaba en claro (publisher#25).
+	 *
+	 * @param mixed  $value     Valor nuevo.
+	 * @param mixed  $old_value Valor anterior (no se usa).
+	 * @param string $option    Nombre de la opción.
 	 */
-	public static function encrypt_on_save( mixed $value, string $option ): mixed {
+	public static function encrypt_on_save( mixed $value, mixed $old_value, string $option ): mixed {
 		// Solo cifrar opciones propias del plugin — no tocar '_token' de terceros.
 		if ( ! str_starts_with( $option, 'convoca_publisher_' ) ) {
 			return $value;
@@ -92,7 +100,7 @@ class Crypto {
 			return $value;
 		}
 
-		if ( ! str_ends_with( $option, '_token' ) && ! str_ends_with( $option, '_bearer_token' ) ) {
+		if ( ! str_ends_with( $option, '_token' ) && ! str_ends_with( $option, '_bearer_token' ) && ! str_ends_with( $option, '_secret' ) ) {
 			return $value;
 		}
 

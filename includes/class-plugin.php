@@ -98,11 +98,16 @@ class Plugin {
 			'convoca_publisher_twitter_bearer_token',
 			'convoca_publisher_tiktok_token',
 			'convoca_publisher_gmb_token',
+			'convoca_publisher_gmb_refresh_token',
+			'convoca_publisher_gmb_client_secret',
 			'convoca_publisher_telegram_token',
 			'convoca_publisher_mastodon_token',
 		);
 
-		add_action( 'pre_update_option', array( Crypto::class, 'encrypt_on_save' ), 10, 2 );
+		// `pre_update_option` pasa TRES argumentos: ( valor, valor_anterior, opción ). Con 2
+		// el segundo era el valor anterior y la opción nunca llegaba: los tokens se guardaban
+		// en claro (publisher#25).
+		add_action( 'pre_update_option', array( Crypto::class, 'encrypt_on_save' ), 10, 3 );
 
 		foreach ( $token_options as $option ) {
 			add_filter( "option_{$option}", array( Crypto::class, 'decrypt_on_load' ), 10, 2 );
