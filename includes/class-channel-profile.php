@@ -40,7 +40,15 @@ final class Channel_Profile implements Channels\ChannelInterface {
 	 */
 	public function __construct( array $profile, Channels\ChannelInterface $channel ) {
 		$this->profile = $profile;
-		$this->channel = $channel;
+
+		// Copia por cuenta: el canal de la red se comparte entre perfiles y no puede quedarse
+		// con las credenciales del último que lo usó. Si el canal sabe recibir ajustes, se los
+		// damos; los demás siguen leyéndolos por `pre_option_*`.
+		$this->channel = clone $channel;
+
+		if ( method_exists( $this->channel, 'set_settings' ) ) {
+			$this->channel->set_settings( (array) ( $profile['settings'] ?? array() ) );
+		}
 	}
 
 	/**
