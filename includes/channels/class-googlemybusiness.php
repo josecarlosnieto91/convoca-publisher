@@ -44,24 +44,7 @@ class Googlemybusiness implements ChannelInterface {
 			);
 		}
 
-		$summary = html_entity_decode( wp_trim_words( $message, 50 ) );
-
-		$body = array(
-			'summary'      => mb_substr( $summary, 0, 1500 ),
-			'callToAction' => array(
-				'actionType' => 'LEARN_MORE',
-				'url'        => $url,
-			),
-			'topicType'    => 'STANDARD',
-			'alertType'    => 'UNSPECIFIED_ALERT_TYPE',
-		);
-
-		if ( ! empty( $image_url ) ) {
-			$body['media'][] = array(
-				'mediaFormat' => 'PHOTO',
-				'sourceUrl'   => $image_url,
-			);
-		}
+		$body = self::local_post_body( $message, $url, $image_url );
 
 		$api_url = "https://mybusiness.googleapis.com/v4/{$location}/localPosts";
 
@@ -99,6 +82,38 @@ class Googlemybusiness implements ChannelInterface {
 			'success' => false,
 			'error'   => $error,
 		);
+	}
+
+	/**
+	 * Cuerpo del anuncio local.
+	 *
+	 * `alertType` solo aplica a EVENT/OFFER con un valor real del enum: mandar
+	 * UNSPECIFIED_ALERT_TYPE con STANDARD hace que la API rechace el 100 % de los envíos
+	 * («Invalid value at 'local_post.alert_type'», publisher#22).
+	 *
+	 * @param string $message   Texto.
+	 * @param string $url       Enlace.
+	 * @param string $image_url Imagen destacada.
+	 * @return array<string, mixed>
+	 */
+	private static function local_post_body( string $message, string $url, string $image_url ): array {
+		$body = array(
+			'summary'      => mb_substr( html_entity_decode( wp_trim_words( $message, 50 ) ), 0, 1500 ),
+			'callToAction' => array(
+				'actionType' => 'LEARN_MORE',
+				'url'        => $url,
+			),
+			'topicType'    => 'STANDARD',
+		);
+
+		if ( '' !== $image_url ) {
+			$body['media'][] = array(
+				'mediaFormat' => 'PHOTO',
+				'sourceUrl'   => $image_url,
+			);
+		}
+
+		return $body;
 	}
 
 	public function get_settings_fields(): array {

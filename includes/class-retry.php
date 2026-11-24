@@ -108,6 +108,34 @@ class Retry {
 	}
 
 	/**
+	 * Intentos máximos antes de dar un fallo por definitivo.
+	 */
+	public static function max_attempts(): int {
+		return self::MAX_ATTEMPTS;
+	}
+
+	/**
+	 * ¿Hay ya un reintento pendiente para esta entrada y cuenta?
+	 *
+	 * @param int    $post_id Entrada.
+	 * @param string $channel Cuenta.
+	 * @return bool
+	 */
+	public static function has_pending( int $post_id, string $channel ): bool {
+		global $wpdb;
+		$table = $wpdb->prefix . self::TABLE;
+
+		return (bool) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT id FROM {$table} WHERE post_id = %d AND channel = %s AND status = %s LIMIT 1",
+				$post_id,
+				$channel,
+				self::STATUS_PENDING
+			)
+		);
+	}
+
+	/**
 	 * Backoff configurable vía filtro `convoca_publisher_retry_backoff`.
 	 *
 	 * @return array<int, int> Horas de espera entre reintentos.
@@ -160,8 +188,39 @@ class Retry {
 	public static function enqueue( int $post_id, string $channel, string $payload = '', int $attempt = 0, string $status = self::STATUS_PENDING ): int {
 		global $wpdb;
 
+		$tabla = $wpdb->prefix . self::TABLE;
+
+		// Un fallo permanente se reintenta una y otra vez: si ya hay un pendiente para esta
+		// entrada y cuenta, se actualiza en vez de insertar otra fila. La cola crecía sin techo
+		// (696 filas duplicadas en producción, publisher#22).
+		if ( self::STATUS_PENDING === $status ) {
+			$existente = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT id FROM {$tabla} WHERE post_id = %d AND channel = %s AND status = %s LIMIT 1",
+					$post_id,
+					$channel,
+					self::STATUS_PENDING
+				)
+			);
+
+			if ( $existente > 0 ) {
+				$wpdb->update(
+					$tabla,
+					array(
+						'payload'    => $payload,
+						'error_text' => '',
+					),
+					array( 'id' => $existente ),
+					array( '%s', '%s' ),
+					array( '%d' )
+				);
+
+				return $existente;
+			}
+		}
+
 		$wpdb->insert(
-			$wpdb->prefix . self::TABLE,
+			$tabla,
 			array(
 				'post_id'      => $post_id,
 				'channel'      => $channel,
