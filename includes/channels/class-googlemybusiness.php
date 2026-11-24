@@ -123,34 +123,47 @@ class Googlemybusiness implements ChannelInterface {
 			);
 		}
 
-		$token  = $token['token'];
 		$imagen = self::prepare_image_url( $image_url );
-		$body   = self::local_post_body( $message, $url, $imagen['url'] );
-		$aviso  = $imagen['notice'];
+		$cuerpo = self::local_post_body( $message, $url, $imagen['url'] );
+		$envio  = self::enviar_local_post( $location, $token['token'], $cuerpo );
 
-		$api_url = "https://mybusiness.googleapis.com/v4/{$location}/localPosts";
+		if ( ! empty( $envio['success'] ) && '' !== $imagen['notice'] ) {
+			$envio['notice'] = $imagen['notice'];
+		}
 
-		$response = wp_remote_post(
-			$api_url,
+		return $envio;
+	}
+
+	/**
+	 * Crear el anuncio local y traducir la respuesta de Google.
+	 *
+	 * @param string               $location Location ID.
+	 * @param string               $token    Access token.
+	 * @param array<string, mixed> $cuerpo   Cuerpo del anuncio.
+	 * @return array{success: bool, post_id?: string, error?: string}
+	 */
+	private static function enviar_local_post( string $location, string $token, array $cuerpo ): array {
+		$respuesta = wp_remote_post(
+			"https://mybusiness.googleapis.com/v4/{$location}/localPosts",
 			array(
 				'headers' => array(
 					'Authorization' => "Bearer {$token}",
 					'Content-Type'  => 'application/json',
 				),
-				'body'    => (string) wp_json_encode( $body ),
+				'body'    => (string) wp_json_encode( $cuerpo ),
 				'timeout' => 30,
 			)
 		);
 
-		if ( is_wp_error( $response ) ) {
+		if ( is_wp_error( $respuesta ) ) {
 			return array(
 				'success' => false,
-				'error'   => $response->get_error_message(),
+				'error'   => $respuesta->get_error_message(),
 			);
 		}
 
-		$http_code = wp_remote_retrieve_response_code( $response );
-		$resp_body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$http_code = (int) wp_remote_retrieve_response_code( $respuesta );
+		$resp_body = json_decode( (string) wp_remote_retrieve_body( $respuesta ), true );
 
 		if ( 401 === $http_code ) {
 			return array(
@@ -160,30 +173,20 @@ class Googlemybusiness implements ChannelInterface {
 		}
 
 		if ( $http_code >= 200 && $http_code < 300 && isset( $resp_body['name'] ) ) {
-			$resultado = array(
+			return array(
 				'success' => true,
-				'post_id' => $resp_body['name'],
+				'post_id' => (string) $resp_body['name'],
 			);
-
-			if ( '' !== $aviso ) {
-				$resultado['notice'] = $aviso;
-			}
-
-			return $resultado;
 		}
 
 		return array(
 			'success' => false,
-			'error'   => self::api_error( $resp_body, (int) $http_code ),
+			'error'   => self::api_error( is_array( $resp_body ) ? $resp_body : null, $http_code ),
 		);
 	}
 
 	/**
 	 * Access token utilizable: el guardado o uno nuevo pedido con el refresh token.
-	 *
-	 * El token de Google caduca en una hora. Con refresh token + client id/secret se pide uno
-	 * nuevo y se guarda en un transient hasta poco antes de caducar; sin ellos se usa el que
-	 * haya (y si caducó, el 401 se traduce a un mensaje que se entiende).
 	 *
 	 * @return array{token: string, error: string}
 	 */
@@ -194,17 +197,7 @@ class Googlemybusiness implements ChannelInterface {
 		$secret   = $this->setting( 'convoca_publisher_gmb_client_secret' );
 
 		if ( '' === $refresh || '' === $client || '' === $secret ) {
-			if ( '' === $guardado ) {
-				return array(
-					'token' => '',
-					'error' => __( 'GMB no tiene token. Conecta la cuenta en Ajustes.', 'convoca-publisher' ),
-				);
-			}
-
-			return array(
-				'token' => $guardado,
-				'error' => '',
-			);
+			return $this->token_sin_renovacion( $guardado );
 		}
 
 		$clave = 'convoca_publisher_gmb_access_' . md5( $refresh . '|' . $client . '|' . $this->setting( 'convoca_publisher_gmb_location' ) );
@@ -217,6 +210,49 @@ class Googlemybusiness implements ChannelInterface {
 			);
 		}
 
+		$nuevo = self::renovar_token( $refresh, $client, $secret );
+
+		if ( '' !== $nuevo['error'] ) {
+			return $nuevo;
+		}
+
+		set_transient( $clave, $nuevo['token'], max( 60, $nuevo['vida'] - 60 ) );
+
+		return array(
+			'token' => $nuevo['token'],
+			'error' => '',
+		);
+	}
+
+	/**
+	 * Token guardado, o el error que explica que falta.
+	 *
+	 * @param string $guardado Access token del perfil.
+	 * @return array{token: string, error: string}
+	 */
+	private function token_sin_renovacion( string $guardado ): array {
+		if ( '' !== $guardado ) {
+			return array(
+				'token' => $guardado,
+				'error' => '',
+			);
+		}
+
+		return array(
+			'token' => '',
+			'error' => __( 'GMB no tiene token. Conecta la cuenta en Ajustes.', 'convoca-publisher' ),
+		);
+	}
+
+	/**
+	 * Pedir un access token nuevo a Google con el refresh token.
+	 *
+	 * @param string $refresh Refresh token.
+	 * @param string $client  Client ID.
+	 * @param string $secret  Client secret.
+	 * @return array{token: string, vida: int, error: string}
+	 */
+	private static function renovar_token( string $refresh, string $client, string $secret ): array {
 		$respuesta = wp_remote_post(
 			'https://oauth2.googleapis.com/token',
 			array(
@@ -233,6 +269,7 @@ class Googlemybusiness implements ChannelInterface {
 		if ( is_wp_error( $respuesta ) ) {
 			return array(
 				'token' => '',
+				'vida'  => 0,
 				'error' => __( 'No se pudo renovar el token de Google: ', 'convoca-publisher' ) . $respuesta->get_error_message(),
 			);
 		}
@@ -242,22 +279,30 @@ class Googlemybusiness implements ChannelInterface {
 		$nuevo  = is_array( $cuerpo ) ? (string) ( $cuerpo['access_token'] ?? '' ) : '';
 
 		if ( 200 !== $codigo || '' === $nuevo ) {
-			$motivo = is_array( $cuerpo ) ? (string) ( $cuerpo['error_description'] ?? $cuerpo['error'] ?? '' ) : '';
-
 			return array(
 				'token' => '',
-				'error' => __( 'No se pudo renovar el token de Google. Revisa el refresh token, o vuelve a conectar la cuenta en Ajustes.', 'convoca-publisher' )
-					. ( '' !== $motivo ? ' (' . $motivo . ')' : '' ),
+				'vida'  => 0,
+				'error' => self::error_renovacion( $cuerpo ),
 			);
 		}
 
-		$vida = isset( $cuerpo['expires_in'] ) ? (int) $cuerpo['expires_in'] : 3600;
-		set_transient( $clave, $nuevo, max( 60, $vida - 60 ) );
-
 		return array(
 			'token' => $nuevo,
+			'vida'  => (int) ( $cuerpo['expires_in'] ?? 3600 ),
 			'error' => '',
 		);
+	}
+
+	/**
+	 * Mensaje cuando Google no entrega el token.
+	 *
+	 * @param mixed $cuerpo Respuesta de OAuth.
+	 */
+	private static function error_renovacion( mixed $cuerpo ): string {
+		$motivo = is_array( $cuerpo ) ? (string) ( $cuerpo['error_description'] ?? $cuerpo['error'] ?? '' ) : '';
+
+		return __( 'No se pudo renovar el token de Google. Revisa el refresh token, o vuelve a conectar la cuenta en Ajustes.', 'convoca-publisher' )
+			. ( '' !== $motivo ? ' (' . $motivo . ')' : '' );
 	}
 
 	/**
@@ -496,7 +541,6 @@ class Googlemybusiness implements ChannelInterface {
 		}
 		return $errors;
 	}
-
 	public function verify_connection(): array {
 		$location = $this->setting( 'convoca_publisher_gmb_location' );
 
@@ -516,26 +560,83 @@ class Googlemybusiness implements ChannelInterface {
 			);
 		}
 
-		$token = $token['token'];
+		$formato = self::validar_location( $location );
 
-		// Validate token format: JWT-like or Google access token
-		if ( strlen( $token ) < 20 || strlen( $token ) > 4096 ) {
+		if ( '' !== $formato ) {
+			return array(
+				'success' => false,
+				'message' => $formato,
+			);
+		}
+
+		if ( strlen( $token['token'] ) < 20 || strlen( $token['token'] ) > 4096 ) {
 			return array(
 				'success' => false,
 				'message' => __( 'El token de Google no tiene un formato válido.', 'convoca-publisher' ),
 			);
 		}
 
-		// Validate location format: accounts/{id}/locations/{id}
-		if ( ! preg_match( '#^accounts/[^/]+/locations/[^/]+$#', $location ) ) {
+		$comprobacion = self::comprobar_location( $location, $token['token'] );
+
+		if ( '' !== $comprobacion['error'] ) {
 			return array(
 				'success' => false,
-				'message' => __( 'El Location ID debe tener el formato: accounts/{accountId}/locations/{locationId}', 'convoca-publisher' ),
+				'message' => $comprobacion['error'],
 			);
 		}
 
-		// Try a lightweight API call to verify the token and location
-		$resp = wp_remote_get(
+		return $this->resultado_verificacion( $comprobacion );
+	}
+
+	/**
+	 * Traducir la respuesta de la comprobación a «conecta» o al motivo.
+	 *
+	 * @param array{code: int, body: array<string, mixed>|null, error: string} $comprobacion Respuesta.
+	 * @return array{success: bool, message: string}
+	 */
+	private function resultado_verificacion( array $comprobacion ): array {
+		if ( $comprobacion['code'] >= 200 && $comprobacion['code'] < 300 ) {
+			return array(
+				'success' => true,
+				'message' => $this->mensaje_conexion(),
+			);
+		}
+
+		if ( 401 === $comprobacion['code'] ) {
+			return array(
+				'success' => false,
+				'message' => __( 'El token de Google ha caducado o no es válido. Configura el refresh token para que se renueve solo, o vuelve a conectar la cuenta en Ajustes.', 'convoca-publisher' ),
+			);
+		}
+
+		return array(
+			'success' => false,
+			'message' => self::api_error( $comprobacion['body'], $comprobacion['code'] ),
+		);
+	}
+
+	/**
+	 * Formato del Location ID, o cadena vacía si vale.
+	 *
+	 * @param string $location Location ID.
+	 */
+	private static function validar_location( string $location ): string {
+		if ( preg_match( '#^accounts/[^/]+/locations/[^/]+$#', $location ) ) {
+			return '';
+		}
+
+		return __( 'El Location ID debe tener el formato: accounts/{accountId}/locations/{locationId}', 'convoca-publisher' );
+	}
+
+	/**
+	 * Consulta ligera para saber si el token y la ubicación sirven.
+	 *
+	 * @param string $location Location ID.
+	 * @param string $token    Access token.
+	 * @return array{code: int, body: array<string, mixed>|null, error: string}
+	 */
+	private static function comprobar_location( string $location, string $token ): array {
+		$respuesta = wp_remote_get(
 			"https://mybusiness.googleapis.com/v4/{$location}/localPosts?pageSize=1",
 			array(
 				'headers' => array(
@@ -545,37 +646,31 @@ class Googlemybusiness implements ChannelInterface {
 			)
 		);
 
-		if ( is_wp_error( $resp ) ) {
+		if ( is_wp_error( $respuesta ) ) {
 			return array(
-				'success' => false,
-				'message' => __( 'Error de conexión: ', 'convoca-publisher' ) . $resp->get_error_message(),
+				'code'  => 0,
+				'body'  => null,
+				'error' => __( 'Error de conexión: ', 'convoca-publisher' ) . $respuesta->get_error_message(),
 			);
 		}
 
-		$http_code = wp_remote_retrieve_response_code( $resp );
-		$body      = json_decode( wp_remote_retrieve_body( $resp ), true );
-
-		if ( $http_code >= 200 && $http_code < 300 ) {
-			$renueva = '' !== $this->setting( 'convoca_publisher_gmb_refresh_token' );
-
-			return array(
-				'success' => true,
-				'message' => $renueva
-					? __( '✅ Conexión correcta. Location ID válido y el token se renueva solo.', 'convoca-publisher' )
-					: __( '✅ Conexión correcta. Location ID válido y accesible. El token caduca en una hora: configura el refresh token para que no haya que renovarlo a mano.', 'convoca-publisher' ),
-			);
-		}
-
-		if ( 401 === $http_code ) {
-			return array(
-				'success' => false,
-				'message' => __( 'El token de Google ha caducado o no es válido. Configura el refresh token para que se renueve solo, o vuelve a conectar la cuenta en Ajustes.', 'convoca-publisher' ),
-			);
-		}
+		$cuerpo = json_decode( (string) wp_remote_retrieve_body( $respuesta ), true );
 
 		return array(
-			'success' => false,
-			'message' => self::api_error( is_array( $body ) ? $body : null, (int) $http_code ),
+			'code'  => (int) wp_remote_retrieve_response_code( $respuesta ),
+			'body'  => is_array( $cuerpo ) ? $cuerpo : null,
+			'error' => '',
 		);
+	}
+
+	/**
+	 * Mensaje de conexión correcta, según haya renovación o no.
+	 */
+	private function mensaje_conexion(): string {
+		if ( '' !== $this->setting( 'convoca_publisher_gmb_refresh_token' ) ) {
+			return __( '✅ Conexión correcta. Location ID válido y el token se renueva solo.', 'convoca-publisher' );
+		}
+
+		return __( '✅ Conexión correcta. Location ID válido y accesible. El token caduca en una hora: configura el refresh token para que no haya que renovarlo a mano.', 'convoca-publisher' );
 	}
 }
