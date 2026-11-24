@@ -182,6 +182,70 @@ final class GoogleMyBusinessTest extends TestCase
     }
 
     /**
+     * La copia JPEG ya generada se reutiliza (no se vuelve a convertir).
+     */
+    public function test_reutiliza_la_copia_jpeg_ya_generada(): void
+    {
+        $GLOBALS['_cp_test_attachment_urls'] = ['https://example.com/uploads/foto.webp' => 77];
+        $GLOBALS['_cp_test_original_urls']   = [77 => 'https://example.com/uploads/foto.webp'];
+        $GLOBALS['_cp_test_attached_files']  = [77 => '/var/www/uploads/foto.webp'];
+        $GLOBALS['_cp_test_postmeta'][77]['_convoca_publisher_gmb_jpeg'] = 'https://example.com/uploads/foto-gmb.jpg';
+
+        $imagen = Googlemybusiness::prepare_image_url('https://example.com/uploads/foto.webp');
+
+        $this->assertSame('https://example.com/uploads/foto-gmb.jpg', $imagen['url']);
+    }
+
+    /**
+     * Sin access token ni refresh token, los ajustes no valen.
+     */
+    public function test_los_ajustes_exigen_token_o_refresh(): void
+    {
+        $canal = new Googlemybusiness($this->ajustes());
+
+        $errores = $canal->validate_settings(['convoca_publisher_gmb_location' => 'accounts/1/locations/2']);
+
+        $this->assertNotEmpty($errores);
+        $this->assertStringContainsString('access token o el refresh token', implode(' ', $errores));
+    }
+
+    /**
+     * Un refresh token sin client id/secret no puede renovar nada.
+     */
+    public function test_el_refresh_token_exige_client_id_y_secret(): void
+    {
+        $canal = new Googlemybusiness($this->ajustes());
+
+        $errores = $canal->validate_settings([
+            'convoca_publisher_gmb_refresh_token' => '1//refresh',
+            'convoca_publisher_gmb_location'      => 'accounts/1/locations/2',
+        ]);
+
+        $this->assertStringContainsString('client ID y el client secret', implode(' ', $errores));
+    }
+
+    /**
+     * Si Google rechaza la renovación, se dice el motivo en vez de seguir con un token vacío.
+     */
+    public function test_si_la_renovacion_falla_se_explica_el_motivo(): void
+    {
+        $canal = new Googlemybusiness($this->ajustes() + [
+            'convoca_publisher_gmb_refresh_token' => '1//refresh',
+            'convoca_publisher_gmb_client_id'     => 'cliente',
+            'convoca_publisher_gmb_client_secret' => 'secreto',
+        ]);
+
+        $GLOBALS['_cp_test_http_queue'] = [
+            ['response' => ['code' => 400], 'body' => '{"error":"invalid_grant","error_description":"Token has been expired or revoked."}'],
+        ];
+
+        $resultado = $canal->publish(10, 'Mensaje', 'https://example.com/?p=10');
+
+        $this->assertFalse($resultado['success']);
+        $this->assertStringContainsString('expired or revoked', $resultado['error']);
+    }
+
+    /**
      * Si el original también es webp, se genera una copia JPEG y se usa.
      */
     public function test_si_hace_falta_genera_una_copia_jpeg(): void
